@@ -1,0 +1,1717 @@
+%!PS-Adobe-3.0
+%%Title: cplx_v6.js
+%%For: gl
+%%Creator: a2ps version 4.14
+%%CreationDate: Sat Jan 19 07:26:13 2013
+%%BoundingBox: 24 24 588 768
+%%DocumentData: Clean7Bit
+%%Orientation: Landscape
+%%Pages: 3
+%%PageOrder: Ascend
+%%DocumentMedia: Letter 612 792 0 () ()
+%%DocumentNeededResources: font Courier
+%%+ font Courier-Bold
+%%+ font Courier-BoldOblique
+%%+ font Courier-Oblique
+%%+ font Helvetica
+%%+ font Helvetica-Bold
+%%+ font Symbol
+%%+ font Times-Bold
+%%+ font Times-Roman
+%%DocumentProcessColors: Black 
+%%DocumentSuppliedResources: procset a2ps-a2ps-hdr
+%%+ procset a2ps-black+white-Prolog
+%%+ encoding ISO-8859-1Encoding
+%%EndComments
+/a2psdict 200 dict def
+a2psdict begin
+%%BeginProlog
+%%Copyright: (c) 1988, 89, 90, 91, 92, 93 Miguel Santana
+%%Copyright: (c) 1995, 96, 97, 98 Akim Demaille, Miguel Santana
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+
+% EPSF import as in the Red Book
+/BeginInclude {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack 
+  userdict begin
+    0 setgray 0 setlinecap
+    1 setlinewidth 0 setlinejoin
+    10 setmiterlimit [ ] 0 setdash newpath
+    gs_languagelevel 1 ne {
+      false setstrokeadjust false setoverprint 
+    } if
+} bind def
+
+/EndInclude {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+/BeginEPSF {
+  BeginInclude
+  /showpage { } def
+} bind def
+
+/EndEPSF {
+  EndInclude
+} bind def
+
+% Page prefeed
+/page_prefeed {         % bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} bind def
+
+/deffont {
+  findfont exch scalefont def
+} bind def
+
+/reencode_font {
+  findfont reencode 2 copy definefont pop def
+} bind def
+
+% Function c-show (str => -)
+% centers text only according to x axis.
+/c-show { 
+  dup stringwidth pop
+  2 div neg 0 rmoveto
+  show
+} bind def
+
+% Function l-show (str => -)
+% prints texts so that it ends at currentpoint
+/l-show {
+  dup stringwidth pop neg 
+  0 
+  rmoveto show
+} bind def
+
+% center-fit show (str w => -)
+% show centered, and scale currentfont so that the width is less than w
+/cfshow {
+  exch dup stringwidth pop
+  % If the title is too big, try to make it smaller
+  3 2 roll 2 copy
+  gt
+  { % if, i.e. too big
+    exch div
+    currentfont exch scalefont setfont
+  } { % ifelse
+    pop pop 
+  }
+  ifelse
+  c-show			% center title
+} bind def
+
+% Return the y size of the current font
+% - => fontsize
+/currentfontsize {
+  currentfont /FontType get 0 eq {
+    currentfont /FontMatrix get 3 get
+  }{
+    currentfont /FontMatrix get 3 get 1000 mul
+  } ifelse
+} bind def
+
+% reencode the font
+% <encoding-vector> <fontdict> -> <newfontdict>
+/reencode { %def
+  dup length 5 add dict begin
+    { %forall
+      % <vector> <key> <val>
+      1 index /FID ne 
+      { def }{ pop pop } ifelse
+    } forall
+    /Encoding exch def % -
+
+    % Use the font's bounding box to determine the ascent, descent,
+    % and overall height; don't forget that these values have to be
+    % transformed using the font's matrix.
+    % We use `load' because sometimes BBox is executable, sometimes not.
+    % Since we need 4 numbers an not an array avoid BBox from being executed
+    /FontBBox load aload pop
+    FontMatrix transform /Ascent exch def pop
+    FontMatrix transform /Descent exch def pop
+    /FontHeight Ascent Descent sub def
+
+    % Get the underline position and thickness if they're defined.
+    % Use 1 if they are not defined.
+    currentdict /FontInfo 2 copy known
+    { get
+      /UnderlinePosition 2 copy % <FontInfo> /UP <FontInfo> /UP
+      2 copy known
+      { get }{ pop pop 1 } ifelse
+      0 exch FontMatrix transform exch pop
+      def % <FontInfo>
+
+      /UnderlineThickness 2 copy % <FontInfo> /UT <FontInfo> /UT
+      2 copy known
+      { get }{ pop pop 1 } ifelse
+      0 exch FontMatrix transform exch pop
+      def % <FontInfo>
+      pop % -
+    }{ pop pop
+    } ifelse
+
+    currentdict
+  end 
+} bind def
+
+% composite fonts for ASCII-EUC mixed strings
+% Version 1.2 1/31/1990
+% Original Ken'ichi HANDA (handa@etl.go.jp)
+% Modified Norio Katayama (katayama@rd.nacsis.ac.jp),1998
+% Extend & Fix Koji Nakamaru (maru@on.cs.keio.ac.jp), 1999
+% Anyone can freely copy, modify, distribute this program.
+
+/copyfont {	% font-dic extra-entry-count  copyfont  font-dic
+	1 index maxlength add dict begin
+	{	1 index /FID ne 2 index /UniqueID ne and
+		{def} {pop pop} ifelse
+	} forall
+	currentdict
+	end
+} bind def
+
+/compositefont { % ASCIIFontName EUCFontName RomanScale RomanOffset Rot(T/F) compositefont font
+    /RomanRotation exch def
+    /RomanOffset exch def
+    /RomanScale exch def
+    userdict /fixeucfont_dict known not {
+	userdict begin
+	    /fixeucfont_dict 2 dict begin
+		/UpperByteEncoding [
+		    16#00 1 16#20 { pop 0 } for
+		    16#21 1 16#28 { 16#20 sub } for
+		    16#29 1 16#2F { pop 0 } for
+		    16#30 1 16#74 { 16#27 sub } for
+		    16#75 1 16#FF { pop 0 } for
+		] def
+	        /LowerByteEncoding [
+		    16#00 1 16#A0 { pop /.notdef } for
+		    16#A1 1 16#FE { 16#80 sub 16 2 string cvrs
+				    (cXX) dup 1 4 -1 roll
+				    putinterval cvn } for
+		    /.notdef
+		] def
+		currentdict
+	    end def
+	end
+    } if
+    findfont dup /FontType get 0 eq {
+	14 dict begin
+	    %
+	    % 7+8 bit EUC font
+	    %
+	    12 dict begin
+		/EUCFont exch def
+		/FontInfo (7+8 bit EUC font) readonly def
+		/PaintType 0 def
+		/FontType 0 def
+		/FontMatrix matrix def
+		% /FontName
+		/Encoding fixeucfont_dict /UpperByteEncoding get def
+		/FMapType 2 def
+		EUCFont /WMode known
+		{ EUCFont /WMode get /WMode exch def }
+		{ /WMode 0 def } ifelse
+		/FDepVector [
+		    EUCFont /FDepVector get 0 get
+		    [ 16#21 1 16#28 {} for 16#30 1 16#74 {} for ]
+		    {
+			13 dict begin
+			    /EUCFont EUCFont def
+			    /UpperByte exch 16#80 add def	
+			    % /FontName
+			    /FontInfo (EUC lower byte font) readonly def
+			    /PaintType 0 def
+			    /FontType 3 def
+			    /FontMatrix matrix def
+			    /FontBBox {0 0 0 0} def
+			    /Encoding
+				fixeucfont_dict /LowerByteEncoding get def
+			    % /UniqueID
+			    % /WMode
+			    /BuildChar {
+				gsave
+				exch dup /EUCFont get setfont
+				/UpperByte get
+				2 string
+				dup 0 4 -1 roll put
+				dup 1 4 -1 roll put
+				dup stringwidth setcharwidth
+				0 0 moveto show
+				grestore
+			    } bind def
+			    currentdict
+			end
+			/lowerbytefont exch definefont
+		    } forall
+		] def
+		currentdict
+	    end
+	    /eucfont exch definefont
+	    exch
+	    findfont 1 copyfont dup begin
+		RomanRotation {
+			/FontMatrix FontMatrix
+			[ 0 RomanScale neg RomanScale 0 RomanOffset neg 0 ]
+			matrix concatmatrix def
+		}{
+			/FontMatrix FontMatrix
+			[ RomanScale 0 0 RomanScale 0 RomanOffset ] matrix concatmatrix
+			def
+			/CDevProc
+			    {pop pop pop pop 0 exch -1000 exch 2 div 880} def
+		} ifelse
+	    end
+	    /asciifont exch definefont
+	    exch
+	    /FDepVector [ 4 2 roll ] def
+	    /FontType 0 def
+	    /WMode 0 def
+	    /FMapType 4 def
+	    /FontMatrix matrix def
+	    /Encoding [0 1] def
+	    /FontBBox {0 0 0 0} def
+%	    /FontHeight 1.0 def % XXXX
+	    /FontHeight RomanScale 1.0 ge { RomanScale }{ 1.0 } ifelse def
+	    /Descent -0.3 def   % XXXX
+	    currentdict
+	end
+	/tmpfont exch definefont
+	pop
+	/tmpfont findfont
+    }{
+	pop findfont 0 copyfont
+    } ifelse
+} def	
+
+/slantfont {	% FontName slant-degree  slantfont  font'
+    exch findfont 1 copyfont begin
+    [ 1 0 4 -1 roll 1 0 0 ] FontMatrix exch matrix concatmatrix
+    /FontMatrix exch def
+    currentdict
+    end
+} def
+
+% Function print line number (<string> # -)
+/# {
+  gsave
+    sx cw mul neg 2 div 0 rmoveto
+    f# setfont
+    c-show
+  grestore
+} bind def
+
+% -------- Some routines to enlight plain b/w printings ---------
+
+% Underline
+% width --
+/dounderline {
+  currentpoint
+  gsave
+    moveto
+    0 currentfont /Descent get currentfontsize mul rmoveto
+    0 rlineto
+    stroke
+  grestore
+} bind def
+
+% Underline a string
+% string --
+/dounderlinestring {
+  stringwidth pop
+  dounderline
+} bind def
+
+/UL {
+  /ul exch store
+} bind def
+
+% Draw a box of WIDTH wrt current font
+% width --
+/dobox {
+  currentpoint
+  gsave
+    newpath
+    moveto
+    0 currentfont /Descent get currentfontsize mul rmoveto
+    dup 0 rlineto
+    0 currentfont /FontHeight get currentfontsize mul rlineto
+    neg 0 rlineto
+    closepath
+    stroke
+  grestore
+} bind def
+
+/BX {
+  /bx exch store
+} bind def
+
+% Box a string
+% string --
+/doboxstring {
+  stringwidth pop
+  dobox
+} bind def
+
+%
+% ------------- Color routines ---------------
+%
+/FG /setrgbcolor load def
+
+% Draw the background
+% width --
+/dobackground {
+  currentpoint
+  gsave
+    newpath
+    moveto
+    0 currentfont /Descent get currentfontsize mul rmoveto
+    dup 0 rlineto
+    0 currentfont /FontHeight get currentfontsize mul rlineto
+    neg 0 rlineto
+    closepath
+    bgcolor aload pop setrgbcolor
+    fill
+  grestore
+} bind def
+
+% Draw bg for a string
+% string --
+/dobackgroundstring {
+  stringwidth pop
+  dobackground
+} bind def
+
+
+/BG {
+  dup /bg exch store
+  { mark 4 1 roll ] /bgcolor exch store } if
+} bind def
+
+
+/Show {
+  bg { dup dobackgroundstring } if
+  ul { dup dounderlinestring } if
+  bx { dup doboxstring } if
+  show
+} bind def
+
+% Function T(ab), jumps to the n-th tabulation in the current line
+/T {
+  cw mul x0 add
+  bg { dup currentpoint pop sub dobackground } if
+  ul { dup currentpoint pop sub dounderline } if
+  bx { dup currentpoint pop sub dobox } if
+  y0 moveto
+} bind def
+
+% Function n: move to the next line
+/n {
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+} bind def
+
+% Function N: show and move to the next line
+/N {
+  Show
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+} bind def
+
+/S {
+  Show
+} bind def
+
+%%BeginResource: procset a2ps-a2ps-hdr 2.0 2
+%%Copyright: (c) 1988, 89, 90, 91, 92, 93 Miguel Santana
+%%Copyright: (c) 1995, 96, 97, 98 Akim Demaille, Miguel Santana
+% Function title: prints page header.
+% <ct> <rt> <lt> are passed as argument
+/title { 
+  % 1. Draw the background
+  x v get y v get moveto
+  gsave
+    0 th 2 div neg rmoveto 
+    th setlinewidth
+    0.95 setgray
+    pw 0 rlineto stroke
+  grestore
+  % 2. Border it
+  gsave
+    0.7 setlinewidth
+    pw 0 rlineto
+    0 th neg rlineto
+    pw neg 0 rlineto
+    closepath stroke
+  grestore
+  % stk: ct rt lt
+  x v get y v get th sub 1 add moveto
+%%IncludeResource: font Helvetica
+  fHelvetica fnfs 0.8 mul scalefont setfont
+  % 3. The left title
+  gsave
+    dup stringwidth pop fnfs 0.8 mul add exch % leave space took on stack
+    fnfs 0.8 mul hm rmoveto
+    show			% left title
+  grestore
+  exch
+  % stk: ct ltw rt
+  % 4. the right title
+  gsave
+    dup stringwidth pop fnfs 0.8 mul add exch % leave space took on stack
+    dup
+    pw exch stringwidth pop fnfs 0.8 mul add sub
+    hm
+    rmoveto
+    show			% right title
+  grestore
+  % stk: ct ltw rtw
+  % 5. the center title
+  gsave
+    pw 3 1 roll
+    % stk: ct pw ltw rtw
+    3 copy 
+    % Move to the center of the left room
+    sub add 2 div hm rmoveto
+    % What is the available space in here?
+    add sub fnfs 0.8 mul sub fnfs 0.8 mul sub
+    % stk: ct space_left
+%%IncludeResource: font Helvetica-Bold
+  fHelvetica-Bold fnfs scalefont setfont
+    cfshow
+  grestore
+} bind def
+
+% Function border: prints virtual page border
+/border { %def
+  gsave				% print four sides
+    0 setgray
+    x v get y v get moveto
+    0.7 setlinewidth		% of the square
+    pw 0 rlineto
+    0 ph neg rlineto
+    pw neg 0 rlineto
+    closepath stroke
+  grestore
+} bind def
+
+% Function water: prints a water mark in background
+/water { %def
+  gsave
+    scx scy moveto rotate
+%%IncludeResource: font Times-Bold
+  fTimes-Bold 100 scalefont setfont
+    .97 setgray
+    dup stringwidth pop 2 div neg -50 rmoveto
+    show
+  grestore
+} bind def
+
+% Function rhead: prints the right header
+/rhead {  %def
+  lx ly moveto
+  fHelvetica fnfs 0.8 mul scalefont setfont
+  l-show
+} bind def
+
+% Function footer (cf rf lf -> -)
+/footer {
+  fHelvetica fnfs 0.8 mul scalefont setfont
+  dx dy moveto
+  show
+
+  snx sny moveto
+  l-show
+  
+  fnx fny moveto
+  c-show
+} bind def
+%%EndResource
+%%BeginResource: procset a2ps-black+white-Prolog 2.0 1
+
+% Function T(ab), jumps to the n-th tabulation in the current line
+/T { 
+  cw mul x0 add y0 moveto
+} bind def
+
+% Function n: move to the next line
+/n { %def
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+} bind def
+
+% Function N: show and move to the next line
+/N {
+  Show
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+}  bind def
+
+/S {
+  Show
+} bind def
+
+/p {
+  false UL
+  false BX
+  fCourier bfs scalefont setfont
+  Show
+} bind def
+
+/sy {
+  false UL
+  false BX
+  fSymbol bfs scalefont setfont
+  Show
+} bind def
+
+/k {
+  false UL
+  false BX
+  fCourier-Oblique bfs scalefont setfont
+  Show
+} bind def
+
+/K {
+  false UL
+  false BX
+  fCourier-Bold bfs scalefont setfont
+  Show
+} bind def
+
+/c {
+  false UL
+  false BX
+  fCourier-Oblique bfs scalefont setfont
+  Show
+} bind def
+
+/C {
+  false UL
+  false BX
+  fCourier-BoldOblique bfs scalefont setfont
+  Show 
+} bind def
+
+/l {
+  false UL
+  false BX
+  fHelvetica bfs scalefont setfont
+  Show
+} bind def
+
+/L {
+  false UL
+  false BX
+  fHelvetica-Bold bfs scalefont setfont
+  Show 
+} bind def
+
+/str{
+  false UL
+  false BX
+  fTimes-Roman bfs scalefont setfont
+  Show
+} bind def
+
+/e{
+  false UL
+  true BX
+  fHelvetica-Bold bfs scalefont setfont
+  Show
+} bind def
+
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Courier
+%%IncludeResource: font Courier-Oblique
+%%IncludeResource: font Courier-Bold
+%%IncludeResource: font Times-Roman
+%%IncludeResource: font Symbol
+%%IncludeResource: font Courier-BoldOblique
+%%BeginResource: encoding ISO-8859-1Encoding
+/ISO-8859-1Encoding [
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/space /exclam /quotedbl /numbersign /dollar /percent /ampersand /quoteright 
+/parenleft /parenright /asterisk /plus /comma /minus /period /slash 
+/zero /one /two /three /four /five /six /seven 
+/eight /nine /colon /semicolon /less /equal /greater /question 
+/at /A /B /C /D /E /F /G 
+/H /I /J /K /L /M /N /O 
+/P /Q /R /S /T /U /V /W 
+/X /Y /Z /bracketleft /backslash /bracketright /asciicircum /underscore 
+/quoteleft /a /b /c /d /e /f /g 
+/h /i /j /k /l /m /n /o 
+/p /q /r /s /t /u /v /w 
+/x /y /z /braceleft /bar /braceright /asciitilde /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/space /exclamdown /cent /sterling /currency /yen /brokenbar /section 
+/dieresis /copyright /ordfeminine /guillemotleft /logicalnot /hyphen /registered /macron 
+/degree /plusminus /twosuperior /threesuperior /acute /mu /paragraph /bullet 
+/cedilla /onesuperior /ordmasculine /guillemotright /onequarter /onehalf /threequarters /questiondown 
+/Agrave /Aacute /Acircumflex /Atilde /Adieresis /Aring /AE /Ccedilla 
+/Egrave /Eacute /Ecircumflex /Edieresis /Igrave /Iacute /Icircumflex /Idieresis 
+/Eth /Ntilde /Ograve /Oacute /Ocircumflex /Otilde /Odieresis /multiply 
+/Oslash /Ugrave /Uacute /Ucircumflex /Udieresis /Yacute /Thorn /germandbls 
+/agrave /aacute /acircumflex /atilde /adieresis /aring /ae /ccedilla 
+/egrave /eacute /ecircumflex /edieresis /igrave /iacute /icircumflex /idieresis 
+/eth /ntilde /ograve /oacute /ocircumflex /otilde /odieresis /divide 
+/oslash /ugrave /uacute /ucircumflex /udieresis /yacute /thorn /ydieresis 
+] def
+%%EndResource
+% Initialize page description variables.
+/sh 612 def
+/sw 792 def
+/llx 24 def
+/urx 768 def
+/ury 588 def
+/lly 24 def
+/#copies 1 def
+/th 15.000000 def
+/fnfs 11 def
+/bfs 7.493857 def
+/cw 4.496314 def
+
+% Dictionary for ISO-8859-1 support
+/iso1dict 8 dict begin
+  /fCourier ISO-8859-1Encoding /Courier reencode_font
+  /fCourier-Bold ISO-8859-1Encoding /Courier-Bold reencode_font
+  /fCourier-BoldOblique ISO-8859-1Encoding /Courier-BoldOblique reencode_font
+  /fCourier-Oblique ISO-8859-1Encoding /Courier-Oblique reencode_font
+  /fHelvetica ISO-8859-1Encoding /Helvetica reencode_font
+  /fHelvetica-Bold ISO-8859-1Encoding /Helvetica-Bold reencode_font
+  /fTimes-Bold ISO-8859-1Encoding /Times-Bold reencode_font
+  /fTimes-Roman ISO-8859-1Encoding /Times-Roman reencode_font
+currentdict end def
+/bgcolor [ 0 0 0 ] def
+/bg false def
+/ul false def
+/bx false def
+% The font for line numbering
+/f# /Helvetica findfont bfs .6 mul scalefont def
+/fSymbol /Symbol findfont def
+/hm fnfs 0.25 mul def
+/pw
+   cw 81.400000 mul
+def
+/ph
+   522.321860 th add
+def
+/pmw urx llx sub pw 2 mul sub 1 div def
+/pmh 0 def
+/v 0 def
+/x [
+  0
+  dup pmw add pw add
+] def
+/y [
+  pmh ph add 0 mul ph add
+  dup
+] def
+/scx sw 2 div def
+/scy sh 2 div def
+/snx urx def
+/sny lly 2 add def
+/dx llx def
+/dy sny def
+/fnx scx def
+/fny dy def
+/lx snx def
+/ly ury fnfs 0.8 mul sub def
+/sx 0 def
+/tab 8 def
+/x0 0 def
+/y0 0 def
+%%EndSetup
+
+%%Page: (1-2) 1
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(// Preliminary experiment to generate functions. ) c n
+(// Use case: calculations in complex domain.) N
+(//) N
+(// Diff with ./cplx_v5.js: we add an example with matrix multiplication.) N
+(// ) N
+(// Guillaume Lathoud) N
+(// December 2012) N
+() p n
+(/*global cadd cplx creal cimag swiF*/) c n
+(var) K
+( cadd  = swiF\(') p
+(a,b) str
+(',   function \(a,b\)   { ) p
+(return) K
+( cplx\( expr\( creal\(a\), ') p
+(+) str
+(', cr) p n
+(eal\(b\) \), expr\( cimag\(a\), ') S
+(+) str
+(', cimag\(b\) \) \); } \)) p n
+(,   csub  = swiF\(') S
+(a,b) str
+(',   function \(a,b\)   { ) p
+(return) K
+( cplx\( expr\( creal\(a\), ') p
+(-) str
+(', cr) p n
+(eal\(b\) \), expr\( cimag\(a\), ') S
+(-) str
+(', cimag\(b\) \) \); } \)) p n
+(,   creal = swiF\(') S
+(a) str
+(',     function \(a\)     { ) p
+(return) K
+( at\( a, 0 \); }\)) p n
+(,   cimag = swiF\(') S
+(a) str
+(',     function \(a\)     { ) p
+(return) K
+( at\( a, 1 \); }\)) p n
+(,   cplx  = swiF\(') S
+(re,im) str
+(', function \(re,im\) { ) p
+(return) K
+( [ re, im ]; }\)) p n
+(;) N
+() N
+(var) K
+( a = cplx\(1,2\)) p n
+(,   b = cplx\(10,100\)) N
+(,   c = cadd\(a,b\)) N
+(,   f = function \(a,b,c\) { ) S
+(return) K
+( csub\( csub\(a,cadd\(b,c\)\), cadd\(b,c\) \); }) p n
+(,   d = f\(a, b, c\)) N
+(,  f2 = swiF\(') S
+(a,b,c) str
+(',f\)) p n
+(,  d2 = f2\(a,b,c\)) N
+(,  f2direct = f2.getDirect\(\)) N
+(,  d2direct = f2direct\(a,b,c\)) N
+(;) N
+(log\(') S
+(d ) str
+(' + d\);) p n
+(log\(') S
+(d2 ) str
+(' + d2\);) p n
+(log\(') S
+(d2direct ) str
+(' + d2direct\);) p n
+(log\(') S
+(f2direct ) str
+(' + f2direct\)) p n
+() N
+(var) K
+( mat_a = [ 1,  2,  3, 4, ) p n
+(              5,  6,  7, 8,) N
+(              9, 10, 11, 12) N
+(            ]) N
+(,  mat_b = [ 13, 14,) N
+(             15, 16,) N
+(             17, 18,) N
+(             19, 20) N
+(           ]) N
+(,  matmul342 = directF\(') S
+(a,b) str
+(', matmul_exprgenF\(3,4,2\)\)) p n
+(,  mat_c  = matmul342\( mat_a, mat_b \)) N
+(;) N
+() N
+(log\(') S
+(mat_a ) str
+(' + mat_a\)) p n
+(log\(') S
+(mat_b ) str
+(' + mat_b\)) p n
+(log\(') S
+(mat_c ) str
+(' + mat_c\)) p n
+(log\(') S
+(matmul342 ) str
+(' + matmul342\)) p n
+() N
+(/* ) c n
+() N
+(----------) N
+() N
+(Verification with octave:) N
+() N
+(mat_a = [ 1,  2,  3, 4;) N
+(              5,  6,  7, 8;) N
+(              9, 10, 11, 12;) N
+(            ]) N
+(mat_b = [ 13, 14;) N
+(             15, 16;) N
+(             17, 18;) N
+(             19, 20;) N
+(           ]) N
+(mat_c = mat_a * mat_b) N
+(mat_c =) N
+() N
+(cplx_v6.js) (Page 1/6) (Dec 28, 12 17:17) title
+border
+/v 1 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(   170   180) c n
+(   426   452) N
+(   682   724) N
+() N
+(----------) N
+() N
+(Speedup verification:) N
+() N
+(time\('matmul342'\)) N
+(for \(var n = 1e6; n--;\)) N
+(    mat_c  = matmul342\( mat_a, mat_b \)) N
+(timeEnd\('matmul342'\)) N
+() N
+(With Chrome 22 on Ubuntu 12:) N
+(    No optimization: When at\(\) returns the raw code string \(NOT expr\):) N
+(    circa 670 ms) N
+() N
+(    With optimization \(as done below\): When at\(\) returns expr\(\):) N
+(    circa 570ms) N
+() N
+(With Firefox 17 on Ubuntu 12: No optim: ~1085ms,  With optim: ~680ms) N
+() N
+(With V8 version 3.7.12:       No optim: ~115ms,   With optim: ~95ms) N
+(*/) S
+( ) p n
+() N
+(function) K
+( ) p
+(matmul_exprgenF) l
+(\(I,J,K\)) p n
+({) N
+(    ) S
+(var) K
+( cacheI = matmul_exprgenF[ I ]  ||  \(matmul_exprgenF[ I ] = {}\)) p n
+(    ,   cacheJ = cacheI[ J ]  ||  \(cacheI[ J ] = {}\)) N
+(    ;) N
+(    ) S
+(if) K
+( \(!\(K ) p
+(in) K
+( cacheJ\)\)) p n
+(    {) N
+(        ) S
+(var) K
+( arr = ) p
+(new) K
+( Array\( I * K \);) p n
+(        ) S
+(for) K
+( \() p
+(var) K
+( i = 0; i < I; i++\)) p n
+(        {) N
+(            ) S
+(for) K
+( \() p
+(var) K
+( k = 0; k < K; k++\)) p n
+(            {) N
+(                ) S
+(var) K
+( one = ) p
+(new) K
+( Array\(J\);) p n
+(                ) S
+(for) K
+( \() p
+(var) K
+( j = 0; j < J; j++\)) p n
+(                {) N
+(                    ) S
+(var) K
+( a_ind = i * J + j) p n
+(                    ,   b_ind = j * K + k) N
+(                    ;) N
+(                    one[ j ] = ') S
+(at\( a, ) str
+(' + a_ind + ') p
+( \), "*", at\( b, ) str
+(' + b_ind + ') p
+(\)) str
+(';) p n
+(                }) N
+(                ) N
+(                arr[ i * K + k ] = ') S
+(expr\( ) str
+(' + one.join\( ') p
+(, "+", ) str
+(' \) + ') p
+( \)) str
+(';) p n
+(            }) N
+(        }) N
+(        cacheJ[ K ] = ) S
+(new) K
+( Function \(') p
+(a,b) str
+(', ') p
+(return [ ) str
+(' + arr.join\(') p
+(,) str
+('\) + ') p
+( ];) str
+('\)) p n
+(    }) N
+(    ) S
+(return) K
+( cacheJ[ K ];) p n
+(}) N
+() N
+(// ---------- Implementation ----------) c n
+() p n
+(function) K
+( ) p
+(at) l
+(\( x, where \)) p n
+({) N
+(    ) S
+(if) K
+( \(') p
+(string) str
+(' !== ) p
+(typeof) K
+( x\)   ) p
+(// Try to solve right away) c n
+(        ) p
+(return) K
+( x[ where ];) p n
+() N
+(    ) S
+(// Else form an expression string, and wrap it into `expr\(\)` to) c n
+(    ) p
+(// make it optimizeable \(see `gathering` further below\).) c n
+(    ) p
+(return) K
+( expr\( x + ') p
+([) str
+(' + \( ') p
+(number) str
+(' === ) p
+(typeof) K
+( where  ?  where  :  ') p
+(") str
+(' + where ) p n
+(+ ') S
+(") str
+(' \) + ') p
+(]) str
+(' \);) p n
+(}) N
+(function) K
+( ) p
+(expr) l
+(\(\)) p n
+({) N
+(    ) S
+(var) K
+( ret = Array.) p
+(prototype) k
+(.slice.call\( arguments \);) p n
+(cplx_v6.js) (Page 2/6) (Dec 28, 12 17:17) title
+border
+grestore
+(Printed by gl) rhead
+(./cplx_v6.js) (1/3) (Saturday January 19, 2013) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (3-4) 2
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(    ret.__isExpr__ = function \(\) { ) p
+(return) K
+( ) p
+(true) k
+(; };) p n
+(    ret.__toStr__  = function \( ) S
+(/*?object?*/) c
+(opt \) { ) p
+(return) K
+( ') p
+(\() str
+(' + ) p
+(this) k
+(.map\( funct) p n
+(ion \(x\) { ) S
+(return) K
+( code2str\( x, opt \); } \).join\(') p
+( ) str
+('\) + ') p
+(\)) str
+('; };) p n
+(    ) S
+(return) K
+( ret;) p n
+(}) N
+(function) K
+( ) p
+(directF) l
+(\(varstr, exprgen\)) p n
+(// Convenience shortcut) c n
+({) p n
+(    ) S
+(return) K
+( swiF\( varstr, exprgen \).getDirect\(\);) p n
+(}) N
+() N
+(function) K
+( ) p
+(swiF) l
+(\() p
+(/*comma-separated string*/) c
+(varstr, ) p
+(/*function*/) c
+(exprgen\)) p n
+({) N
+(    ) S
+(if) K
+( \(swiF.within\)) p n
+(        ) S
+(throw) K
+( ) p
+(new) K
+( Error\(') p
+(only one swiF at a time!) str
+('\);) p n
+(    swiF.within = 1;) N
+(    ) N
+() N
+(    ) S
+(var) K
+( vararr = varstr.split\(') p
+(,) str
+('\).map\(function\(s\) { ) p
+(return) K
+( s.trim\(\); }\)) p n
+(    ,   direct) N
+(    ;) N
+(    ) N
+(    switcher.exprgen = exprgen; ) S
+(// xxx debug) c n
+() p n
+(    switcher.getDirect = switcher_getDirect;) N
+() N
+(    ) S
+(delete) K
+( swiF.within;) p n
+(    ) S
+(return) K
+( switcher;) p n
+() N
+(    ) S
+(function) K
+( ) p
+(switcher) l
+(\(\)) p n
+(    {) N
+(        ) S
+(if) K
+( \(swiF.creatingDirect\)) p n
+(        {) N
+(            ) S
+(var) K
+( e = exprgen.apply\( ) p
+(null) k
+(, arguments \)  ) p
+(// To be called with varia) c n
+(ble name strings) N
+(            ) p
+(if) K
+( \(') p
+(string) str
+(' === ) p
+(typeof) K
+( e\)) p n
+(                e = expr\(e\);) N
+(                ) N
+(            ) S
+(return) K
+( e;) p n
+(        }) N
+(        ) N
+(        ) S
+(if) K
+( \(!direct\)) p n
+(            switcher_getDirect\(\);) N
+(        ) N
+(        ) S
+(return) K
+( direct.apply\( ) p
+(null) k
+(, arguments \);) p n
+(    }) N
+() N
+(    ) S
+(function) K
+( ) p
+(switcher_getDirect) l
+(\(\)) p n
+(    {) N
+(        ) S
+(if) K
+( \(!direct\)) p n
+(        {) N
+(            swiF.creatingDirect = 1;) N
+(            ) N
+(            check_exprgen_if_possible\( exprgen \);) N
+() N
+(            ) S
+(var) K
+( e = exprgen.apply\() p
+(null) k
+(,vararr\);) p n
+(            ) N
+(            ) S
+(// To prevent name collision when creating local variable names) c n
+(            ) p
+(var) K
+( varname = {};) p n
+(            ) S
+(for) K
+( \() p
+(var) K
+( i = vararr.length; i--;\)) p n
+(                varname[ vararr[i] ] = 1) N
+(            ;) N
+(            ) N
+(            ) S
+(var) K
+( code = ') p
+(/* ) str
+(' + exprgen + ') p
+( */\\n) str
+(' + ) p n
+(                code2str\( e, { isTop: ) S
+(true) k
+(, varname: varname } \)) p n
+(            ;) N
+(            direct = ) S
+(new) K
+( Function \(varstr, code\);  ) p
+(// To be called with values) c n
+(            ) p n
+(            ) S
+(delete) K
+( swiF.creatingDirect;) p n
+(cplx_v6.js) (Page 3/6) (Dec 28, 12 17:17) title
+border
+/v 1 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(        }) p n
+(        ) S
+(return) K
+( direct;) p n
+(    }) N
+(}) N
+() N
+(function) K
+( ) p
+(check_exprgen_if_possible) l
+(\( exprgen \)) p n
+(// Try to ensure that `exprgen` is a pure expression) c n
+(// \(provided that function decompilation works\)) N
+({) p n
+(    ) S
+(var) K
+( probably_decompiled = '' + exprgen) p n
+(    ,   mo = probably_decompiled.match\( /^\\s*function\\s+\(\\w+\)?\\s*\\\([^\\\)]*\\\)\\s*\\{) N
+(\\s*\([^\\s;\\[]+\)/ \)) N
+(    ;) N
+(    ) S
+(if) K
+( \(mo\)) p n
+(    {) N
+(        ) S
+(if) K
+( \(mo[2] !== ') p
+(return) str
+('\)) p n
+(            ) S
+(throw) K
+( ) p
+(new) K
+( Error\(') p
+(`exprgen` must implement a pure expression, that is only one `return` state) str n
+(ment \(necessary condition\).) S
+('\);) p n
+(    }) N
+(}) N
+() N
+(function) K
+( ) p
+(code2str) l
+(\( code, ) p
+(/*?object?*/) c
+(opt \)) p n
+(// Returns a string \(JavaScript code\)) c n
+({) p n
+(    ) S
+(var) K
+(   isTop = opt  &&  opt.isTop) p n
+(    , gathering = opt  &&  opt.gathering) N
+(    ,       cfg = isTop  ?  code2stat\( code, opt \)  :  opt   ) S
+(//  `cfg` can be nu) c n
+(lley) N
+(    , ret ) p n
+(    ;) N
+(    ) N
+(    ) S
+(if) K
+( \() p
+(typeof) K
+( code === ') p
+(string) str
+('\)) p n
+(    {) N
+(        ret = code;) N
+(    }) N
+(    ) S
+(else) K
+( ) p
+(if) K
+( \(isExpr\( code \)\)) p n
+(    {) N
+(        ret = expr2str\( code, cfg \);) N
+(    }) N
+(    ) S
+(else) K
+( ) p
+(if) K
+( \(code ) p
+(instanceof) K
+( Array\)) p n
+(    {) N
+(        ret = ') S
+([ ) str
+(' + code.map\( function \(x\) { ) p
+(return) K
+( code2str\( x, cfg \); } \).join) p n
+(\(') S
+(, ) str
+('\) + ') p
+( ]) str
+(';) p n
+(    }) N
+(    ) S
+(else) K
+( ) p
+(if) K
+( \(') p
+(object) str
+(' === ) p
+(typeof) K
+( code\)) p n
+(    {) N
+(        ) S
+(var) K
+( retArr = [];) p n
+(        ) S
+(for) K
+( \() p
+(var) K
+( k ) p
+(in) K
+( code\) ) p
+(if) K
+( \(code.hasOwnProperty\(k\)\)) p n
+(            retArr.push\( k + ') S
+(: ) str
+(' + code2str\( code[k], cfg \) \)) p n
+(        ret = ') S
+({ ) str
+(' + retArr.join\(') p
+(, ) str
+('\) + ') p
+( }) str
+(';) p n
+(    }) N
+(    ) S
+(else) K n
+(    {) p n
+(        ) S
+(throw) K
+( ) p
+(new) K
+( Error\(') p
+(code2str detected a bug) str
+('\);) p n
+(    }) N
+() N
+(    ) S
+(var) K
+( shorthand;) p n
+(    ) S
+(if) K
+( \(isTop\)) p n
+(    {) N
+(        ) S
+(var) K
+( varInitArr = cfg.varInitArr;) p n
+(        ) N
+(        ret = \(varInitArr.length  ?  ') S
+(var\\n  ) str
+(' + varInitArr.join\(') p
+(\\n, ) str
+('\) + ') p
+(\\n;) str
+('  :  ) p n
+(''\)) N
+(            + ') S
+(\\nreturn ) str
+(' + ret + ') p
+(;\\n) str
+(') p n
+(        ;) N
+(    }) N
+(    ) S
+(else) K
+( ) p
+(if) K
+( \(gathering\)) p n
+(        gathering\( code, ret \);) N
+(    ) S
+(else) K
+( ) p
+(if) K
+( \(shorthand = cfg  &&  cfg.duplistr2shorthand[ code2str\( code \) ]\)) p n
+(cplx_v6.js) (Page 4/6) (Dec 28, 12 17:17) title
+border
+grestore
+(Printed by gl) rhead
+(./cplx_v6.js) (2/3) (Saturday January 19, 2013) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (5-6) 3
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(        ) p
+(return) K
+( shorthand;) p n
+(    ) N
+(    ) S
+(return) K
+( ret;) p n
+(}) N
+(function) K
+( ) p
+(isExpr) l
+(\( code \)) p n
+({) N
+(    ) S
+(return) K
+( code.__isExpr__  &&  code.__isExpr__\(\);) p n
+(}) N
+(function) K
+( ) p
+(expr2str) l
+(\( expr, opt \)) p n
+({) N
+(    ) S
+(return) K
+( expr.__toStr__\( opt \);) p n
+(}) N
+(function) K
+( ) p
+(code2stat) l
+(\( code, ) p
+(/*object*/) c
+(cfg \)) p n
+({) N
+(    ) S
+(if) K
+( \(cfg.isTop\)) p n
+(        ) S
+(return) K
+( code2stat\( code, cfg = { count: {}, pile: [], str2inpile: {}, str) p n
+(2expr: {}, str2varname: {}, varname: Object.create\( cfg.varname \)) N
+(                                        , gathering: stat_gathering ) N
+(                                      } \);) N
+() N
+(    code2str\( code, cfg \); ) S
+(// Calls `cfg.gathering` recursively through the code) c n
+(    ) p n
+(    ) S
+(delete) K
+( cfg.gathering;) p n
+() N
+(    ) S
+(var) K
+( duplicates = cfg.pile.filter\( function \(s\) { ) p
+(return) K
+( cfg.count[ s ] > 1; ) p n
+(} \);) N
+() N
+(    ) S
+(var) K
+( duplistr2shorthand = cfg.duplistr2shorthand = {};) p n
+(    ) S
+(for) K
+( \() p
+(var) K
+( i = duplicates.length; i--;\)) p n
+(    {) N
+(        ) S
+(var) K
+( str = duplicates[ i ];) p n
+(        cfg.duplistr2shorthand[ str ] = cfg.str2varname[ str ];) N
+(    }) N
+() N
+(    cfg.varInitArr = duplicates.map\( function \(s\) { ) N
+(        ) S
+(var) K
+( tmp = Object.create\( duplistr2shorthand \);) p n
+(        tmp[ s ] = ) S
+(null) k
+(;) p n
+(        ) S
+(return) K
+( cfg.str2varname[ s ] + ') p
+( = ) str
+(' + code2str\( cfg.str2expr[ s ], { dupl) p n
+(istr2shorthand: tmp } \); ) N
+(    } \);) N
+(    ) N
+(    ) S
+(return) K
+( cfg;) p n
+() N
+(    ) S
+(function) K
+( ) p
+(stat_gathering) l
+(\( code, str \)) p n
+(    {) N
+(        ) S
+(if) K
+( \(isExpr\( code \)\)) p n
+(        {) N
+(            ) S
+(if) K
+( \(!\(str ) p
+(in) K
+( cfg.count\)\)) p n
+(            {) N
+(                cfg.count[ str ] = 0;) N
+() N
+(                ) S
+(// Prevent collision between/among local varnames and function v) c n
+(arnames) N
+(                ) p
+(var) K
+( name = ') p
+(_) str
+(' + str.replace\( /[^\\w_]/g, '' \)) p n
+(                ,   i    = ) S
+(null) k n
+(                ,   varname ) p n
+(                ;) N
+(                ) S
+(while) K
+( \(\(varname = name + \(i != ) p
+(null) k
+(  ?  ') p
+(_) str
+(' + i  :  ''\)\) ) p
+(in) K
+( cfg.) p n
+(varname\)) N
+(                    i++;) N
+() N
+(                cfg.varname[ varname ] = 1;) N
+(                cfg.str2varname[ str ] = varname;) N
+(            }) N
+(            ) N
+(            cfg.count[ str ]++;) N
+() N
+(            ) S
+(if) K
+( \(!cfg.str2inpile[str]\)) p n
+(            {) N
+(cplx_v6.js) (Page 5/6) (Dec 28, 12 17:17) title
+border
+/v 1 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(                cfg.pile.push\( str \);) p n
+(                cfg.str2inpile[ str ] = 1;) N
+(            }) N
+(            cfg.str2expr[ str ] = code;) N
+(        }) N
+(    }) N
+(}) N
+() N
+(function) K
+( ) p
+(log) l
+(\() p
+(/*...arguments...*/) c
+(\)) p n
+({) N
+(    ) S
+(// Browser environment) c n
+(    ) p
+(if) K
+( \() p
+(typeof) K
+( console !== ') p
+(undefined) str
+('  &&  console.log\)) p n
+(    {) N
+() S 8 T () S
+(try) K n
+() p 8 T ({) N
+() S 8 T (    console.log.apply\( console, arguments \);) N
+() S 8 T (}) N
+() S 8 T () S
+(catch) K
+( \(e\) ) p n
+() S 8 T ({) N
+() S 8 T (    ) S
+(// Probably some IE browser) c n
+() p 8 T (    console.log\( Array.) S
+(prototype) k
+(.join.call\( arguments, ') p
+( ) str
+(' \) \)) p n
+() S 8 T (}) N
+(    }) N
+(    ) N
+(    ) S
+(else) K n
+(    {) p n
+(        ) S
+(// Non-browser environment) c n
+(        print.apply\( ) p
+(null) k
+(, arguments \);) p n
+(    }) N
+(}) N
+() N
+(function) K
+( ) p
+(time) l
+(\(name\)) p n
+({) N
+(    ) S
+(// Browser environment) c n
+(    ) p
+(if) K
+( \() p
+(typeof) K
+( console !== ') p
+(undefined) str
+('  &&  console.log\)) p n
+(    {) N
+(        console.time\(name\);) N
+(    }) N
+(    ) S
+(else) K n
+(    {) p n
+(        time[name] = ) S
+(new) K
+( Date;  ) p
+(// Using the fact that JavaScript functions are ) c n
+(objects as well.) N
+(    }) p n
+(}) N
+() N
+(function) K
+( ) p
+(timeEnd) l
+(\(name\)) p n
+({) N
+(    ) S
+(// Browser environment) c n
+(    ) p
+(if) K
+( \() p
+(typeof) K
+( console !== ') p
+(undefined) str
+('  &&  console.log\)) p n
+(    {) N
+(        console.timeEnd\(name\);) N
+(    }) N
+(    ) S
+(else) K n
+(    {) p n
+(        time[name] = ) S
+(new) K
+( Date - time[name];) p n
+(        log\(name, time[name] + ') S
+(ms) str
+('\);) p n
+(    }) N
+(}) N
+(cplx_v6.js) (Page 6/6) (Dec 28, 12 17:17) title
+border
+grestore
+(Printed by gl) rhead
+(./cplx_v6.js) (3/3) (Saturday January 19, 2013) footer
+end % of iso1dict
+pagesave restore
+showpage
+
+%%Trailer
+end
+%%EOF

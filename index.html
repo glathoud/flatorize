@@ -1,0 +1,377 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8" /> 
+<title>Flatorize</title>
+<link rel="stylesheet" type="text/css" href="prettify/prettify.css">
+<style type="text/css">
+@media only screen { .screen-hidden, .print { display: none; } }
+@media only print  { .print-hidden, .screen { display: none; } }
+body { max-width: 600px; margin: auto; color: #222; }
+p, h1, h2, h3, h4, ul, li {
+    font-family: Verdana,Arial,'Lucida Grande',Sans-Serif;
+    line-height: 150%;
+    text-align: justify;
+}
+pre, code { overflow-wrap: break-word; overflow: hidden; }
+.small { font-size: 80%; line-height: 80%; }
+.generated-code-output .code-textarea { width: 100%; height: 250px; }
+#all-perf td, #all-perf th { padding: 0 3px 0 2px; text-align: right; font-size: 92%; }
+#all-perf .table-left { text-align: left; }
+#all-perf .table-sep { padding-right: 0px; }
+.happy { color: darkgreen; }
+.sad   { color: darkred; }
+.anchorable .anchor { display: none; }
+.anchorable:hover .anchor { display: inline; }
+</style>
+<script type="text/javascript" src="log.js"></script>
+<script type="text/javascript" src="flatorize.js"></script>
+<script type="text/javascript" src="examples.js"></script>
+<script type="text/javascript">generate_small_functions();</script>
+</head>
+<body>
+
+<ul class="screen-hidden">
+  <li>github: <a href="https://github.com/glathoud/flatorize">https://github.com/glathoud/flatorize</a></li>
+  <li>[1] <a href="http://glat.info">http://glat.info</a></li>
+  <li>[2] <a href="http://asmjs.org">http://asmjs.org</a></li>
+</ul>
+<a href="https://github.com/glathoud/flatorize" class="print-hidden">
+  <img style="position: fixed; top: 0; right: 0; border: 0; margin: 0; padding: 0;"
+       src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"
+       alt="Fork me on GitHub">
+</a>
+
+<h2>Flatorize: Generate fast, flat, factorized code for mathematical expressions</h2>
+
+<p style="text-align:right">by <a href="http://glat.info">Guillaume Lathoud</a><span class="print">&nbsp;[1]</span>, April 2013</p>
+
+<p>Using many small functions, one can write code in a safe, robust
+and tractable manner, which also helps thinking about the task at hand.</p>
+
+<p>Now let us say one uses such an approach to write and/or <em>generate</em> code for mathematical
+expressions, ending up with something like:</p>
+
+<pre class="prettyprint lang-js"><code>function f(a,b,c) { return sub( sub(a,add(b,c)), add(b,c) ); }
+</code></pre>
+
+<p>Can we optimize this implementation? Or even better, let the computer generate optimized code for us?</p>
+
+<h3 class="anchorable" id="factorize">Factorize <a href="#factorize" class="anchor">#</a></h3>
+
+<p>To spare CPU, one can modify  the above example by evaluating <code class="prettyprint lang-js">add(b,c)</code>
+ only once:</p>
+<pre class="prettyprint lang-js"><code>function f(a,b,c) { 
+    var bc = add(b,c);
+    return sub( sub(a,bc), bc ); 
+}
+</code></pre>
+
+<h3 class="anchorable" id="flatten">Flatten <a href="#flatten" class="anchor">#</a></h3>
+
+<p>Such small, "building block" functions like <code class="prettyprint
+lang-js">add</code> or <code class="prettyprint
+lang-js">sub</code> are useful to write code, but at runtime the
+CPU spends more time in function overhead than just doing the simple operation in it
+(e.g. addition or subtraction).<p>
+
+<p>One can eliminate function overhead by inlining each small function, that&nbsp;is&nbsp;replacing each small function with its implementation:</p>
+<pre class="prettyprint lang-js"><code>function f(a,b,c) { 
+    var bc = b+c;
+    return (a - bc) - bc;
+}
+</code></pre>
+
+<p>The CPU performance should be pretty good at this point.</p>
+
+<p>One could try to further optimize,
+e.g. writing <code class="prettify lang-js">a-2*bc</code>, which
+amounts to mathematical expression simplification. This can be quite
+complicated, and it is not sure how much CPU speed can be gained this
+way -&nbsp;especially compared to function overhead elimination&nbsp;-
+so if we ever attempt simplification, we'll keep it very simple.
+</p>
+
+<h3 class="anchorable" id="contents">Contents <a href="#contents" class="anchor">#</a></h3>
+
+<p>An implementation called <code>flatorize</code> is provided that generates fast code for mathematical expressions, using factorization and flattening.</p>
+
+
+<p>The rest of this article describes how to use <code>flatorize</code>, then gives
+several performance results &ndash; pushing things until they
+break.</p>
+
+<p><code>flatorize</code> source files: on <a href="https://github.com/glathoud/flatorize">github</a>, or here (<a href="flatorize.js">flatorize.js</a>, <a href="examples.js">examples.js</a>, <a href="log.js">log.js</a>).</p>
+
+<h3 class="anchorable" id="usage">Usage: <code>expr</code>, <code>part</code> and <code>flatorize</code> <a href="#usage" class="anchor">#</a></h3>
+
+<p>
+<code class="prettyprint lang-js">flatorize('a,b,c', function f(a,b,c) { ... })</code> returns a new function, obtained by:
+  <ol>
+    <li>calling <code class="prettyprint lang-js">f('a','b','c')</code>, which returns an expression,</li>
+    <li>factorizing and flattening the expression,</li> 
+    <li>generating the new code for the expression.</li>
+  </ol>
+</p>
+
+<p><code class="prettyprint lang-js">f(a,b,c)</code> can use 2&nbsp;methods to build and return an expression:</p>
+<ul>
+<li><code class="prettyprint lang-js">flatorize.expr(a,'+',b)</code> defines the code expression <code class="prettyprint lang-js">a+b</code>.</li>
+<li><code class="prettyprint lang-js">flatorize.part(arr,3)</code> or <code class="prettyprint lang-js">flatorize.part(obj,'prop')</code> describe the extraction of a property value from an object (array or not).</li>
+</ul>
+
+<p>Example: we now work with complex numbers, which we represent as arrays of two numbers <code class="prettyprint lang-js">[re,im]</code>. Consider the function <code>f</code> of complex numbers <code class="prettyprint lang-js">a,b,c</code>:</p>
+
+<pre class="prettyprint lang-js"><code>f = <script type="text/javascript">document.write(f+'')</script>;</code></pre>
+
+<p>To produce an optimized implementation <code>f2</code> of the function <code>f</code>,
+we use <a href="flatorize.js">flatorize</a> and write the following code:</p>
+
+<pre class="prettyprint lang-js"><code>FZ    = flatorize;
+cadd  = FZ('a,b',   function (a,b)   { 
+    return cplx( FZ.expr( creal(a), '+', creal(b) ),
+                 FZ.expr( cimag(a), '+', cimag(b) ) 
+               ); 
+});
+csub  = FZ('a,b',   function (a,b)   { 
+    return cplx( FZ.expr( creal(a), '-', creal(b) ),
+                 FZ.expr( cimag(a), '-', cimag(b) ) 
+               ); 
+});
+creal = FZ('a',     function (a)     { return FZ.part( a, 0 ); });
+cimag = FZ('a',     function (a)     { return FZ.part( a, 1 ); });
+cplx  = FZ('re,im', function (re,im) { return [ re, im ]; });
+
+f  = <script type="text/javascript">document.write(f+'');</script>
+f2 = FZ('a,b,c',f);
+</code></pre>
+
+<p>All functions returned by <code class="prettyprint lang-js">flatorize</code>
+can be used to build further expressions: in the above example, <code>creal</code> is used to express <code>cadd</code>, which itself is used to expressed <code>f</code>. Definition order does not matter.
+</p>
+
+<p>All functions returned by <code class="prettyprint lang-js">flatorize</code>
+can also be called with values, for computation. For example, calling <code class="prettyprint lang-js">f2(a,b,c)</code> executes
+the flat, factorized:</p>
+
+<pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(f2.getDirect()+'')</script></code></pre>
+<p class="small">(This code, as a few others below, was produced and inserted as you loaded the page.)</p>
+
+
+<h3 class="anchorable" id="matmul">Example: matrix multiplication <a href="#matmul" class="anchor">#</a></h3>
+
+<p>If we know we are going to do some intensive computations,
+multiplying matrices of known sizes (3x4 and 4x2 in the example below), we
+can use <code>flatorize</code> to generate a fast implementation <code>matmul342</code>:</p>
+
+<pre class="prettyprint lang-js"><code>matmul342 = flatorize('a,b', matmul_exprgenF(3,4,2));
+
+<script type="text/javascript">document.write(matmul_exprgenF+'');</script>
+</code></pre>
+
+<p>This generates the following function:</p>
+<pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(matmul342+'');</script>
+</code></pre>
+
+<p>Let us verify that `matmul342` actually works:</p>
+<pre class="prettyprint lang-js"><code>mat_a = [ 1,  2,  3, 4, 
+          5,  6,  7, 8,
+          9, 10, 11, 12
+        ];
+
+mat_b = [ 13, 14,
+          15, 16,
+          17, 18,
+          19, 20
+        ];
+
+mat_c = matmul342( mat_a, mat_b );
+/* mat_c has the value:
+   [170, 180, 
+    426, 452, 
+    682, 724
+   ]
+*/
+</code></pre>
+
+<p>So <code>matmul342</code> works fine. But does it bring any improvement over a standard matrix multiplication loop?</p>
+
+<p><button id="tryit_speed_matmul342" onclick="tryit_speed_matmul342( this )">Measure the speed!</button> (Feel free to do it multiple times.)</p><pre id="tryit_speed_matmul342_output">(The speed measurement can last long in some browsers.)</pre>
+
+<p>In Firefox&nbsp;19 on a linux Ubuntu 12.04, I obtained a small degradation about -28%, and in Chrome&nbsp;24 I obtained a large speedup&nbsp;+232%. There are more results <a href="#push-all">below</a>, with large speedups for Firefox as well.</p>
+
+<h3 class="anchorable" id="dft">Discrete Fourier Transform (DFT) <a href="#dft" class="anchor">#</a></h3>
+
+
+<p>We now implement a DFT using the
+Cooley-Tukey algorithm for both
+real &amp; complex inputs (option). The implementation <code>dft_ditfft2</code> shows that we can express recursive
+mathematical expressions in a "natural" way, that is very close to the
+original <a href='http://en.wikipedia.org/wiki/Cooley%E2%80%93Tukey_FFT_algorithm#Pseudocode'>pseudocode</a>.</p>
+
+<pre class="prettyprint lang-js"><code>dftreal16flat = flatorize('arr', dft_exprgenF( 4, { real: true } ));
+
+<script type="text/javascript">document.write(dft_exprgenF+'');</script>
+</code></pre>
+
+<p>Let us now test it on a "small" scale (16 point). First, let us generate the code:</p>
+
+<p><button id="tryit_flatorize_dft16" onclick="tryit_flatorize_dft( this, 16 )">Try <code>flatorize</code>!</button>&nbsp;</p><p id="tryit_flatorize_dft16_output" class="generated-code-output"></p>
+
+<p>So the code generation of a "flatorized" 16-point DFT takes very little time. This has to be done only one time.</p>
+
+<p>Now that we have a "flatorized" implementation, let us check whether it runs faster than the original Cooley-Tukey:</p>
+
+<p><button id="tryit_speed_dft16" onclick="tryit_speed_dft( this, 16 )">Measure the speed!</button> (Feel free to do it multiple times.)</p><pre id="tryit_speed_dft16_output">(The speed measurement can last long in some browsers.)</pre>
+
+<p>On a linux Ubuntu 12.04, I obtained with Firefox&nbsp; a speedup of +1574%, and with Chrome&nbsp;+997%.</p>
+
+<h3 class="anchorable" id="push-dft1024">Pushing it: 1024-point Discrete Fourier Transform (DFT) <a href="#push-dft1024" class="anchor">#</a></h3>
+
+<pre class="prettyprint lang-js"><code>dftreal1024flat = flatorize('arr', dft_exprgenF( 10, { real: true } ));</code></pre>
+
+<p>Since the recursion depth \(log_2{1024}=10\) starts to be quite significant, one can wonder how long the call to `flatorize` itself will take.</p>
+<p><button id="tryit_flatorize_dft1024" onclick="tryit_flatorize_dft( this, 1024 )">Try <code>flatorize</code>!</button>&nbsp;</p><p id="tryit_flatorize_dft1024_output" class="generated-code-output"></p>
+
+<p>In Chrome&nbsp;24 on a linux Ubuntu 12.04 the call to <code>flatorize</code> lasted less than a second - I found this quite okay, since we call <code>flatorize</code> only one time. Afterwards, the optimized code is available for intensive tasks.</p>
+
+<p>Now, let us measure how fast the flatorized DFT1024 implementation runs, as compared
+with the original Cooley-Tukey:</p>
+<p><button id="tryit_speed_dft1024" onclick="tryit_speed_dft( this, 1024 )">Measure the speed!</button> (Feel free to do it multiple times.)</p><pre id="tryit_speed_dft1024_output">(The speed measurement can last long in some browsers.)</pre>
+
+<p>In Chrome&nbsp;24 on a linux Ubuntu 12.04, I got no improvement by the first measurement, but afterwards a consistent speedup of about +190%. In Firefox&nbsp;19 I got a consistent speedup of about +300%.</p>
+
+<h3 class="anchorable" id="push-all">Pushing it: all performance results <a href="#push-all" class="anchor">#</a></h3>
+
+<p>Speedup brought by <code>flatorize</code>:</p>
+
+<ul>
+  <li>System: linux Ubuntu 12.04 on a Thinkpad T420s.</li>
+  <li>(1st): first measurement.</li>
+  <li>(2+): second measurement and following measurements.</li>
+  <li>dying: my system almost died.</li>
+</ul>
+
+<table id="all-perf">
+  <thead>
+    <tr><th class="table-left">Speedup on:</th><th><code>matmul342</code></th><th><code>DFT16</code></th><th><code>DFT32</code></th><th><code>DFT64</code></th><th><code>DFT128</code></th><th><code>DFT256</code></th><th><code>DFT512</code></th><th><code>DFT1024</code></th></tr>
+  </thead>
+  <tbody>
+
+    <tr class="table-sep"><td class="table-left" colspan="9"><hr></td></tr>
+
+    <tr id="all-perf-firefox19-first"><td class="table-left">Firefox&nbsp;19&nbsp;(1st)</td><td class="sad" id="all-perf-firefox19-first-matmul342">-28%</td><td class="happy" id="all-perf-firefox19-first-dft16">+1574%</td><td class="happy" id="all-perf-firefox19-first-dft32">+1822%</td><td class="happy" id="all-perf-firefox19-first-dft64">+1733%</td><td class="happy" id="all-perf-firefox19-first-dft128">+819%</td><td class="happy" id="all-perf-firefox19-first-dft256">+452%</td><td class="happy" id="all-perf-firefox19-first-dft512">+324%</td><td class="happy" id="all-perf-firefox19-first-dft1024">+291%</td></tr>
+
+    <tr id="all-perf-firefox19-after"><td class="table-left">Firefox&nbsp;19&nbsp;(2+)</td><td class="sad" id="all-perf-firefox19-after-matmul342">-27%</td><td class="happy" id="all-perf-firefox19-after-dft16">+1546%</td><td class="happy" id="all-perf-firefox19-after-dft32">+1798%</td><td class="happy" id="all-perf-firefox19-after-dft64">+1858%</td><td class="happy" id="all-perf-firefox19-after-dft128">+842%</td><td class="happy" id="all-perf-firefox19-after-dft256">+470%</td><td class="happy" id="all-perf-firefox19-after-dft512">+334%</td><td class="happy" id="all-perf-firefox19-after-dft1024">+297%</td></tr>
+    
+    <tr class="table-sep"><td class="table-left" colspan="9"><hr></td></tr>
+
+    <tr id="all-perf-chrome24-first"><td class="table-left">Chrome&nbsp;24&nbsp;(1st)</td><td class="happy" id="all-perf-chrome24-first-matmul342">+232%</td><td class="happy" id="all-perf-chrome24-first-dft16">+997%</td><td class="happy" id="all-perf-chrome24-first-dft32">+1023%</td><td class="happy" id="all-perf-chrome24-first-dft64">+229%</td><td class="sad" id="all-perf-chrome24-first-dft128">-52%</td><td class="sad" id="all-perf-chrome24-first-dft256">-94%</td><td class="happy" id="all-perf-chrome24-first-dft512">+80%</td><td class="happy" id="all-perf-chrome24-first-dft1024">+25%</td></tr>
+
+    <tr id="all-perf-chrome24-after"><td class="table-left">Chrome&nbsp;24&nbsp;(2+)</td><td class="happy" id="all-perf-chrome24-after-matmul342">+225%</td><td class="happy" id="all-perf-chrome24-after-dft16">+990%</td><td class="happy" id="all-perf-chrome24-after-dft32">+1386%</td><td class="happy" id="all-perf-chrome24-after-dft64">+985%</td><td class="happy" id="all-perf-chrome24-after-dft128">+997%</td><td class="happy" id="all-perf-chrome24-after-dft256">+222%</td><td class="happy" id="all-perf-chrome24-after-dft512">+214%</td><td class="happy" id="all-perf-chrome24-after-dft1024">+193%</td></tr>
+    
+    <tr class="table-sep"><td class="table-left" colspan="9"><hr></td></tr>
+
+    <tr id="all-perf-v8_3_17_16_first"><td class="table-left">V8&nbsp;3.17.16&nbsp;(1st)</td><td class="happy" id="all-perf-v8_3_17_16_first-matmul342">+183%</td><td class="happy" id="all-perf-v8_3_17_16_first-dft16">+1012%</td><td class="happy" id="all-perf-v8_3_17_16_first-dft32">+792%</td><td class="happy" id="all-perf-v8_3_17_16_first-dft64">+124%</td><td class="sad" id="all-perf-v8_3_17_16_first-dft128">-72%</td><td class="sad" id="all-perf-v8_3_17_16_first-dft256">-94%</td><td class="sad" id="all-perf-v8_3_17_16_first-dft512">dying</td><td class="sad" id="all-perf-v8_3_17_16_first-dft1024">dying</td></tr>
+
+    <tr id="all-perf-v8_3_17_16-after"><td class="table-left">V8&nbsp;3.17.16&nbsp;(2+)</td><td class="happy" id="all-perf-v8_3_17_16-after-matmul342">+181%</td><td class="happy" id="all-perf-v8_3_17_16-after-dft16">+1143%</td><td class="happy" id="all-perf-v8_3_17_16-after-dft32">+1505%</td><td class="happy" id="all-perf-v8_3_17_16-after-dft64">+869%</td><td class="happy" id="all-perf-v8_3_17_16-after-dft128">+802%</td><td class="happy" id="all-perf-v8_3_17_16-after-dft256">+90%</td><td class="sad" id="all-perf-v8_3_17_16-after-dft512">N/A</td><td class="sad" id="all-perf-v8_3_17_16-after-dft1024">N/A</td></tr>
+
+    <tr class="table-sep"><td class="table-left" colspan="9"><hr></td></tr>
+
+    <tr id="all-perf-yours-choice">
+      <td></td>
+      <td><input type="checkbox" id="tryit_cb_matmul342" checked="checked"></td>
+      <td><input type="checkbox" id="tryit_cb_dft16" checked="checked"></td>
+      <td><input type="checkbox" id="tryit_cb_dft32" checked="checked"></td>
+      <td><input type="checkbox" id="tryit_cb_dft64" checked="checked"></td>
+      <td><input type="checkbox" id="tryit_cb_dft128" checked="checked"></td>
+      <td><input type="checkbox" id="tryit_cb_dft256"></td>
+      <td><input type="checkbox" id="tryit_cb_dft512"></td>
+      <td><input type="checkbox" id="tryit_cb_dft1024"></td>
+    </tr>
+    
+    <tr id="all-perf-yours"><td class="table-left"><button id="tryit_all" onclick="tryit_all( this, { except : { matmul342 : !document.getElementById('tryit_cb_matmul342').checked, dft16 : !document.getElementById('tryit_cb_dft16').checked, dft32 : !document.getElementById('tryit_cb_dft32').checked, dft64 : !document.getElementById('tryit_cb_dft64').checked, dft128 : !document.getElementById('tryit_cb_dft128').checked, dft256 : !document.getElementById('tryit_cb_dft256').checked, dft512 : !document.getElementById('tryit_cb_dft512').checked, dft1024 : !document.getElementById('tryit_cb_dft1024').checked } } )">Run now!</button><td id="all-perf-yours-matmul342"></td><td id="all-perf-yours-dft16"></td><td id="all-perf-yours-dft32"></td><td id="all-perf-yours-dft64"></td><td id="all-perf-yours-dft128"></td><td id="all-perf-yours-dft256"></td><td id="all-perf-yours-dft512"></td><td id="all-perf-yours-dft1024"></td></tr>
+    
+  </tbody>
+</table>
+
+<p>(Feel free to do it multiple times.)</p>
+
+<h4 class="anchorable" id="push-all-speedup">Result analysis: speedup <a href="#push-all-speedup" class="anchor">#</a></h4>
+
+<p>While the slowdown of Firefox&nbsp;19 on <code>matmul342</code> is slightly disappointing, overall its speedup results are <span class="happy">very good, and very stable</span> &ndash; the first measurement&nbsp;(1) and the following ones&nbsp;(2+) show the same speedup.</p>
+
+<p>For <code>DFT128</code> and beyond, the speedups on Chrome&nbsp;24 and V8&nbsp;3.17.16 are <span class="sad">very disappointing</span> on the first measurement&nbsp;(1). They both probably delay too much the code optimization.</p>
+
+<p>But the speedup on Chrome&nbsp;24 is <span class="happy">very good</span> on the following measurements&nbsp;(2+), where Chrome&nbsp;24 also has some of the best absolute performances (e.g. about \(2.1 \cdot 10^7\) <code>matmul342</code> calls per second).</p>
+
+<h4 class="anchorable" id="push-all-memory">Result analysis: memory <a href="#push-all-memory" class="anchor">#</a></h4>
+
+<p>On <code>DFT256</code>, <code>DFT512</code> and <code>DFT1024</code>, V8&nbsp;3.17.16 consumes <span class="sad">inordinate amounts of memory (gigabytes)</span>, which explains why my system then almost died.</p>
+
+<p>Both Firefox&nbsp;19 and Chrome&nbsp;24 had a <span class="happy">very stable memory consumption</span>.</p>
+
+
+<h3 class="anchorable" id="conclusion">Conclusion <a href="#conclusion" class="anchor">#</a></h3>
+
+<p>In most cases, the performance improvement is huge. This validates the interest of <code>flatorize</code>.
+I am looking forward to push performance, looking at <a href="http://asmjs.org"><code>asm.js</code></a><span class="screen-hidden">&nbsp;[2]</span>, or more «native-like» approaches (<a href="http://www.khronos.org/webcl/">WebCL</a>, <a href="http://code.google.com/p/nativeclient/">NaCl</a> or <a href="http://www.chromium.org/nativeclient/pnacl/building-and-testing-portable-native-client">PNaCl</a>).
+</p>
+
+<hr>
+
+<h3 class="anchorable" id="disclaimer">Disclaimer <a href="#disclaimer" class="anchor">#</a></h3>
+
+<p>By no means did I intend <code>flatorize</code> to compete with highly specialized and/or native implementations <em>of a particular task</em> (e.g. <a href="http://fftw.org">FFTW</a> to implement DFT).</p>
+<p>Rather, this simple, task-agnostic approach &ndash;&nbsp;factorizing and flattening&nbsp;&ndash; can give <em>huge enough</em> performance gains in many cases, which spares us the development and maintainance costs of  "going native".</p>
+
+<hr>
+
+<h3 class="anchorable" id="details">Miscellaneous details <a href="#details" class="anchor">#</a></h3>
+
+
+<p>Above in the article, the three main functions were described: <code>flatorize</code>, <code>flatorize.expr</code> and <code>flatorize.part</code>. In addition:</p>
+<ol>
+  <li>The method <code>getDirect</code> and the convenience function <code>flatorize.now</code> give you direct access to the flatorized implementation, which you can use for computations (even better performance). <code>flatorize.now</code> makes sense when you know that you will never use the flatorized function to build further expressions, e.g. in specific cases of a parameterizable implementation (<code>matmul342</code>); else use <code>getDirect</code>.</li>
+  <li>Within a function that builds an expression, a call to the method <code>evalnow</code> delivers a value (instead of an expression). See <a href="#dft">above</a> the call <code>cpol.evalnow</code> within <code>dft_exprgenF</code>.</li>
+</ol>
+<p>For more details about these two points, and examples, you can have a look at the sources on <a href="https://github.com/glathoud/flatorize">github</a> or here (files <a href="flatorize.js">flatorize.js</a> and <a href="examples.js">examples.js</a>).</p>
+
+<p>.</p>
+
+<p>V8: Several <code>.sh</code> files are provided to run the tests on
+V8,
+including <a href="d8_tryit_speed_all.sh">d8_tryit_speed_all.sh</a>
+and <a href="d8_tryit_speed_dft1024.sh">d8_tryit_speed_dft1024.sh</a>;
+the rest on <a href="https://github.com/glathoud/flatorize">github</a>.</p>
+
+<p>.</p>
+
+<p>Flatorizing DFT1024 in a tractable time &ndash; order of magnitude: 1 second &ndash; actually required a bit of work, which you can look at in the directory "<a href="OLD">OLD</a>" (<code>cplx_v*.js</code> files). The method is not specific to DFT, but rather very generic. The resulting, cleaned-up implementation: <a href="flatorize.js">flatorize.js</a>
+</p>
+
+<hr>
+
+<h3 class="anchorable" id="license">License <a href="#license" class="anchor">#</a></h3>
+
+<object width="100%" height="350px" type="text/plain" data="LICENSE.TXT"></object>
+
+
+
+<script type="text/javascript" src="prettify/prettify.js"></script>
+<script type="text/javascript">setTimeout( prettyPrint );</script>
+<script type="text/javascript">
+[ 
+    'tryit_speed_matmul342', 'tryit_flatorize_dft16', 'tryit_speed_dft16', 'tryit_flatorize_dft1024', 'tryit_speed_dft1024', 'tryit_all'
+].forEach(
+    function (id) { document.getElementById(id).removeAttribute('disabled'); }
+);
+window.ontouchstart = function () { Array.prototype.forEach.call( document.getElementsByClassName( "anchor" ), function (node) { node.className = node.className.replace( /\banchor\b/g, '' ); } ); };
+</script>
+<script type="text/javascript" src="../MathJax/MathJax.js?config=default"></script>
+<script type="text/javascript">
+var _gaq = _gaq || [];  _gaq.push(['_setAccount', 'UA-5516483-1']);  _gaq.push(['_trackPageview']);  (function() {    var ga = document.createElement('script');    ga.src = ('https:' == document.location.protocol ? 'https://ssl' :         'http://www') + '.google-analytics.com/ga.js';    ga.setAttribute('async', 'true');    document.documentElement.firstChild.appendChild(ga);  })();
+</script>
+
+</body>
+</html>
