@@ -3,6 +3,7 @@ syntax: glob
 
 .git
 *.elc
+*.bin
 *.exe
 *.pyc
 *~
