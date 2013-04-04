@@ -1,0 +1,63 @@
+#!/usr/bin/env gsi-script
+
+;;; Scheme - successfully tested with Gambit v4.6.2
+;;; -*- mode:scheme; coding: utf-8 -*-
+
+(load "scheme_matmul_common.scm")
+
+(define (sanity_check)
+  (equal? (matmul342 mat_a mat_b)
+          mat_c)
+  )
+
+(define (speed_test)
+  (define (speed_test_impl) 
+    (let loop ((n NITER))
+      (if (< n 1)
+          #t
+          (let ((mat_c (matmul342 mat_a mat_b)))
+            ;; (display mat_c)   ; for debugging
+            (loop (- n 1))
+            )
+          )
+      )
+    )
+  (if (sanity_check)
+      (speed_test_impl)
+      (display "ERROR: Sanity check failed!\n")
+      )
+  )
+
+(define (matmul342 a b)
+  (let ((_0 (vector-ref a 0))
+        (_1 (vector-ref b 0))
+        (_2 (vector-ref a 1))
+        (_3 (vector-ref b 2))
+        (_4 (vector-ref a 2))
+        (_5 (vector-ref b 4))
+        (_6 (vector-ref a 3))
+        (_7 (vector-ref b 6))
+        (_8 (vector-ref b 1))
+        (_9 (vector-ref b 3))
+        (_a (vector-ref b 5))
+        (_b (vector-ref b 7))
+        (_c (vector-ref a 4))
+        (_d (vector-ref a 5))
+        (_e (vector-ref a 6))
+        (_f (vector-ref a 7))
+        (_g (vector-ref a 8))
+        (_h (vector-ref a 9))
+        (_i (vector-ref a 10))
+        (_j (vector-ref a 11))
+        )
+    `#( ,(+ (* _0 _1) (* _2 _3) (* _4 _5) (* _6 _7) )
+        ,(+ (* _0 _8) (* _2 _9) (* _4 _a) (* _6 _b) )
+        ,(+ (* _c _1) (* _d _3) (* _e _5) (* _f _7) )
+        ,(+ (* _c _8) (* _d _9) (* _e _a) (* _f _b) )
+        ,(+ (* _g _1) (* _h _3) (* _i _5) (* _j _7) )
+        ,(+ (* _g _8) (* _h _9) (* _i _a) (* _j _b) )
+        )
+    )
+)
+
+(speed_test)
