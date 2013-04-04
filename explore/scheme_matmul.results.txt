@@ -1,0 +1,17 @@
+$ time scheme_matmul_classic.scm          # Ugly imperative implementation, ported from ../examples.js
+
+real	0m15.653s
+user	0m15.613s
+sys	0m0.000s
+
+$ time scheme_matmul_list_of_lists.scm    # Concise functional implementation from rosettacode.org
+
+real	0m6.098s
+user	0m6.064s
+sys	0m0.016s
+
+$ time scheme_matmul342.scm               # Proposed "flatorized" implementation for I:3,J:4,K:2
+
+real	0m2.856s
+user	0m2.844s
+sys	0m0.000s
