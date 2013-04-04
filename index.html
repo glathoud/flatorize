@@ -307,7 +307,7 @@ with the original Cooley-Tukey:</p>
 
 <h4 class="anchorable" id="push-all-memory">Result analysis: memory <a href="#push-all-memory" class="anchor">#</a></h4>
 
-<p>On <code>DFT256</code>, <code>DFT512</code> and <code>DFT1024</code>, V8&nbsp;3.17.16 consumes <span class="sad">inordinate amounts of memory (gigabytes)</span>, which explains why my system then almost died.</p>
+<p>On <code>DFT256</code>, <code>DFT512</code> and <code>DFT1024</code>, V8&nbsp;3.17.16 consumes <span class="sad">inordinate amounts of memory (gigabytes)</span>, which explains why my system then almost died (V8 issue&nbsp;<a href="http://code.google.com/p/v8/issues/detail?id=2612">#2612</a>).</p>
 
 <p>Both Firefox&nbsp;19 and Chrome&nbsp;24 had a <span class="happy">very stable memory consumption</span>.</p>
 
