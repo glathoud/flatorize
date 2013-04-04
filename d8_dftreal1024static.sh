@@ -1,4 +1,7 @@
 #!/usr/bin/env sh
+# 
+# Convenience wrapper to reproduce this issue:
+# http://code.google.com/p/v8/issues/detail?id=2612
 SETUPCODE=''
 if [ $# -gt 0 ]
 then

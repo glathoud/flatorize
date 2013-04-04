@@ -4,6 +4,7 @@
 // Convenience wrapper: ./d8_dftreal1024static.sh
 //
 // V8 issue, as of April 2013:
+// http://code.google.com/p/v8/issues/detail?id=2612
 //
 // With V8 3.17.16, above a certain number of iterations, the whole
 // system memory is sucked: the memory consumption increases linearly
