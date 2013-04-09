@@ -1,4 +1,8 @@
-static const int NITER = 5e5;
+static const int NITER = 1e8;
+
+static const int I = 3;
+static const int J = 4;
+static const int K = 2;
 
 static const float mat_a[3*4] = { 1, 2, 3, 4,
                                   5, 6, 7, 8,
@@ -13,3 +17,7 @@ static const float mat_c[3*2] = { 170, 180,
                                   426, 452,
                                   682, 724 };
 
+
+void matmul_classic( const float* a, const float* b, const int I, const int J, const int K, float* out );
+
+void matmul342( const float* a, const float* b, float* out );
