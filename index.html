@@ -55,7 +55,17 @@ expressions, one can end up with things like:</p>
 <pre class="prettyprint lang-js"><code>function f(a,b,c) { return sub( sub(a,add(b,c)), add(b,c) ); }
 </code></pre>
 
-<p>Can we optimize this implementation? Or even better, let the computer generate optimized code for us?</p>
+<h3 class="anchorable" id="summary">Summary <a href="#summary" class="anchor">#</a></h3>
+
+<p>I describe and test an implementation
+that generates faster code,  where function overhead has been eliminated (example just below).</p>
+
+<p>Tests include more complex cases, e.g. a 1024-point Discrete Fourier Transform. <a href="#push-all">Results</a> show a huge speedup in many cases.</p>
+
+<pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(f2.getDirect()+'')</script></code></pre>
+<p class="small">(This code, as a few others below, was produced and inserted as you loaded the page.)</p>
+
+<p>Now the two basic ideas: factorize and flatten mathematical expressions.</p>
 
 <h3 class="anchorable" id="factorize">Factorize <a href="#factorize" class="anchor">#</a></h3>
 
