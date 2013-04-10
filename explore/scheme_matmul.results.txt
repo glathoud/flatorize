@@ -2,26 +2,36 @@
 
 time scheme_matmul_classic.scm          # Ugly imperative implementation, ported from ../examples.js
 
-real	0m15.628s
-user	0m15.577s
-sys	0m0.012s
+real	0m15.620s
+user	0m15.561s
+sys	0m0.020s
+
+time scheme_matmul_classic2.scm         # Ugly imperative implementation, ported from ../examples.js
+
+real	0m15.013s
+user	0m14.957s
+sys	0m0.016s
 
 time scheme_matmul_list_of_lists.scm    # Concise functional implementation from rosettacode.org
 
-real	0m6.065s
-user	0m6.048s
-sys	0m0.000s
+real	0m6.031s
+user	0m6.004s
+sys	0m0.008s
 
 time scheme_matmul342.scm               # Proposed "flatorized" implementation for I:3,J:4,K:2
 
-real	0m2.845s
-user	0m2.828s
+real	0m2.852s
+user	0m2.832s
 sys	0m0.008s
 
 # Compile them:
 
 ( cat scheme_matmul_common.scm ; grep -v load scheme_matmul_classic.scm ) | grep -v gsi-script > tmp.scm
 gsc -exe -o scheme_matmul_classic.bin tmp.scm
+rm tmp.scm
+
+( cat scheme_matmul_common.scm ; grep -v load scheme_matmul_classic2.scm ) | grep -v gsi-script > tmp.scm
+gsc -exe -o scheme_matmul_classic2.bin tmp.scm
 rm tmp.scm
 
 ( cat scheme_matmul_common.scm ; grep -v load scheme_matmul_list_of_lists.scm ) | grep -v gsi-script > tmp.scm
@@ -36,19 +46,28 @@ rm tmp.scm
 
 time scheme_matmul_classic.bin          # Ugly imperative implementation, ported from ../examples.js
 
-real	0m0.726s
-user	0m0.712s
+real	0m0.728s
+user	0m0.724s
+sys	0m0.000s
+
+time scheme_matmul_classic2.bin         # Ugly imperative implementation, ported from ../examples.js
+
+real	0m0.680s
+user	0m0.668s
 sys	0m0.008s
 
 time scheme_matmul_list_of_lists.bin    # Concise functional implementation from rosettacode.org
 
-real	0m2.588s
-user	0m2.568s
-sys	0m0.012s
+real	0m2.580s
+user	0m2.556s
+sys	0m0.016s
 
 time scheme_matmul342.bin               # Proposed "flatorized" implementation for I:3,J:4,K:2
 
-real	0m0.261s
-user	0m0.252s
-sys	0m0.004s
+real	0m0.262s
+user	0m0.248s
+sys	0m0.016s
 
+set +v
+gl@gl-ThinkPad-T420s:~/tobackup/flatorize/explore
+$ 
