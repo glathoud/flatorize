@@ -1,3 +1,6 @@
+
+NITER:500000.
+
 # First, time the interpretation of the .scm files:
 
 time scheme_matmul_classic.scm          # Ugly imperative implementation, ported from ../examples.js

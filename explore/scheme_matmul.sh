@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 reset
+scheme_matmul_NITER.scm
 set -v
 # First, time the interpretation of the .scm files:
 
