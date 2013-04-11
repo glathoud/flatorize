@@ -1,3 +1,13 @@
+;; Two improvements (without, then with (not safe))
+;; Based on the feedback from Alex Queiroz
+;; Note: (not safe) speeds up all compiled results except list_of_lists
+;; 
+;; (declare
+;;   (block)
+;;   ;; (not safe)
+;;   (standard-bindings)
+;;   (extended-bindings))
+
 (define NITER 5e5)
 
 (define mat_a `#( 1 2 3 4

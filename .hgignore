@@ -9,3 +9,5 @@ syntax: glob
 *~
 a.out
 *.js.ps
+
+DIRECTIONS.org
