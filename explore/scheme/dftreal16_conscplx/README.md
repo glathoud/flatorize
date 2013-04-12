@@ -1,8 +1,7 @@
 Speed tests of various implementations of the 16-point Discrete
 Fourier Transform in real domain (the input vector is real).
 
-Scheme's R5RS built-in complex numbers are *not* used here: complex
-numbers are represented as a `cons` of two real numbers `( re . im )`.
-
-(At some point of time equivalent tests using Scheme's R5RS built-in
-complex numbers should appear under [../dftreal16/](../dftreal16/).)
+Complex numbers are represented as `(cons re im)`. When compiled, this
+brings a [speedup](./dftreal16.results.txt#L52), as compared to using
+Scheme's [built-in complex
+numbers](../dftreal16_conscplx/dftreal16.results.txt#L52).
