@@ -1,4 +1,4 @@
-;; requires "./scheme_util.scm"  for PI and EPSILON
+;; requires "./util.scm"  for PI and EPSILON
 
 (define (dftreal-cooley-tukey x)
   ;; Translated from `dft_cooley_tukey_gen` in ../examples.js

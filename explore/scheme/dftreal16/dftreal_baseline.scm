@@ -1,9 +1,9 @@
-;; requires "./scheme_util.scm"  for PI
+;; requires "./util.scm"  for PI
 
 (define (dftreal_baseline x)
   ;; Translated from `dft16_baseline` in ../examples.js
   ;; x:   vector of N real numbers
-  ;; out: vector of N complex numbers: (re . im) pairs
+  ;; out: vector of N complex numbers
   (let* ((N (vector-length x))
          (out (make-vector N))
          (x0  (vector-ref x 0))
@@ -28,7 +28,7 @@
                          (+ im (* re_j sin_angle))
                          )
                  )
-               (vector-set! out i (cons re im))
+               (vector-set! out i (make-rectangular re im))
                ))
          (loop-i (+ i 1))
          )

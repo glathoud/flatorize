@@ -3,8 +3,8 @@
 ;;; Scheme - successfully tested with Gambit v4.6.2
 ;;; -*- mode:scheme; coding: utf-8 -*-
 
-(load "scheme_dftreal16_common.scm")
-(load "scheme_dftreal_baseline.scm")
+(load "dftreal16_common.scm")
+(load "dftreal_baseline.scm")
 
 (define (sanity_check)
   (let ((X (dftreal_baseline x_rand16real)))

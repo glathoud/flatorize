@@ -4,7 +4,7 @@
  (standard-bindings)
  (extended-bindings))
 
-(load "scheme_util.scm")
+(load "util.scm")
 
 (define NITER 1e5)
 

@@ -3,8 +3,8 @@
 ;;; Scheme - successfully tested with Gambit v4.6.2
 ;;; -*- mode:scheme; coding: utf-8 -*-
 
-(load "scheme_dftreal16_common.scm")
-(load "scheme_dftreal_cooley_tukey_func.scm")
+(load "dftreal16_common.scm")
+(load "dftreal_cooley_tukey_func.scm")
 
 (define (sanity_check)
   (let ((X (dftreal-cooley-tukey-func x_rand16real)))

@@ -1,4 +1,4 @@
-;; requires "./scheme_util.scm"  for PI and EPSILON
+;; requires "./util.scm"  for PI and EPSILON
 
 (define (dftreal-cooley-tukey-func x)
   ;; Translated from `dft_cooley_tukey_gen` in ../examples.js
@@ -6,7 +6,7 @@
   ;; out: vector of N complex numbers: (re . im) pairs
   ;; N must be a power of two
   ;;
-  ;; difference with ./scheme_dftreal_cooley_tukey.scm : replaced the `vector-set!` calls with a purely functional impl.
+  ;; difference with ./dftreal_cooley_tukey.scm : replaced the `vector-set!` calls with a purely functional impl.
   (define (dftreal-ditfft2 x offset radix s)
 
     (cond ((< radix 1) `#( ( ,(vector-ref x offset) . 0 ) ))
@@ -44,7 +44,7 @@
                           (v-re (- (* cos-angle u-re) (* sin-angle u-im)))
                           (v-im (+ (* cos-angle u-im) (* sin-angle u-re)))
                           )
-                     (loop (+ k 1)   ;; difference with ./scheme_dftreal_cooley_tukey.scm : replaced the `vector-set!` calls with a purely functional impl.
+                     (loop (+ k 1)   ;; difference with ./dftreal_cooley_tukey.scm : replaced the `vector-set!` calls with a purely functional impl.
                            left
                            right
                            (vector-append left2  `#( ,(cons (+ t-re v-re) (+ t-im v-im)) ))

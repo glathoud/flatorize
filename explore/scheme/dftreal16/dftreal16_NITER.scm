@@ -5,7 +5,7 @@
 ;;;
 ;;; Imperative implementation directly translated from the JavaScript in ../examples.js
 
-(load "scheme_dftreal16_common.scm")
+(load "dftreal16_common.scm")
 
 (display "\nNITER: ")
 (display (inexact->exact NITER))
