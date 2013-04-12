@@ -4,6 +4,7 @@
   ;; Translated from `dft_cooley_tukey_gen` in ../examples.js
   ;; x:   vector of N real numbers
   ;; out: vector of N complex numbers: (re . im) pairs
+  ;; N must be a power of two
   ;;
   ;; difference with ./scheme_dftreal_cooley_tukey.scm : replaced the `vector-set!` calls with a purely functional impl.
   (define (dftreal-ditfft2 x offset radix s)

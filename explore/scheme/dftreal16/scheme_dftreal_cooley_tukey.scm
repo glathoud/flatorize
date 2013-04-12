@@ -3,16 +3,16 @@
 (define (dftreal-cooley-tukey x)
   ;; Translated from `dft_cooley_tukey_gen` in ../examples.js
   ;; x:   vector of N real numbers
-  ;; out: vector of N complex numbers: (re . im) pairs
+  ;; out: vector of N complex numbers
   ;; N must be a power of two
   (define (dftreal-ditfft2 x offset radix s)
 
-    (cond ((< radix 1) `#( ( ,(vector-ref x offset) . 0 ) ))
+    (cond ((< radix 1) `#( ,(vector-ref x offset) ) )
 
           ((< radix 2)
            (let ((t (vector-ref x offset      ))
                  (u (vector-ref x (+ offset s))))
-             `#( ( ,(+ t u) . 0)  ( ,(- t u) . 0) )
+             `#( ,(+ t u) ,(- t u) )
              ))
 
           (else 
@@ -31,25 +31,11 @@
                         )
                (if (< k halfN)
                    (let* ((t     (vector-ref left  k))
-                          (t-re  (car t))
-                          (t-im  (cdr t))
                           (u     (vector-ref right k))
-                          (u-re  (car u))
-                          (u-im  (cdr u))
-                          (angle (/ (* -2 PI k) N))
-                          (cos-angle (cos angle))
-                          (sin-angle (sin angle))
-                          (v-re (- (* cos-angle u-re) (* sin-angle u-im)))
-                          (v-im (+ (* cos-angle u-im) (* sin-angle u-re)))
+                          (v     (* u (make-polar 1 (/ (* -2 PI k) N))))
                           )
-                     (vector-set! left2 
-                                  k
-                                  (cons (+ t-re v-re) (+ t-im v-im))
-                                  )
-                     (vector-set! right2 
-                                  k
-                                  (cons (- t-re v-re) (- t-im v-im))
-                                  )
+                     (vector-set! left2   k (+ t v))
+                     (vector-set! right2  k (- t v))
                      (loop (+ k 1) left right left2 right2)
                      )
                    (vector-append left2 right2)

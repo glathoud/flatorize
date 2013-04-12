@@ -1,18 +1,20 @@
 ;; requires "./scheme_util.scm"  for PI and EPSILON
 
-(define (dftreal-cooley-tukey x)
+(define (dftreal-cooley-tukey-func x)
   ;; Translated from `dft_cooley_tukey_gen` in ../examples.js
   ;; x:   vector of N real numbers
   ;; out: vector of N complex numbers: (re . im) pairs
   ;; N must be a power of two
+  ;;
+  ;; difference with ./scheme_dftreal_cooley_tukey.scm : replaced the `vector-set!` calls with a purely functional impl.
   (define (dftreal-ditfft2 x offset radix s)
 
-    (cond ((< radix 1) `#( ( ,(vector-ref x offset) . 0 ) ))
+    (cond ((< radix 1) `#( ,(vector-ref x offset) ))
 
           ((< radix 2)
            (let ((t (vector-ref x offset      ))
                  (u (vector-ref x (+ offset s))))
-             `#( ( ,(+ t u) . 0)  ( ,(- t u) . 0) )
+             `#( ,(+ t u) ,(- t u) )
              ))
 
           (else 
@@ -26,31 +28,20 @@
              (let loop ((k      0) 
                         (left   left) 
                         (right  right)
-                        (left2  (make-vector halfN))
-                        (right2 (make-vector halfN))
+                        (left2  `#())
+                        (right2 `#())
                         )
                (if (< k halfN)
                    (let* ((t     (vector-ref left  k))
-                          (t-re  (car t))
-                          (t-im  (cdr t))
                           (u     (vector-ref right k))
-                          (u-re  (car u))
-                          (u-im  (cdr u))
-                          (angle (/ (* -2 PI k) N))
-                          (cos-angle (cos angle))
-                          (sin-angle (sin angle))
-                          (v-re (- (* cos-angle u-re) (* sin-angle u-im)))
-                          (v-im (+ (* cos-angle u-im) (* sin-angle u-re)))
+                          (v     (* u (make-polar 1 (/ (* -2 PI k) N))))
                           )
-                     (vector-set! left2 
-                                  k
-                                  (cons (+ t-re v-re) (+ t-im v-im))
-                                  )
-                     (vector-set! right2 
-                                  k
-                                  (cons (- t-re v-re) (- t-im v-im))
-                                  )
-                     (loop (+ k 1) left right left2 right2)
+                     (loop (+ k 1)   ;; difference with ./scheme_dftreal_cooley_tukey.scm : replaced the `vector-set!` calls with a purely functional impl.
+                           left
+                           right
+                           (vector-append left2  `#( ,(+ t v) ) )
+                           (vector-append right2 `#( ,(- t v) ) )
+                           )
                      )
                    (vector-append left2 right2)
                    )
