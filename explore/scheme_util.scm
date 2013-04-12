@@ -1,3 +1,5 @@
+(define PI (* 2 (acos 0)))   ; xxx is there something nicer than this?
+
 (define EPSILON 1e-10)
 
 (define (compare-vec-cplx A B)

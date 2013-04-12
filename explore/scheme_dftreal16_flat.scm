@@ -3,7 +3,7 @@
 ;;; Scheme - successfully tested with Gambit v4.6.2
 ;;; -*- mode:scheme; coding: utf-8 -*-
 
-(load "scheme_dft16_common.scm")
+(load "scheme_dftreal16_common.scm")
 
 (define (sanity_check)
   (let ((X (dft16_flat x_rand16real)))
@@ -17,7 +17,6 @@
       (if (< n 1)
           #t
           (let ((X (dft16_flat x_rand16real)))
-            ;; (display mat_c)   ; for debugging
             (loop (- n 1))
             )
           )
