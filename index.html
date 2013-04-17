@@ -46,26 +46,47 @@ pre, code { overflow-wrap: break-word; overflow: hidden; }
 
 <p style="text-align:right">by <a href="http://glat.info">Guillaume Lathoud</a><span class="print">&nbsp;[1]</span>, April 2013</p>
 
-<p>Using many small functions, one can write code in a safe, robust
-and tractable manner, which also helps thinking about the task at hand.</p>
+<h3 class="anchorable" id="tldr">TL;DR <a href="#tldr" class="anchor">#</a></h3>
 
-<p>Writing or <em>generating</em> code in such a way for mathematical
+<p><code>flatorize</code> generates fast JavaScript code for mathematical expressions by eliminating  function overhead.</p>
+
+<p>Generated code:</p>
+<ul>
+  <li><a href="#example-generated">Two</a> <a href="#matmul-generated">simple</a> examples,</li>
+  <li><a href="#dft16-generate">More complex</a> example (Discrete Fourier Transform).</li>
+</ul>
+
+<p>Performance: huge speedups</p>
+<ul>
+  <li>in <a href="#push-all">JavaScript</a>,</li>
+  <li>in <a href="https://github.com/glathoud/flatorize/blob/master/explore/scheme/dftreal16/dftreal16.results.txt#L66">Scheme</a> and <a href="https://github.com/glathoud/flatorize/blob/master/explore/C/cAll_matmul.results.txt#L40">C</a> as well (initial tests).</li>
+</ul>
+
+
+
+<h3 class="anchorable" id="summary">Summary <a href="#summary" class="anchor">#</a></h3>
+
+<p>Writing or generating code for mathematical
 expressions, one can end up with things like:</p>
 
 <pre class="prettyprint lang-js"><code>function f(a,b,c) { return sub( sub(a,add(b,c)), add(b,c) ); }
 </code></pre>
 
-<h3 class="anchorable" id="summary">Summary <a href="#summary" class="anchor">#</a></h3>
+<p><em>Writing</em> many small functions like <code>add</code>
+and <code>sub</code> permits to prevent bugs, and think
+in a clearer way, but <em>at runtime</em> it costs function overhead.</p>
 
-<p>I describe and test an implementation
-that generates faster code,  where function overhead has been eliminated (example just below).</p>
+<p>Here I propose to speed up math computations by generating code where function overhead has been eliminated.
 
-<p>Tests include more complex cases, e.g. a 1024-point Discrete Fourier Transform. <a href="#push-all">Results</a> show a huge speedup in many cases.</p>
+The two core ideas are to <a href="#factorize">factorize</a> and to <a href="#flatten">flatten</a> the implementation of mathematical expressions, hence the name <code>flatorize</code>.</p>
 
-<pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(f2.getDirect()+'')</script></code></pre>
-<p class="small">(This code, as a few others below, was produced and inserted as you loaded the page.)</p>
+<p>A JavaScript <a href="#impl">implementation</a> is provided. <a href="#push-all">Test&nbsp;results</a> show huge speedups, including on recursive expressions (e.g.&nbsp;Cooley-Tukey expression of the Discrete Fourier Transform).</p>
 
-<p>Now the two basic ideas: factorize and flatten mathematical expressions.</p>
+<p>Initial tests show huge speedups in <a href="https://github.com/glathoud/flatorize/blob/master/explore/scheme/dftreal16/dftreal16.results.txt#L66">Scheme</a> and <a href="https://github.com/glathoud/flatorize/blob/master/explore/C/cAll_matmul.results.txt#L40">C</a> as well.</p>
+
+<!--pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(f2.getDirect()+'')</script></code></pre>
+<p class="small">(This code, as a few others below, was produced and inserted as you loaded the page.)</p-->
+
 
 <h3 class="anchorable" id="factorize">Factorize <a href="#factorize" class="anchor">#</a></h3>
 
@@ -79,11 +100,12 @@ that generates faster code,  where function overhead has been eliminated (exampl
 
 <h3 class="anchorable" id="flatten">Flatten <a href="#flatten" class="anchor">#</a></h3>
 
-<p>Such small, "building block" functions like <code class="prettyprint
+<p>Small "building block" functions like <code class="prettyprint
 lang-js">add</code> or <code class="prettyprint
-lang-js">sub</code> are useful to write code, but at runtime the
-CPU spends more time in function overhead than just doing the simple operation in it
-(e.g. addition or subtraction).<p>
+lang-js">sub</code> are useful to <em>write</em> code, but <em>at runtime</em> the
+CPU spends more time in function overhead than just doing the simple operation(s) in them.<p>
+
+<p>In more complex cases like recursive expressions, the function overhead becomes even bigger.</p>
 
 <p>One can eliminate function overhead by inlining each small function, that&nbsp;is&nbsp;replacing each small function with its implementation:</p>
 <pre class="prettyprint lang-js"><code>function f(a,b,c) { 
@@ -102,16 +124,17 @@ way -&nbsp;especially compared to function overhead elimination&nbsp;-
 so if we ever attempt simplification, we'll keep it very simple.
 </p>
 
-<h3 class="anchorable" id="contents">Contents <a href="#contents" class="anchor">#</a></h3>
+<h3 class="anchorable" id="impl">Implementation <a href="#impl" class="anchor">#</a></h3>
 
 <p>An implementation called <code>flatorize</code> is provided that generates fast code for mathematical expressions, using factorization and flattening.</p>
 
+<p><code>flatorize</code> source files: on <a href="https://github.com/glathoud/flatorize">github</a>, or here (<a href="flatorize.js">flatorize.js</a>, <a href="examples.js">examples.js</a>, <a href="log.js">log.js</a>).</p>
 
 <p>The rest of this article describes how to use <code>flatorize</code>, then gives
 several performance results &ndash; pushing things until they
 break.</p>
 
-<p><code>flatorize</code> source files: on <a href="https://github.com/glathoud/flatorize">github</a>, or here (<a href="flatorize.js">flatorize.js</a>, <a href="examples.js">examples.js</a>, <a href="log.js">log.js</a>).</p>
+
 
 <h3 class="anchorable" id="usage">Usage: <code>expr</code>, <code>part</code> and <code>flatorize</code> <a href="#usage" class="anchor">#</a></h3>
 
@@ -130,7 +153,9 @@ break.</p>
 <li><code class="prettyprint lang-js">flatorize.part(arr,3)</code> or <code class="prettyprint lang-js">flatorize.part(obj,'prop')</code> describe the extraction of a property value from an object (array or not).</li>
 </ul>
 
-<p>Example: we now work with complex numbers, which we represent as arrays of two numbers <code class="prettyprint lang-js">[re,im]</code>. Consider the function <code>f</code> of complex numbers <code class="prettyprint lang-js">a,b,c</code>:</p>
+<h3 class="anchorable" id="example">Example: complex numbers <a href="#example" class="anchor">#</a></h3>
+
+<p>We now work with complex numbers, which we represent as arrays of two numbers <code class="prettyprint lang-js">[re,im]</code>. Consider the function <code>f</code> of complex numbers <code class="prettyprint lang-js">a,b,c</code>:</p>
 
 <pre class="prettyprint lang-js"><code>f = <script type="text/javascript">document.write(f+'')</script>;</code></pre>
 
@@ -164,7 +189,7 @@ can be used to build further expressions: in the above example, <code>creal</cod
 can also be called with values, for computation. For example, calling <code class="prettyprint lang-js">f2(a,b,c)</code> executes
 the flat, factorized:</p>
 
-<pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(f2.getDirect()+'')</script></code></pre>
+<pre class="prettyprint lang-js" id="example-generated"><code><script type="text/javascript">document.write(f2.getDirect()+'')</script></code></pre>
 <p class="small">(This code, as a few others below, was produced and inserted as you loaded the page.)</p>
 
 
@@ -180,7 +205,7 @@ can use <code>flatorize</code> to generate a fast implementation <code>matmul342
 </code></pre>
 
 <p>This generates the following function:</p>
-<pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(matmul342+'');</script>
+<pre class="prettyprint lang-js" id="matmul-generated"><code><script type="text/javascript">document.write(matmul342+'');</script>
 </code></pre>
 
 <p>Let us verify that `matmul342` actually works:</p>
@@ -224,7 +249,7 @@ original <a href='http://en.wikipedia.org/wiki/Cooley%E2%80%93Tukey_FFT_algorith
 <script type="text/javascript">document.write(dft_exprgenF+'');</script>
 </code></pre>
 
-<p>Let us now test it on a "small" scale (16 point). First, let us generate the code:</p>
+<p id="dft16-generate">Let us now test it on a "small" scale (16 point). First, let us generate the code:</p>
 
 <p><button id="tryit_flatorize_dft16" onclick="tryit_flatorize_dft( this, 16 )">Try <code>flatorize</code>!</button>&nbsp;</p><p id="tryit_flatorize_dft16_output" class="generated-code-output"></p>
 
