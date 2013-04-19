@@ -88,7 +88,7 @@ function generate_small_functions()
     
     // We know we will not use `matmul342` to build further expressions,
     // so we use the faster `FZ.now` instead of `FZ`.
-    matmul342 = FZ.now('a,b', matmul_exprgenF(3,4,2))
+    matmul342 = FZ.now('a:[12 float],b:[8 float]->c:[6 float]', matmul_exprgenF(3,4,2))
     var mat_c  = matmul342( mat_a, mat_b );
 
     log('mat_a ' + mat_a)

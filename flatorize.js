@@ -131,7 +131,7 @@
         // `varstr`: Ignore the type declarations (meant e.g. to
         // generate C code - not interesting for JS code).
         
-        var varstr = possibly_typed_varstr.split('->')[ 0 ].replace( /:.*,/g, ',' )
+        var varstr = possibly_typed_varstr.split('->')[ 0 ].replace( /:[^,]*/g, '' )
         ,   vararr = varstr.split(',').map(function(s) { return s.trim(); })
         ,   direct
         ;
@@ -144,6 +144,16 @@
         switcher.untyped_varstr        = varstr;
         switcher.untyped_vararr        = [].concat( vararr );
         
+        // Here for JavaScript we won't need type information, but for
+        // some other language we may need it (e.g. ./flatorize_c.js).
+
+        if (varstr !== possibly_typed_varstr)
+        {
+            var o = get_types_from_typed_varstr( possibly_typed_varstr );
+            switcher.typed_in_var  = o.typed_in_var;
+            switcher.typed_out_var = o.typed_out_var;
+        }
+
         // Setup API methods
 
         switcher.getDirect = switcher_getDirect;
@@ -218,6 +228,39 @@
     }
 
     // -------------------- Private implementation --------------------
+
+    function get_types_from_typed_varstr( /*string*/typed_varstr )
+    // Extract type information. Not used in the JavaScript case, but
+    // useful for some other languages (e.g. ./flatorize_c.js).
+    //
+    // Returns an object with two fields `typed_in_var` and
+    // `typed_out_var`.
+    {
+        var in_out = typed_varstr.split( '->' )
+        ,   inArr  = in_out[ 0 ].split( ',' )
+        ,  outArr  = [ in_out[ 1 ] ]
+        ;
+        
+        return { 
+            typed_in_var    : typed_arr_2_obj(  inArr )
+            , typed_out_var : typed_arr_2_obj( outArr )
+        };
+
+        function typed_arr_2_obj( arr )
+        {
+            var ret = {};
+            for (var n = arr.length, i = 0; i < n; i++)
+            {
+                var s = arr[ i ]
+                ,  nt = s.split(':')
+                , name = nt[ 0 ]
+                , type = nt[ 1 ]
+                ;
+                ret[ name ] = type; // xxx further parse type
+            }
+            return ret;
+        }
+    }
 
     function expr_simplify( arr )
     {

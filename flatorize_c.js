@@ -67,11 +67,16 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         
         ,   js_direct   = js_switcher.getDirect  ?  js_switcher.getDirect()  :  js_switcher
 
+        ,  typed_in_var = js_direct.typed_in_var
+        , typed_out_var = js_direct.typed_out_var
+        
         ,   e           = js_direct.e
         ,   exprCache   = js_direct.exprCache
         ,   varnameset  = js_direct.varnameset
         ;
         
+        console.log( 'xxx flatorize_c js_direct:' );
+        console.dir( js_direct );
         
         return 'xxx';
     }
