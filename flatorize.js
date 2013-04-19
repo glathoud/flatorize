@@ -277,12 +277,12 @@
             {
                 // Type: Array of known length.
 
-                var same = arrtype_mo[ 1 ].match( /^\s*(\d+)\s*(.*?)\s*$/ );
-                if (same)
+                var same_mo = arrtype_mo[ 1 ].match( /^\s*(\d+)\s*(.*?)\s*$/ );
+                if (same_mo)
                 {
                     // Same type for all elements.
-                    var len = same[ 0 ] | 0
-                    , subtype = parse_type( same[ 1 ] )
+                    var   len = same_mo[ 1 ] | 0
+                    , subtype = parse_type( same_mo[ 2 ] )
                     ,     ret = new Array( len )
                     ;
                     for (var i = len; i--;)
