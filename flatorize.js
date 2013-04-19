@@ -134,15 +134,17 @@
         var varstr = possibly_typed_varstr.split('->')[ 0 ].replace( /:.*,/g, ',' )
         ,   vararr = varstr.split(',').map(function(s) { return s.trim(); })
         ,   direct
-
-        // We'll give access to intermediary products, useful e.g. to
-        // generate code in another language.
-        ,   direct_e
-        ,   direct_exprCache
-        ,   direct_varnameset
         ;
+
+        // Mark the input parameters
+
+        switcher.possibly_typed_varstr = possibly_typed_varstr;
+        switcher.exprgen               = exprgen;
+
+        switcher.untyped_varstr        = varstr;
+        switcher.untyped_vararr        = [].concat( vararr );
         
-        switcher.exprgen = exprgen; // to debug
+        // Setup API methods
 
         switcher.getDirect = switcher_getDirect;
         switcher.evalnow   = switcher_evalnow;
@@ -198,9 +200,9 @@
                 
                 // We'll give access to intermediary products, useful e.g. to
                 // generate code in another language.
-                direct_e          = e;
-                direct_exprCache  = exprCache;
-                direct_varnameset = varnameset;
+                direct.e          = e;
+                direct.exprCache  = exprCache;
+                direct.varnameset = varnameset;
 
                 
                 creatingDirect--;

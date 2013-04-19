@@ -1,0 +1,73 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8" /> 
+<title>Flatorize: Generate C code</title>
+<link rel="stylesheet" type="text/css" href="prettify/prettify.css">
+<style type="text/css">
+@media only screen { .screen-hidden, .print { display: none; } }
+@media only print  { .print-hidden, .screen { display: none; } }
+body { max-width: 600px; margin: auto; color: #222; }
+p, h1, h2, h3, h4, ul, li {
+    font-family: Verdana,Arial,'Lucida Grande',Sans-Serif;
+    line-height: 150%;
+    text-align: justify;
+}
+pre, code { overflow-wrap: break-word; overflow: hidden; }
+.small { font-size: 80%; line-height: 80%; }
+.generated-code-output .code-textarea { width: 100%; height: 250px; }
+#all-perf td, #all-perf th { padding: 0 3px 0 2px; text-align: right; font-size: 92%; }
+#all-perf .table-left { text-align: left; }
+#all-perf .table-sep { padding-right: 0px; }
+.happy { color: darkgreen; }
+.sad   { color: darkred; }
+.anchorable .anchor { display: none; }
+.anchorable:hover .anchor { display: inline; }
+</style>
+<script type="text/javascript" src="log.js"></script>
+<script type="text/javascript" src="flatorize.js"></script>
+<script type="text/javascript" src="examples.js"></script>
+<script type="text/javascript">generate_small_functions();</script>
+<script type="text/javascript" src="flatorize_c.js"></script>
+</head>
+<body>
+
+<a href="https://github.com/glathoud/flatorize" class="print-hidden">
+  <img style="position: fixed; top: 0; right: 0; border: 0; margin: 0; padding: 0;"
+       src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"
+       alt="Fork me on GitHub">
+</a>
+
+<p><a href="index.html">Back to the main article</a></p>
+
+<h2>Flatorize: Generate C code</h2>
+
+<p style="text-align:right">by <a href="http://glat.info">Guillaume Lathoud</a><span class="print">&nbsp;[1]</span>, April 2013</p>
+
+<h3 class="anchorable" id="c-matmul342"><code>matmul342</code><a href="#c-matmul342" class="anchor">#</a></h3>
+
+<script type="text/javascript">
+  var matmul342_c_code = flatorize.getCodeC( matmul342 );
+</script>
+
+<pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(matmul342_c_code);</script></code></pre>
+
+<script type="text/javascript" src="prettify/prettify.js"></script>
+<script type="text/javascript">setTimeout( prettyPrint );</script>
+<script type="text/javascript">
+/* xxx
+[ 
+    'tryit_speed_matmul342', 'tryit_flatorize_dft16', 'tryit_speed_dft16', 'tryit_flatorize_dft1024', 'tryit_speed_dft1024', 'tryit_all'
+].forEach(
+    function (id) { document.getElementById(id).removeAttribute('disabled'); }
+);
+*/
+window.ontouchstart = function () { Array.prototype.forEach.call( document.getElementsByClassName( "anchor" ), function (node) { node.className = node.className.replace( /\banchor\b/g, '' ); } ); };
+</script>
+<script type="text/javascript" src="../MathJax/MathJax.js?config=default"></script>
+<script type="text/javascript">
+var _gaq = _gaq || [];  _gaq.push(['_setAccount', 'UA-5516483-1']);  _gaq.push(['_trackPageview']);  (function() {    var ga = document.createElement('script');    ga.src = ('https:' == document.location.protocol ? 'https://ssl' :         'http://www') + '.google-analytics.com/ga.js';    ga.setAttribute('async', 'true');    document.documentElement.firstChild.appendChild(ga);  })();
+</script>
+
+</body>
+</html>
