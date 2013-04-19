@@ -121,15 +121,18 @@
     }
 
     var creatingDirect, within;
-    function flatorize(/*comma-separated string*/varstr, /*function*/exprgen)
+    function flatorize(/*comma-separated string*/possibly_typed_varstr, /*function*/exprgen)
     // Returns a function.
     {
         if (within)
             throw new Error('only one flatorize at a time!');
         within = true;
+     
+        // `varstr`: Ignore the type declarations (meant e.g. to
+        // generate C code - not interesting for JS code).
         
-
-        var vararr = varstr.split(',').map(function(s) { return s.trim(); })
+        var varstr = possibly_typed_varstr.split('->')[ 0 ].replace( /:.*,/g, ',' )
+        ,   vararr = varstr.split(',').map(function(s) { return s.trim(); })
         ,   direct
         ;
         
