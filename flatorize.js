@@ -150,8 +150,9 @@
         if (varstr !== possibly_typed_varstr)
         {
             var o = get_types_from_typed_varstr( possibly_typed_varstr );
-            switcher.typed_in_var  = o.typed_in_var;
-            switcher.typed_out_var = o.typed_out_var;
+            switcher.typed_in_var      = o.typed_in_var;
+            switcher.typed_out_varname = o.typed_out_varname;
+            switcher.typed_out_vartype = o.typed_out_vartype;
         }
 
         // Setup API methods
@@ -210,10 +211,18 @@
                 
                 // We'll give access to intermediary products, useful e.g. to
                 // generate code in another language.
+                direct.untyped_vararr = vararr;
+                if ('typed_in_var' in switcher)
+                {
+                    direct.typed_in_var      = switcher.typed_in_var;
+                    direct.typed_out_varname = switcher.typed_out_varname;
+                    direct.typed_out_vartype = switcher.typed_out_vartype;
+                }
                 direct.e          = e;
                 direct.exprCache  = exprCache;
                 direct.varnameset = varnameset;
 
+                // Done
                 
                 creatingDirect--;
                 exprCache = pile_exprCache.pop();
@@ -238,12 +247,15 @@
     {
         var in_out = typed_varstr.split( '->' )
         ,   inArr  = in_out[ 0 ].split( ',' )
-        ,  outArr  = [ in_out[ 1 ] ]
+        ,  out_nt  = in_out[ 1 ].split( ':' )
+        ,  outName = out_nt[ 0 ]
+        ,  outType = parse_type( out_nt[ 1 ] )
         ;
         
         return { 
-            typed_in_var    : typed_arr_2_obj(  inArr )
-            , typed_out_var : typed_arr_2_obj( outArr )
+            typed_in_var        : typed_arr_2_obj(  inArr )
+            , typed_out_varname : outName
+            , typed_out_vartype : outType
         };
 
         function typed_arr_2_obj( arr )
