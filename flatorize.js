@@ -134,6 +134,12 @@
         var varstr = possibly_typed_varstr.split('->')[ 0 ].replace( /:.*,/g, ',' )
         ,   vararr = varstr.split(',').map(function(s) { return s.trim(); })
         ,   direct
+
+        // We'll give access to intermediary products, useful e.g. to
+        // generate code in another language.
+        ,   direct_e
+        ,   direct_exprCache
+        ,   direct_varnameset
         ;
         
         switcher.exprgen = exprgen; // to debug
@@ -190,6 +196,12 @@
                 ;
                 direct = new Function (varstr, code);  // To be called with values
                 
+                // We'll give access to intermediary products, useful e.g. to
+                // generate code in another language.
+                direct_e          = e;
+                direct_exprCache  = exprCache;
+                direct_varnameset = varnameset;
+
                 
                 creatingDirect--;
                 exprCache = pile_exprCache.pop();
