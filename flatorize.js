@@ -234,7 +234,7 @@
     // useful for some other languages (e.g. ./flatorize_c.js).
     //
     // Returns an object with two fields `typed_in_var` and
-    // `typed_out_var`.
+    // `typed_out_var`. Both have the form { <varname> : <type>, ... }
     {
         var in_out = typed_varstr.split( '->' )
         ,   inArr  = in_out[ 0 ].split( ',' )
@@ -256,9 +256,70 @@
                 , name = nt[ 0 ]
                 , type = nt[ 1 ]
                 ;
-                ret[ name ] = type; // xxx further parse type
+                ret[ name ] = parse_type( type );
             }
             return ret;
+        }
+
+        function parse_type( /*string*/type )
+        // Parse a type definition, which can be simple type, an array
+        // of types (length mandatory) or an object of types.
+        // 
+        // That is, `type` can be "float", "double", "int", "long",
+        // "[<n> <type>]" (same type for all array elements),
+        // "[<type>,<type>,...]" (different types) or
+        // "{<k>:<type>,<k>:<type>,...}".
+        {
+            var arrtype_mo = type.match( /^\s*\[\s*(.*?)\s*\]\s*$/ )
+            ,   objtype_mo = !arrtype_mo  &&  type.match( /^\s*\{\s*(.*?)\s*\}\s*$/ )
+            ;
+            if (arrtype_mo)
+            {
+                // Type: Array of known length.
+
+                var same = arrtype_mo[ 1 ].match( /^\s*(\d+)\s*(.*?)\s*$/ );
+                if (same)
+                {
+                    // Same type for all elements.
+                    var len = same[ 0 ] | 0
+                    , subtype = parse_type( same[ 1 ] )
+                    ,     ret = new Array( len )
+                    ;
+                    for (var i = len; i--;)
+                        ret[ i ] = subtype;
+                    
+                    ret.sametype = true;  // <<< same type: marked here
+                    
+                    return ret;
+                }
+                else
+                {
+                    // Different types for the various elements.
+                    return arrtype_mo[ 1 ].split( ',' ).map( parse_type );
+                }
+            }
+            else if (objtype_mo)
+            {
+                // Type: Object. The various keys may have values of
+                // different types.
+
+                var kv_arr = objtype_mo[ 1 ].split( ',' )
+                ,   ret    = {}
+                ;
+                for (var n = kv_arr.length, i = 0; i < n; i++)
+                {
+                    var kv_mo         = kv_arr[ i ].match( /^\s*(\S+)\s*:\s*(.*?)\s*$/ );
+                    ret[ kv_mo[ 1 ] ] = parse_type( kv_mo[ 2 ] );
+                }
+                return ret;
+            }
+            else
+            {
+                // Type: Simple numeric value.
+
+                var t_mo = type.match(/^\s*(float|double|int|long)\s*$/);
+                return t_mo[ 1 ];
+            }
         }
     }
 
