@@ -33,6 +33,9 @@
     flatorize.expr = expr;    // To build and expression.
     flatorize.part = part;    // To extract a property of an array or object.
 
+    // Tools used for other languages, e.g. ./flatorize_c.js
+    flatorize.isExpr = isExpr;
+    
     // ---------- Public API implementation ----------
 
     function part( x, where )
@@ -176,7 +179,8 @@
         {
             if (creatingDirect)
             {
-                var e = exprgen.apply( null, arguments )  // To be called with variable name strings
+                var e = exprgen.apply( null, arguments );  // To be called with variable name strings
+
                 if ('string' === typeof e)
                     e = expr(e);
                 

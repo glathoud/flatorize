@@ -74,11 +74,87 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         ,   exprCache   = js_direct.exprCache
         ,   varnameset  = js_direct.varnameset
         ;
-        
+
         console.log( 'xxx flatorize_c js_direct:' );
         console.dir( js_direct );
+
+        var idnum2type  = propagateType( js_direct )        
+        ;
+        
+        console.log( 'xxx flatorize_c idnum2type:' );
+        console.dir( idnum2type );
         
         return 'xxx';
+    }
+
+    // ---------- Private details ----------
+
+    var isExpr = flatorize.isExpr;
+
+    function propagateType( /*object e.g. `js_direct`*/info, /*?object?*/input_idnum2type )
+    {
+        // Input
+
+        var typed_in_var      = info.typed_in_var
+        
+        ,   exprCache         = info.exprCache
+        ,   idnum2expr        = exprCache.idnum2expr
+        
+        ,   out_e             = info.e
+        ,   typed_out_vartype = info.typed_out_vartype
+
+        ,   out_e_isExpr  = isExpr( out_e )
+        ,   out_e_isArray = out_e instanceof Array
+
+        // Output
+
+        ,   isTop      = !input_idnum2type
+        ,   idnum2type = input_idnum2type  ||  {}
+        ;
+        
+        // Determine the type of `out_e`
+
+        if (out_e_isExpr)
+        {
+            var idnum = out_e.__exprIdnum__;
+            idnum.toPrecision.call.a;  // Must be a number
+
+            idnum2type[ idnum ] = typed_out_vartype;
+        }
+        else if (out_e_isArray)
+        {
+            if (isTop  &&  !(typed_out_vartype instanceof Array))
+                throw new Error( '(top) `out_e` and `typed_out_vartype` must be consistent!' );
+        }
+        else
+        {
+            out_e.substring.call.a;  // Must be a string
+            return;
+        }
+
+        // Recurse
+        
+        if (out_e instanceof Array)  // Both `isExpr` and `isTop` cases
+        {
+            for (var n = out_e.length, i = 0; i < n; i++)
+            {
+                var e_i    = out_e[ i ]
+                ,   e_info = {
+
+                    typed_in_var : typed_in_var
+                    , exprCache  : exprCache
+
+                    , e                 : e_i
+                    , typed_out_vartype : out_e_isExpr  ?  typed_out_vartype  :  out_e_isArray  ?  typed_out_vartype[ i ]  :  /*error*/null
+                }
+                ;
+                propagateType( e_info, idnum2type );
+            }
+        }
+        
+        // Done
+
+        return idnum2type;
     }
 
 })();
