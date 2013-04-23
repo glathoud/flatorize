@@ -42,7 +42,16 @@
 
         // Else form an expression string, and wrap it into `expr()` to
         // make it optimizeable (see `gathering` further below).
-        return expr( x + '[' + ( 'number' === typeof where  ?  where  :  '"' + where + '"' ) + ']' );
+        var ret = expr( x + '[' + ( 'number' === typeof where  ?  where  :  '"' + where + '"' ) + ']' );
+
+        // Mark the expression as a "part" - not necessary for
+        // JavaScript (the present file), but useful e.g. for typed
+        // languages, to propagate types (e.g. ./flatorize_c.js).
+        var part = ret.part = { x : x, where : where };
+        if (Object.freeze)
+            Object.freeze( part );
+
+        return ret;
     }
 
     var exprCache, pile_exprCache;
