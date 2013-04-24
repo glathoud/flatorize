@@ -36,10 +36,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
     // ---------- Public API implementation
 
-    function flatorize_getCodeC(
-        switcherfun_or_typedvarstr /*switcher function | comma-separated string `typedvarstr`, e.g. "a:float,b:[16 int]->c:float"*/
-        , exprgen                  /*undefined         |       function (in the `typedvarstr` case) */
-    )
+    function flatorize_getCodeC( /*object*/cfg )
     // Returns a C code string.
     //
     // Two usages:  
@@ -47,7 +44,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
     // (1) In one shot, if `exprgen_fun` has no dependency, or all of them have been flatorized already
     // 
     // {{{
-    // var c_code_str = flatorize.getCodeC( "a:float,b:[16 int]->c:float", exprgen_fun );
+    // var c_code_str = flatorize.getCodeC( { name: "functionname", varstr: "a:float,b:[16 int]->c:float", exprgen: exprgen_fun } );
     // }}}
     // 
     // (2) In two steps (useful if your expression has dependencies, esp. mutual dependencies):
@@ -57,15 +54,16 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
     // // ...  the remaining dependencies of `exprgen_fun` can be flatorized here ...
     // 
     // // Now we have all flatorized all dependencies of `exprgen_fun`, so we can generate code
-    // var c_code_str = flatorize.getCodeC( switcherfun );
+    // var c_code_str = flatorize.getCodeC( { name: "functionname", switcher: switcherfun } );
     // }}}
     {
-        var js_switcher = 
-            'function' === typeof switcherfun_or_typedvarstr
-            ?  switcherfun_or_typedvarstr
-            :  flatorize( switcherfun_or_typedvarstr, exprgen )
+        var topFunName = cfg.name;   // Mandatory
+        topFunName.substring.call.a;  // Cheap assert: Must be a string
+
+        var js_switcher = cfg.switcher  ||  flatorize( cfg.varstr, cfg.exprgen );  // Two variants
+        js_switcher.call.a;  // Cheap assert: Must be a function
         
-        ,   js_direct   = js_switcher.getDirect  ?  js_switcher.getDirect()  :  js_switcher
+        var js_direct   = js_switcher.getDirect  ?  js_switcher.getDirect()  :  js_switcher
 
         ,  typed_in_var = js_direct.typed_in_var
         , typed_out_var = js_direct.typed_out_var
@@ -78,16 +76,19 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         console.log( 'xxx flatorize_c js_direct:' );
         console.dir( js_direct );
 
-        var idnum2type  = propagateType( js_direct )        
-        ;
+        var idnum2type  = propagateType( js_direct );
         
         console.log( 'xxx flatorize_c idnum2type:' );
         console.dir( idnum2type );
         
-        return 'xxx';
+        var codelines = generateCodeC( js_direct, idnum2type, topFunName );
+
+        return codelines.join( '\n' );
     }
 
     // ---------- Private details ----------
+
+    // xxx when it works, remove the unused local vars in propagateType and generateCodeC
 
     var isExpr = flatorize.isExpr;
 
@@ -134,7 +135,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
         // Recurse
         
-        if (out_e instanceof Array)  // Both `isExpr` and `isTop` cases
+        if (out_e_isExpr  ||  out_e_isArray)
         {
             for (var n = out_e.length, i = 0; i < n; i++)
             {
@@ -155,6 +156,83 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         // Done
 
         return idnum2type;
+    }
+
+    function generateCodeC( /*object*/info, /*object*/idnum2type, /*?string?*/topFunName )
+    // Returns an array of strings (code lines)
+    {
+        // Some of the `info` fields are only required at the top
+        // level (`topFunName` given, i.e. `isTop === true`).
+
+        var typed_in_var      = info.typed_in_var
+        ,   untyped_vararr   = info.untyped_vararr
+        
+        ,   exprCache         = info.exprCache
+        ,   idnum2expr        = exprCache.idnum2expr
+        
+        ,   out_e             = info.e
+        ,   typed_out_varname = info.typed_out_varname
+        ,   typed_out_vartype = info.typed_out_vartype
+
+        ,   isTop             = !!topFunName
+        
+        ,   before = []
+        ,   body   = []
+        ,   after  = []
+
+        ;
+        
+        if (isTop)
+        {
+            before = [ 
+                funDeclCodeC( untyped_vararr, typed_in_var, topFunName, typed_out_varname, typed_out_vartype )
+                , '{'
+            ];
+            
+            after = [ '}' ];
+        }
+
+
+        return before.concat( body ).concat( after );
+    }
+
+
+    function funDeclCodeC( untyped_vararr, typed_in_var, topFunName, typed_out_varname, typed_out_vartype )
+    {
+        var is_out_type_simple   = 'string' === typeof typed_out_vartype
+        ,   arr = [ ]
+        ;
+        arr.push( is_out_type_simple  ?  typed_out_vartype  :  'void' );
+        arr.push( topFunName, '(' );
+
+        var declArr = untyped_vararr.map( decl_in_var );
+        if (!is_out_type_simple)
+            declArr.push( '/*out:*/ ' + decl( typed_out_varname, typed_out_vartype ) );
+        
+        arr.push( declArr.join( ', ' ) );
+
+        arr.push( ')' );
+        
+        return arr.join( ' ' );
+
+        function decl_in_var( varname )
+        {
+            var vartype = typed_in_var[ varname ];
+            return decl( varname, vartype );
+        }
+
+        function decl( varname, vartype )
+        {
+            var sArr;
+            if ('string' === typeof vartype)
+                sArr = [ vartype, varname ];
+            else if (vartype instanceof Array  &&  vartype.sametype  &&  'string' === typeof vartype[ 0 ])
+                sArr = [ vartype[ 0 ], '*', varname ];
+            else
+                throw new Error( 'C: vartype not supported yet.' );
+
+            return sArr.join( ' ' );
+        }
     }
 
 })();
