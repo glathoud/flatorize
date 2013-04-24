@@ -250,8 +250,11 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         ,   ret = [ ]
         ;
         
-        'xxx subexpr'
-
+        if (isExpr( out_e ))
+        {
+            
+        }
+        
         if (is_out_type_simple)
         {
             // Use return

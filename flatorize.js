@@ -217,9 +217,14 @@
                     varnameset[ vararr[i] ] = 1
                 ;
                 
-                var code = '/* ' + (exprgen + '').replace( /\/(\*.*\*)\//g, '$1') + ' */\n' + 
-                    code2str( e, { isTop: true, varnameset: varnameset } )
+                var topcfg = { isTop: true, varnameset: varnameset }
+                
+                ,   code   = '/* ' + (exprgen + '').replace( /\/(\*.*\*)\//g, '$1') + ' */\n' + code2str( e, topcfg )
+
+                ,   dupliidnum2varname = topcfg.dupliidnum2varname
+                ,   duplicates         = topcfg.duplicates
                 ;
+
                 direct = new Function (varstr, code);  // To be called with values
                 
                 // We'll give access to intermediary products, useful e.g. to
@@ -234,6 +239,8 @@
                 direct.e          = e;
                 direct.exprCache  = exprCache;
                 direct.varnameset = varnameset;
+                direct.dupliidnum2varname = dupliidnum2varname;
+                direct.duplicates         = duplicates;
 
                 // Done
                 
@@ -489,6 +496,9 @@
             ret = (varInitArr.length  ?  'var\n  ' + varInitArr.join('\n, ') + '\n;'  :  '')
                 + '\nreturn ' + ret + ';\n'
             ;
+
+            opt.dupliidnum2varname = cfg.dupliidnum2varname;
+            opt.duplicates         = cfg.duplicates;
         }
         else if (shorthandvarname = cfg  &&  'object' === typeof code  &&  ('__exprIdnum__' in code)  &&  cfg.dupliidnum2varname[ code.__exprIdnum__ ])
             ret = shorthandvarname;
@@ -510,10 +520,14 @@
     function code2stat( code, /*object*/cfg )
     {
         if (cfg.isTop)
-            return code2stat( code, cfg = { dupliidnum2varname: {}
-                                            , varnameset: Object.create( cfg.varnameset )
-                                          } );
-
+        {
+            return code2stat( code, cfg = { 
+                duplicates : cfg.duplicates  ||  []
+                , dupliidnum2varname: {}
+                , varnameset: Object.create( cfg.varnameset )
+            } );
+        }
+        
         // Input: statistics gathered while creating expressions
         // (implicitely depth-first walk).
 
@@ -523,7 +537,7 @@
         // Output: find and setup temporary variable names
         // for duplicates = expressions used more than one time.
         
-        ,   duplicates = []  // list of `idnum` (integers)
+        ,   duplicates = []          // list of `idnum` (integers)
         ,   dupliidnum2varname = cfg.dupliidnum2varname  // mapping (mapping idnum   -> varname)
         ,   varnameset         = cfg.varnameset          // set     (mapping varname -> 1)
         ;
@@ -534,6 +548,8 @@
             if (idnum2count[ i ] > 1)
                 duplicates.push( i );
         
+        cfg.duplicates.unshift.apply( cfg.duplicates, duplicates );
+
         for (var shift = 0, n = duplicates.length, 
              i = 0; i < n; i++)
         {
@@ -559,7 +575,7 @@
             var tmp = Object.create( dupliidnum2varname );
             tmp[ idnum ] = null;
             
-            var tmpcfg = { dupliidnum2varname: tmp };
+            var tmpcfg = { dupliidnum2varname: tmp, duplicates : cfg.duplicates };
             tmpcfg[ CODE2STR_CFG_ID ] = cfgid;
             
             var initcode = code2str( idnum2expr[ idnum ], tmpcfg, /*topopt:*/ { do_not_cache: true, no_paren: true } );
