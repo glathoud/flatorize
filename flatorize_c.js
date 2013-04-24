@@ -2,6 +2,7 @@
   ECMAScript implementation of "flatorize": Generate fast, flat,
   factorized ** C code ** for mathematical expressions.
 
+  Requires: ./flatorize.js
   
   Copyright 2013 Guillaume Lathoud
   
