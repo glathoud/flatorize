@@ -173,6 +173,9 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         
         ,   exprCache         = info.exprCache
         ,   idnum2expr        = exprCache.idnum2expr
+
+        ,   duplicates         = info.duplicates
+        ,   dupliidnum2varname = info.dupliidnum2varname
         
         ,   out_e             = info.e
         ,   typed_out_varname = info.typed_out_varname
@@ -193,7 +196,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                 , '{'
             ];
         
-            body = funBodyCodeC( typed_out_varname, typed_out_vartype, out_e, idnum2type, idnum2expr )
+            body = funBodyCodeC( typed_out_varname, typed_out_vartype, out_e, idnum2type, idnum2expr, duplicates, dupliidnum2varname )
 
             after = [ '}' ];
         }
@@ -234,9 +237,9 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         {
             var sArr;
             if ('string' === typeof vartype)
-                sArr = [ vartype, varname ];
+                sArr = [ 'const', vartype, varname ];
             else if (vartype instanceof Array  &&  vartype.sametype  &&  'string' === typeof vartype[ 0 ])
-                sArr = [ vartype[ 0 ], '*', varname ];
+                sArr = [ 'const', vartype[ 0 ], '*', varname ];
             else
                 throw new Error( 'funDeclCodeC: vartype not supported yet.' );
 
@@ -244,17 +247,31 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         }
     }
 
-    function funBodyCodeC( typed_out_varname, typed_out_vartype, out_e, idnum2type, idnum2expr )
+    function funBodyCodeC( typed_out_varname, typed_out_vartype, out_e, idnum2type, idnum2expr, duplicates, dupliidnum2varname )
     {
         var is_out_type_simple = 'string' === typeof typed_out_vartype
         ,   ret = [ ]
         ;
         
-        if (isExpr( out_e ))
+        // Intermediary calculations
+
+        ret.push( '/* intermediary calculations */' );
+
+        for (var n = duplicates.length, i = 0; i < n; i++)
         {
-            
+            var idnum  = duplicates[ i ]
+            ,   d_e    = idnum2expr[ idnum ]
+            ,   d_type = idnum2type[ idnum ]
+            ,   d_name = dupliidnum2varname[ idnum ]
+            ;
+            d_type.substring.call.a;  // Must be a simple type
+            ret.push( d_type + ' ' + d_name + ' = ' + expcode_cast_if_needed( d_type, d_e, d_name ) + ';' );
         }
         
+        // Return
+
+        ret.push( '', '/* output */' );
+
         if (is_out_type_simple)
         {
             // Use return
@@ -282,16 +299,28 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             
         }
         
-        
-        return ret;
+        return ret.map( indent );
 
-
-        function expcode_cast_if_needed( outtype, e )
+        function expcode_cast_if_needed( outtype, e, /*?string?*/outname )
         {
             var etype  = idnum2type[ e[ _EXPR_IDNUM ] ]
             ,   jscode = e[ _JS_CODE ]
             ;
+            if (jscode === outname)
+            {
+                // e.g. intermediary value
+                if (e.length === 1  &&  'string' === typeof e[ 0 ])
+                    jscode = e[ 0 ];
+                else
+                    throw new Error( 'expcode_cast_if_needed: unsupported case!' );
+            }
+
             return outtype === etype  ?  jscode  :  '(' + outtype + ')(' + jscode + ')';
+        }
+
+        function indent( s )
+        {
+            return '  ' + s;
         }
     }
     
