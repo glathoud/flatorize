@@ -46,13 +46,19 @@ pre, code { overflow-wrap: break-word; overflow: hidden; }
 
 <h3 class="anchorable" id="c-matmul342"><code>matmul342</code><a href="#c-matmul342" class="anchor">#</a></h3>
 
+<p>The <a href="flatorize_c.js">flatorize_c.js</a> plugin:</p>
+
+<pre class="prettyprint lang-js"><code>var matmul342_c_code = flatorize.getCodeC( { switcher: matmul342, name: "matmul342" } );</script></code></pre>
+
+<p>...translated <a href="index.html#matmul-generated">optimized JavaScript code</a> into the following C code:</p>
+
 <script type="text/javascript">
-  var matmul342_c_code = flatorize.getCodeC( { switcher: matmul342, name: "matmul342" } );
+var matmul342_c_code = flatorize.getCodeC( { switcher: matmul342, name: "matmul342" } );
 </script>
 
 <pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(matmul342_c_code);</script></code></pre>
 
-<p>This code was generated at page load, by translating the <a href="index.html#matmul-generated">JavaScript</a> code using the <a href="flatorize_c.js">flatorize_c.js</a> plugin.</p>
+<p>Result: a <a href="https://github.com/glathoud/flatorize/blob/master/explore/C/cAll_matmul.results.txt#L46">+180% speedup</a> over the <a href="https://github.com/glathoud/flatorize/blob/master/explore/C/c_matmul_classic.c#L50">original C code</a>.
 
 <script type="text/javascript" src="prettify/prettify.js"></script>
 <script type="text/javascript">setTimeout( prettyPrint );</script>
