@@ -92,6 +92,8 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
     var isExpr = flatorize.isExpr;
 
+    var _EXPR_IDNUM = '__exprIdnum__';
+    
     function propagateType( /*object e.g. `js_direct`*/info, /*?object?*/input_idnum2type )
     {
         // Input
@@ -117,7 +119,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
         if (out_e_isExpr)
         {
-            var idnum = out_e.__exprIdnum__;
+            var idnum = out_e[ _EXPR_IDNUM ];
             idnum.toPrecision.call.a;  // Must be a number
 
             idnum2type[ idnum ] = typed_out_vartype;
@@ -268,7 +270,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                 basictype.substring.call.a;  // Must be a string
                 
                 for (var i = 0; i < n; i++)
-                    ret.push( typed_out_varname + '[' + i + '] = ' + 'xxx' + ';' );
+                    ret.push( typed_out_varname + '[' + i + '] = ' + expcode_cast_if_needed( basictype, out_e[ i ] ) + ';' );
             }
             else
             {
@@ -279,6 +281,15 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         
         
         return ret;
+
+
+        function expcode_cast_if_needed( outtype, e )
+        {
+            var etype  = idnum2type[ e[ _EXPR_IDNUM ] ]
+            ,   jscode = e[ _JS_CODE ]
+            ;
+            return outtype === etype  ?  jscode  :  '(' + outtype + ')(' + jscode + ')';
+        }
     }
     
 })();
