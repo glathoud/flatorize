@@ -158,6 +158,8 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         return idnum2type;
     }
 
+    var _JS_CODE = '__code2str_cache_cfgSTAT';
+
     function generateCodeC( /*object*/info, /*object*/idnum2type, /*?string?*/topFunName )
     // Returns an array of strings (code lines)
     {
@@ -188,18 +190,23 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                 funDeclCodeC( untyped_vararr, typed_in_var, topFunName, typed_out_varname, typed_out_vartype )
                 , '{'
             ];
-            
+        
+            body = funBodyCodeC( typed_out_varname, typed_out_vartype, out_e, idnum2type, idnum2expr )
+
             after = [ '}' ];
         }
-
-
+        else
+        {
+            
+        }
+        
         return before.concat( body ).concat( after );
     }
 
 
     function funDeclCodeC( untyped_vararr, typed_in_var, topFunName, typed_out_varname, typed_out_vartype )
     {
-        var is_out_type_simple   = 'string' === typeof typed_out_vartype
+        var is_out_type_simple = 'string' === typeof typed_out_vartype
         ,   arr = [ ]
         ;
         arr.push( is_out_type_simple  ?  typed_out_vartype  :  'void' );
@@ -229,10 +236,49 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             else if (vartype instanceof Array  &&  vartype.sametype  &&  'string' === typeof vartype[ 0 ])
                 sArr = [ vartype[ 0 ], '*', varname ];
             else
-                throw new Error( 'C: vartype not supported yet.' );
+                throw new Error( 'funDeclCodeC: vartype not supported yet.' );
 
             return sArr.join( ' ' );
         }
     }
 
+    function funBodyCodeC( typed_out_varname, typed_out_vartype, out_e, idnum2type, idnum2expr )
+    {
+        var is_out_type_simple = 'string' === typeof typed_out_vartype
+        ,   ret = [ ]
+        ;
+        
+        'xxx subexpr'
+
+        if (is_out_type_simple)
+        {
+            // Use return
+
+            'xxx return'
+        }
+        else
+        {
+            // Do not use return
+            
+            if (typed_out_vartype instanceof Array  &&  typed_out_vartype.sametype  &&  'string' === typeof typed_out_vartype[ 0 ])
+            {
+                var n = typed_out_vartype.length
+                , basictype = typed_out_vartype[ 0 ]
+                ;
+                basictype.substring.call.a;  // Must be a string
+                
+                for (var i = 0; i < n; i++)
+                    ret.push( typed_out_varname + '[' + i + '] = ' + 'xxx' + ';' );
+            }
+            else
+            {
+                throw new Error( 'funBodyCodeC: vartype not supported yet.' );
+            }
+            
+        }
+        
+        
+        return ret;
+    }
+    
 })();
