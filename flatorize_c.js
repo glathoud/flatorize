@@ -318,7 +318,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                 if (e.length === 1  &&  'string' === typeof e[ 0 ])
                     jscode = e[ 0 ];
                 else
-                    jscode = e.__toStr__( null, { no_paren : true } );
+                    jscode = e.__toStr__(  { dupliidnum2varname: dupliidnum2varname, duplicates : duplicates }, { no_paren : true } );
             }
 
             return outtype === etype  ?  jscode  :  '(' + outtype + ')(' + jscode + ')';
