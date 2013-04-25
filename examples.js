@@ -65,7 +65,7 @@ function generate_small_functions()
     f = function (a,b,c) { return csub( csub(a,cadd(b,c)), cadd(b,c) ); };
     var   d = f(a, b, c);
 
-    f2 = FZ('a,b,c',f);
+    f2 = FZ('a:[2 float],b:[2 float],c:[2 float]->d:[2 float]',f);
     var   d2 = f2(a,b,c);
 
     f2direct = f2.getDirect();

@@ -116,6 +116,10 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         ,   idnum2type = input_idnum2type  ||  {}
         ;
         
+        // Check
+
+        (typed_out_vartype.substring  ||  typed_out_vartype.concat).call.a;   // must be a string or an array
+
         // Determine the type of `out_e`
 
         if (out_e_isExpr)
@@ -314,7 +318,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                 if (e.length === 1  &&  'string' === typeof e[ 0 ])
                     jscode = e[ 0 ];
                 else
-                    throw new Error( 'expcode_cast_if_needed: unsupported case!' );
+                    jscode = e.__toStr__( null, { no_paren : true } );
             }
 
             return outtype === etype  ?  jscode  :  '(' + outtype + ')(' + jscode + ')';

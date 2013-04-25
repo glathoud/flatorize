@@ -29,6 +29,7 @@ pre, code { overflow-wrap: break-word; overflow: hidden; }
 <script type="text/javascript" src="examples.js"></script>
 <script type="text/javascript">generate_small_functions();</script>
 <script type="text/javascript" src="flatorize_c.js"></script>
+<!--script type="text/javascript" src="examples_c.js"></script-->
 </head>
 <body>
 
@@ -44,21 +45,33 @@ pre, code { overflow-wrap: break-word; overflow: hidden; }
 
 <p style="text-align:right">by <a href="http://glat.info">Guillaume Lathoud</a><span class="print">&nbsp;[1]</span>, April 2013</p>
 
+
+
 <h3 class="anchorable" id="c-matmul342"><code>matmul342</code><a href="#c-matmul342" class="anchor">#</a></h3>
 
 <p>The <code>flatorize_c.js</code> <a href="flatorize_c.js">plugin</a>:</p>
 
-<pre class="prettyprint lang-js"><code>var matmul342_c_code = flatorize.getCodeC( { switcher: matmul342, name: "matmul342" } );</script></code></pre>
+<script type="text/javascript" id="script-gen-matmul342_c_code">var matmul342_c_code = flatorize.getCodeC( { switcher: matmul342, name: "matmul342" } );</script>
+<pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(document.getElementById("script-gen-matmul342_c_code").textContent);</script></code></pre>
 
 <p>...translated <a href="index.html#matmul-generated">optimized JavaScript code</a> into the following C code:</p>
 
-<script type="text/javascript">
-var matmul342_c_code = flatorize.getCodeC( { switcher: matmul342, name: "matmul342" } );
-</script>
 
 <pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(matmul342_c_code);</script></code></pre>
+<p class="small">(This code, as a few others below, was produced and inserted as you loaded the page.)</p>
 
 <p>Result: a <a href="https://github.com/glathoud/flatorize/blob/master/explore/C/cAll_matmul.results.txt#L46">+180% speedup</a> over the <a href="https://github.com/glathoud/flatorize/blob/master/explore/C/c_matmul_classic.c#L50">original C code</a>.
+
+
+
+<h3 class="anchorable" id="c-f2"><code>f2</code><a href="#c-f2" class="anchor">#</a></h3>
+
+
+<script type="text/javascript" id="script-gen-f2_c_code">var f2_c_code = flatorize.getCodeC( { switcher: f2, name: "f2" } );</script>
+<pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(document.getElementById("script-gen-f2_c_code").textContent);</script></code></pre>
+
+<pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(f2_c_code);</script></code></pre>
+
 
 <script type="text/javascript" src="prettify/prettify.js"></script>
 <script type="text/javascript">setTimeout( prettyPrint );</script>
