@@ -107,8 +107,9 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         ,   out_e             = info.e
         ,   typed_out_vartype = info.typed_out_vartype
 
-        ,   out_e_isExpr  = isExpr( out_e )
-        ,   out_e_isArray = out_e instanceof Array
+        ,   out_e_isExpr   = isExpr( out_e )
+        ,   out_e_isArray  = out_e instanceof Array
+        ,   out_e_isNumber = typeof out_e === 'number' 
 
         // Output
 
@@ -133,6 +134,10 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         {
             if (isTop  &&  !(typed_out_vartype instanceof Array))
                 throw new Error( '(top) `out_e` and `typed_out_vartype` must be consistent!' );
+        }
+        else if (out_e_isNumber)
+        {
+            idnum2type[ idnum ] = out_e === out_e | 0  ?  'int'  :  'float';
         }
         else
         {

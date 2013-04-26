@@ -385,7 +385,8 @@ function generate_dftrealflat( dftsize )
 
     log('');
     time(name);
-    tmp = FZ.now('arr', dft_exprgenF( Math.round( Math.log( dftsize ) / Math.log( 2 ) ), { real: true } ));
+    tmp = FZ.now('arr:[' + dftsize + ' float]->X:[' + dftsize + '[2 float]]'
+                 , dft_exprgenF( Math.round( Math.log( dftsize ) / Math.log( 2 ) ), { real: true } ));
     timeEnd(name);
     
     eval( name + ' = tmp' );
