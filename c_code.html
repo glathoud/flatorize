@@ -76,13 +76,15 @@ f2 = flatorize('a:[2 float],b:[2 float],c:[2 float]->d:[2 float]',f);
 
 <p>A call to <code>flatorize()</code>:</p>
 <pre class="prettyprint lang-js"><code>// note the type declarations, ignored by JavaScript but used later for C
-matmul342 = flatorize('a:[12 float],b:[8 float]->c:[6 float]', matmul_exprgenF(3,4,2));
+matmul342 = flatorize('a:[12 float],b:[8 float]->c:[6 float]',
+                      matmul_exprgenF(3,4,2));
 </code></pre>
 
 <p>...generates flatorized JavaScript code  (<a href="index.html#matmul">details</a>).</p>
 
 <p>Then, a call to <code>flatorize.getCodeC()</code>:</p>
-<script type="text/javascript" id="script-gen-matmul342_c_code">var matmul342_c_code = flatorize.getCodeC( { switcher: matmul342, name: "matmul342" } );</script>
+<script type="text/javascript" id="script-gen-matmul342_c_code">var matmul342_c_code = flatorize.getCodeC( { switcher: matmul342,
+                                             name: "matmul342" } );</script>
 <pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(document.getElementById("script-gen-matmul342_c_code").textContent);</script></code></pre>
 
 <p>...generates flatorized C code:</p>
@@ -104,13 +106,15 @@ matmul342 = flatorize('a:[12 float],b:[8 float]->c:[6 float]', matmul_exprgenF(3
 
 <p>A call to <code>flatorize()</code>:</p>
 <pre class="prettyprint lang-js"><code>// note the type declarations, ignored by JavaScript but used later for C
-dftreal16flat = flatorize('arr:[16 float]->X:[16 [2 float]]', dft_exprgenF( 4, { real: true } ));
+dftreal16flat = flatorize('arr:[16 float]->X:[16 [2 float]]',
+                          dft_exprgenF( 4, { real: true } ));
 </code></pre>
 
 <p>...generates flatorized JavaScript code  (<a href="index.html#dft">details</a>).</p>
 
 <p>Then, a call to <code>flatorize.getCodeC()</code>:</p>
-<script type="text/javascript" id="script-gen-dftreal16flat_c_code">var dftreal16flat_c_code = flatorize.getCodeC( { switcher: dftreal16flat, name: "dftreal16flat" } );</script>
+<script type="text/javascript" id="script-gen-dftreal16flat_c_code">var dftreal16flat_c_code = flatorize.getCodeC( { switcher: dftreal16flat,
+                                                 name: "dftreal16flat" });</script>
 <pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(document.getElementById("script-gen-dftreal16flat_c_code").textContent);</script></code></pre>
 
 <p>...generates flatorized C code:</p>
