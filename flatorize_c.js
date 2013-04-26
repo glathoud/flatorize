@@ -93,6 +93,11 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
     var isExpr = flatorize.isExpr;
 
+    function typeIsArraySametype( typedecl )
+    {
+        return typedecl instanceof Array  &&  typedecl.sametype;
+    }
+
     var _EXPR_IDNUM = '__exprIdnum__';
     
     function propagateType( /*object e.g. `js_direct`*/info, /*?object?*/input_idnum2type )
@@ -249,8 +254,10 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             var sArr = notconst  ?  []  :  [ 'const' ];
             if ('string' === typeof vartype)
                 sArr.push( vartype, varname );
-            else if (vartype instanceof Array  &&  vartype.sametype  &&  'string' === typeof vartype[ 0 ])
+            else if (typeIsArraySametype( vartype )  &&  'string' === typeof vartype[ 0 ])
                 sArr.push( vartype[ 0 ], '*', varname );
+            else if (typeIsArraySametype( vartype )  &&  typeIsArraySametype( vartype[ 0 ] )  &&    'string' === typeof vartype[ 0 ][ 0 ])
+                sArr.push( vartype[ 0 ][ 0 ], '**', varname );
             else
                 throw new Error( 'funDeclCodeC: vartype not supported yet.' );
 
@@ -292,16 +299,37 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         else
         {
             // Do not use return
-            
-            if (typed_out_vartype instanceof Array  &&  typed_out_vartype.sametype  &&  'string' === typeof typed_out_vartype[ 0 ])
+         
+            var is_level_1, basictype;
+   
+            if (
+                typeIsArraySametype( typed_out_vartype )  &&  
+                    (
+                        (is_level_1 = 'string' === typeof (basictype = typed_out_vartype[ 0 ]))  ||  
+                            (typeIsArraySametype( typed_out_vartype[ 0 ] )  &&  'string' === typeof (basictype = typed_out_vartype[ 0 ][ 0 ]))
+                    )
+            )
             {
                 var n = typed_out_vartype.length
-                , basictype = typed_out_vartype[ 0 ]
+                ,   p = !is_level_1  &&  typed_out_vartype[ 0 ].length
                 ;
                 basictype.substring.call.a;  // Must be a string
                 
                 for (var i = 0; i < n; i++)
-                    ret.push( typed_out_varname + '[' + i + '] = ' + expcode_cast_if_needed( basictype, out_e[ i ] ) + ';' );
+                {
+                    if (is_level_1)
+                    {
+                        ret.push( typed_out_varname + '[' + i + '] = ' + expcode_cast_if_needed( basictype, out_e[ i ] ) + ';' );
+                    }
+                    else
+                    {
+                        for (var j = 0; j < p; j++)
+                        {
+                            ret.push( typed_out_varname + '[' + i + ']' + '[' + j + ']' + ' = ' + expcode_cast_if_needed( basictype, out_e[ i ][ j ] ) + ';' );
+                        }
+                        
+                    }
+                }
             }
             else
             {
@@ -334,5 +362,5 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             return '  ' + s;
         }
     }
-    
+
 })();
