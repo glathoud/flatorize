@@ -17,3 +17,4 @@ pre, code { overflow-wrap: break-word; overflow: hidden; }
 .sad   { color: darkred; }
 .anchorable .anchor { display: none; }
 .anchorable:hover .anchor { display: inline; }
+.pre-scroll { height: 250px; overflow-y: scroll; }
