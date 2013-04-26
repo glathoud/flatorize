@@ -99,7 +99,7 @@ matmul342 = flatorize('a:[12 float],b:[8 float]->c:[6 float]', matmul_exprgenF(3
 
 <p>A call to <code>flatorize()</code>:</p>
 <pre class="prettyprint lang-js"><code>// note the type declarations, ignored by JavaScript but used later for C
-xxx
+dftreal16flat = flatorize('arr:[16 float]->X:[16 [2 float]]', dft_exprgenF( 4, { real: true } ));
 </code></pre>
 
 <p>...generates flatorized JavaScript code  (<a href="index.html#dft">details</a>).</p>
