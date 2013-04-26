@@ -29,7 +29,12 @@
 <p>This page presents a plugin method <code>flatorize.getCodeC()</code> (GitHub <a href="https://github.com/glathoud/flatorize/blob/master/flatorize_c.js">source</a>) that goes on top of <code>flatorize</code> (see the <a href="index.html">main article</a>, GitHub <a href="https://github.com/glathoud/flatorize/blob/master/flatorize.js">source</a>).</p>
 
 <p>Several examples describe how to use <code>flatorize.getCodeC()</code> to speedup C code for mathematical expressions.</p>
-
+<ul class="small">
+  <li><a href="#c-f2">complex numbers (how-to example)</a></li>
+  <li><a href="#c-matmul">matrix multiplication (speedup example)</a></li>
+  <li><a href="#c-dft">Discrete Fourier Transform (speedup example)</a></li>
+</ul>
+  
 
 
 
@@ -65,7 +70,7 @@ f2 = flatorize('a:[2 float],b:[2 float],c:[2 float]->d:[2 float]',f);
 
 
 
-<h3 class="anchorable" id="c-matmul342"><code>matmul342:</code> matrix multiplication (speedup example)<a href="#c-matmul342" class="anchor">#</a></h3>
+<h3 class="anchorable" id="c-matmul"><code>matmul342:</code> matrix multiplication (speedup example)<a href="#c-matmul" class="anchor">#</a></h3>
 
 <p>Task: generate fast C code to multiply a 3x4 matrix with a 4x2 matrix.</p>
 
