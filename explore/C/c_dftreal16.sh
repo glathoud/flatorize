@@ -5,7 +5,7 @@ set -v
 # Compiling
 #
 gcc -o c_dftreal16_print_NITER.bin    c_dftreal16_print_NITER.c 
-# xxx gcc -o c_dftreal16_cooley_tukey.bin   c_dftreal16_cooley_tukey.c
+gcc -o c_dftreal16_cooley_tukey.bin   c_dftreal16_cooley_tukey.c -lm
 gcc -o c_dftreal16flat.bin           c_dftreal16flat.c
 #
 # Testing

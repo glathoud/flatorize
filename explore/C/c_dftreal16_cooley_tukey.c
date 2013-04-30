@@ -6,38 +6,40 @@
 extern const int   NITER;
 extern const int   N;
 extern const int   epsilon;
-extern const float x_rand16real[];
-extern const float X_rand16real[][2];
+extern       double PI;
+extern const double x_rand16real[];
+extern const double X_rand16real[][2];
 
-const float PI = 2.0 * (float)(acos( 1.0 ));
-
-void dftreal16flat ( const float * arr, /*output:*/ float ** X );
+void dftreal_cooley_tukey( const double* arr, const int N, const int radix, const int offset, const int s, const int out_offset, double PI,
+                           /*output:*/double** X 
+                           );
 
 int main()
 {
   int i;
 
+  double PI = getPI();
   
-  float ** X = malloc( N * sizeof( float* ));
+  double ** X = malloc( N * sizeof( double* ));
 
   for (i = 0; i < N; i++)
     {
-      X[ i ] = malloc( sizeof( float* ));
+      X[ i ] = malloc( sizeof( double* ));
     }
   
-  int radix = (int)(round( log( N ) / log( 2.0 ) ));
+  int radix = (int)(round( log( (float)(N) ) / log( 2.0 ) ));
 
   /* --- Sanity check --- */
 
-  dftreal_cooley_tukey( x_rand16real, N, radix, 0, 1, 0, X );
+  dftreal_cooley_tukey( x_rand16real, N, radix, 0, 1, 0, PI, X );
   
   int ok_all = 1;
   for (i = 0; i < N; i++)
     {
-      float*       result_i   = X[ i ];
-      const float* expected_i = X_rand16real[ i ];
-      float  delta_0 = fabs( result_i[ 0 ] - expected_i[ 0 ] );
-      float  delta_1 = fabs( result_i[ 1 ] - expected_i[ 1 ] );
+      double*       result_i   = X[ i ];
+      const double* expected_i = X_rand16real[ i ];
+      double  delta_0 = fabs( result_i[ 0 ] - expected_i[ 0 ] );
+      double  delta_1 = fabs( result_i[ 1 ] - expected_i[ 1 ] );
       int ok = EPSILON > delta_0  &&  EPSILON > delta_1;
       /*printf( "%d: %g %g, %g %g, %g %g -> ok: %d\n", i, result_i[ 0 ], result_i[ 1 ], expected_i[ 0 ], expected_i[ 1 ], delta_0, delta_1, ok );*/
       ok_all &= ok;
@@ -51,7 +53,7 @@ int main()
   
   /* --- Performance test --- */
   for (i = NITER ; i-- ; )
-    dftreal16flat( x_rand16real, X );
+    dftreal_cooley_tukey( x_rand16real, N, radix, 0, 1, 0, PI, X );
   
 
   /* --- Cleanup --- */
@@ -66,7 +68,9 @@ int main()
   return 0;
 }
 
-void dftreal_cooley_tukey( const float* arr, const int N, const int radix, const int offset, const int s, const int out_offset, /*output:*/float** X )
+void dftreal_cooley_tukey( const double* arr, const int N, const int radix, const int offset, const int s, const int out_offset, double PI, 
+                           /*output:*/double** X 
+                           )
 /*
 // *Implement* the Discrete Fourier Transform (DFT)
 // for a 2-radix (N == 1 << radix)
@@ -83,8 +87,8 @@ void dftreal_cooley_tukey( const float* arr, const int N, const int radix, const
     }
   else if (radix < 2)
     {
-      float t = arr[ offset ];
-      float u = arr[ offset + s ];
+      double t = arr[ offset ];
+      double u = arr[ offset + s ];
       X[ out_offset     ][ 0 ] = t + u;
       X[ out_offset + 1 ][ 0 ] = t - u;
     }
@@ -95,27 +99,27 @@ void dftreal_cooley_tukey( const float* arr, const int N, const int radix, const
       int s2        = s << 1;
 
       /* left */
-      dftreal_cooley_tukey( arr, halfN, radix_m_1, offset,      s2, out_offset,      X );
+      dftreal_cooley_tukey( arr, halfN, radix_m_1, offset,      s2, out_offset,      PI, X );
 
       /* right */
-      dftreal_cooley_tukey( arr, halfN, radix_m_1, offset + s2, s2, out_offset + s2, X );
+      dftreal_cooley_tukey( arr, halfN, radix_m_1, offset + s2, s2, out_offset + s2, PI, X );
       int k;
       for (k = 0; k < halfN; k++)
         {
-          float * ct = arr[ offset      + k ];
-          float t_re = ct[ 0 ];
-          float t_im = ct[ 1 ];
+          double * ct = X[ offset      + k ];
+          double t_re = ct[ 0 ];
+          double t_im = ct[ 1 ];
 
-          float * cu = arr[ offset + s2 + k ];
-          float u_re = cu[ 0 ];
-          float u_im = cu[ 1 ];
+          double * cu = X[ offset + s2 + k ];
+          double u_re = cu[ 0 ];
+          double u_im = cu[ 1 ];
 
-          float angle = (2 * PI * k) / N;
-          float a_re = cos( v_angle );
-          float a_im = sin( v_angle );
+          double angle = (2 * PI * k) / N;
+          double a_re = cos( angle );
+          double a_im = sin( angle );
 
-          float v_re = u_re * a_re - u_im * a_im;
-          float v_im = u_re * a_im + u_im * a_re;
+          double v_re = u_re * a_re - u_im * a_im;
+          double v_im = u_re * a_im + u_im * a_re;
 
           /* In-place finition of left and right */
 
