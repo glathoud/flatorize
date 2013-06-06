@@ -29,9 +29,11 @@ int main()
   
   int radix = (int)(round( log( (float)(N) ) / log( 2.0 ) ));
 
+  printf("radix: %d\n", radix);
+
   /* --- Sanity check --- */
 
-  dftreal_cooley_tukey( x_rand16real, N, radix, 0, 1, 0, PI, X );
+  dftreal_cooley_tukey( x_rand16real, N, 0, radix, 1, 0, PI, X );
   
   int ok_all = 1;
   for (i = 0; i < N; i++)
@@ -53,7 +55,7 @@ int main()
   
   /* --- Performance test --- */
   for (i = NITER ; i-- ; )
-    dftreal_cooley_tukey( x_rand16real, N, radix, 0, 1, 0, PI, X );
+    dftreal_cooley_tukey( x_rand16real, N, 0, radix, 1, 0, PI, X );
   
 
   /* --- Cleanup --- */
@@ -68,7 +70,7 @@ int main()
   return 0;
 }
 
-void dftreal_cooley_tukey( const double* arr, const int N, const int radix, const int offset, const int s, const int out_offset, double PI, 
+void dftreal_cooley_tukey( const double* arr, const int N, const int offset, const int radix, const int s, const int out_offset, double PI, 
                            /*output:*/double** X 
                            )
 /*
@@ -78,8 +80,16 @@ void dftreal_cooley_tukey( const double* arr, const int N, const int radix, cons
 //
 // Based on:
 // http://en.wikipedia.org/wiki/Cooley%E2%80%93Tukey_FFT_algorithm#Pseudocode
+//
+// xxx
+// Actually in-place issues more complicated than I thought
+// http://en.wikipedia.org/wiki/Cooley%E2%80%93Tukey_FFT_algorithm#Data_reordering.2C_bit_reversal.2C_and_in-place_algorithms
+// 
+// So we have to go first for a (possibly simpler) out-of-place implementation.
 */
 {
+  printf( "dftreal_cooley_tukey N:%d, offset:%d, radix:%d, s:%d, out_offset:%d, PI:%f\n", N, offset, radix, s, out_offset, PI );
+
   if (radix < 1)
     {
       X[ out_offset ][ 0 ] = arr[ offset ];
@@ -87,10 +97,19 @@ void dftreal_cooley_tukey( const double* arr, const int N, const int radix, cons
     }
   else if (radix < 2)
     {
-      double t = arr[ offset ];
-      double u = arr[ offset + s ];
-      X[ out_offset     ][ 0 ] = t + u;
-      X[ out_offset + 1 ][ 0 ] = t - u;
+      double * ct = X[ offset ];
+      double t_re = ct[ 0 ];
+      double t_im = ct[ 1 ];
+
+      double * cu = X[ offset + s ];
+      double u_re = cu[ 0 ];
+      double u_im = cu[ 1 ];
+
+      X[ out_offset     ][ 0 ] = t_re + u_re;
+      X[ out_offset     ][ 0 ] = t_im + u_im;
+
+      X[ out_offset + 1 ][ 0 ] = t_re - u_re;
+      X[ out_offset + 1 ][ 1 ] = t_im - u_im;
     }
   else
     {
@@ -99,10 +118,10 @@ void dftreal_cooley_tukey( const double* arr, const int N, const int radix, cons
       int s2        = s << 1;
 
       /* left */
-      dftreal_cooley_tukey( arr, halfN, radix_m_1, offset,      s2, out_offset,      PI, X );
+      dftreal_cooley_tukey( arr, halfN, offset,     radix_m_1, s2, out_offset,         PI, X );
 
       /* right */
-      dftreal_cooley_tukey( arr, halfN, radix_m_1, offset + s2, s2, out_offset + s2, PI, X );
+      dftreal_cooley_tukey( arr, halfN, offset + s, radix_m_1, s2, out_offset + s, PI, X );
       int k;
       for (k = 0; k < halfN; k++)
         {
@@ -110,7 +129,7 @@ void dftreal_cooley_tukey( const double* arr, const int N, const int radix, cons
           double t_re = ct[ 0 ];
           double t_im = ct[ 1 ];
 
-          double * cu = X[ offset + s2 + k ];
+          double * cu = X[ offset + s  + k ];
           double u_re = cu[ 0 ];
           double u_im = cu[ 1 ];
 
