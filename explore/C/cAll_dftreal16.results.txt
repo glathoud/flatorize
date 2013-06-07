@@ -17,7 +17,7 @@ real	0m0.997s
 user	0m0.992s
 sys	0m0.000s
 #
-time c_dftreal16fftw3.bin    # FFTW3 lib was compiled with -O3 (speed advantage)
+time c_dftreal16fftw3.bin    # FFTW3.3.3 lib was compiled with -O3 (speed advantage)
 
 real	0m0.562s
 user	0m0.552s
