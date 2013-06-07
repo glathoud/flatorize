@@ -1,0 +1,53 @@
+$ cAll_dftreal16.sh 
+#
+# Compiling
+#
+gcc -o c_dftreal16_print_NITER.bin    c_dftreal16_print_NITER.c 
+gcc -o c_dftreal16flat.bin           c_dftreal16flat.c
+gcc -o c_dftreal16fftw3.bin          c_dftreal16fftw3.c -lfftw3 -lm
+#
+# Testing
+#
+c_dftreal16_print_NITER.bin
+NITER: 1e+07
+#
+time c_dftreal16flat.bin     # Not compiled with -O3
+
+real	0m0.997s
+user	0m0.992s
+sys	0m0.000s
+#
+time c_dftreal16fftw3.bin    # FFTW3 lib was compiled with -O3 (speed advantage)
+
+real	0m0.562s
+user	0m0.552s
+sys	0m0.004s
+#
+set +v
+--------
+#
+# Compiling
+#
+gcc -O3 -c -o cO3_dftreal16_common.o    cO3_dftreal16_common.c
+gcc -o cO3_dftreal16_print_NITER.bin    cO3_dftreal16_common.o cO3_dftreal16_print_NITER.c 
+gcc -o cO3_dftreal16flat.bin           cO3_dftreal16_common.o cO3_dftreal16flat.c
+gcc -o cO3_dftreal16fftw3.bin          cO3_dftreal16_common.o cO3_dftreal16fftw3.c -lfftw3 -lm
+#
+# Testing
+#
+cO3_dftreal16_print_NITER.bin
+NITER: 1e+07
+#
+time cO3_dftreal16flat.bin
+
+real	0m0.393s
+user	0m0.388s
+sys	0m0.000s
+#
+time cO3_dftreal16fftw3.bin
+
+real	0m0.563s
+user	0m0.560s
+sys	0m0.000s
+#
+set +v

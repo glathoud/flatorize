@@ -5,15 +5,15 @@ set -v
 # Compiling
 #
 gcc -o c_dftreal16_print_NITER.bin    c_dftreal16_print_NITER.c 
-gcc -o c_dftreal16_cooley_tukey.bin   c_dftreal16_cooley_tukey.c -lm
 gcc -o c_dftreal16flat.bin           c_dftreal16flat.c
+gcc -o c_dftreal16fftw3.bin          c_dftreal16fftw3.c -lfftw3 -lm
 #
 # Testing
 #
 c_dftreal16_print_NITER.bin
 #
-# xxx time c_dftreal16_cooley_tukey.bin
+time c_dftreal16flat.bin     # Not compiled with -O3
 #
-time c_dftreal16flat.bin
+time c_dftreal16fftw3.bin    # FFTW3 lib was compiled with -O3 (speed advantage)
 #
 set +v
