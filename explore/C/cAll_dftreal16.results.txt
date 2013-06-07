@@ -40,18 +40,25 @@ NITER: 1e+07
 #
 time cO3_dftreal16fftw3.bin
 
-real	0m0.563s
-user	0m0.560s
+real	0m0.559s
+user	0m0.556s
 sys	0m0.000s
+#
+time cO3_dftreal16fftw3real.bin
+
+real	0m0.347s
+user	0m0.344s
+sys	0m0.004s
 #
 time cO3_dftreal16flat.bin
 
-real	0m0.393s
-user	0m0.388s
-sys	0m0.000s
+real	0m0.361s
+user	0m0.352s
+sys	0m0.004s
 #
 set +v
 
-# speedup:
-# > (* 100 (- (/ 1 0.393) (/ 1 0.563)))
-# 76.83303278058744
+# speed comparison:
+# (* 100 (- (/ 1 0.361) (/ 1 0.347)))
+# -11.17612779103836    
+# (slight slowdown)

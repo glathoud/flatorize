@@ -34,7 +34,7 @@
   <li><a href="#c-matmul">matrix multiplication (speedup example)</a><br>
 ...<code>flatorize-c</code> brings a <a href="https://github.com/glathoud/flatorize/blob/master/explore/C/cAll_matmul.results.txt#L48">+60% speedup</a> over the <a href="https://github.com/glathoud/flatorize/blob/master/explore/C/c_matmul_classic.c#L50">original C code</a>.</li>
   <li><a href="#c-dft">Discrete Fourier Transform (speedup example)</a><br>
-...<code>flatorize-c</code>, compiled with just <code>-O3</code>, already brings a <a href="https://github.com/glathoud/flatorize/blob/master/explore/C/cAll_dftreal16.results.txt#L43">+43% speedup</a> over the highly optimized <a href="http://www.fftw.org/fftw-3.3.3.tar.gz">FFTW&nbsp;3.3.3</a>.
+...<code>flatorize-c</code>, not fully optimized yet (still duplicates the Hermitian output), yields only a <a href="https://github.com/glathoud/flatorize/blob/master/explore/C/cAll_dftreal16.results.txt#L43">-11% slowdown</a> over the highly optimized <a href="http://www.fftw.org/fftw-3.3.3.tar.gz">FFTW&nbsp;3.3.3</a>.
 </li>
 </ul>
   
@@ -125,7 +125,7 @@ dftreal16flat = flatorize('arr:[16 float]->X:[16 [2 float]]',
 <pre class="prettyprint lang-js pre-scroll"><code>// dftreal16flat_c_code
 <script type="text/javascript">document.write(dftreal16flat_c_code);</script></code></pre>
 
-<p>...which, compiled with just <code>-O3</code>, already brings a <a href="https://github.com/glathoud/flatorize/blob/master/explore/C/cAll_dftreal16.results.txt#L43">+43% speedup</a> over the highly optimized <a href="http://www.fftw.org/fftw-3.3.3.tar.gz">FFTW&nbsp;3.3.3</a>.</p>
+<p>...which, although not fully optimized yet (still duplicates the Hermitian output), yields only a <a href="https://github.com/glathoud/flatorize/blob/master/explore/C/cAll_dftreal16.results.txt#L43">-11% slowdown</a> over the highly optimized <a href="http://www.fftw.org/fftw-3.3.3.tar.gz">FFTW&nbsp;3.3.3</a>.</p>
 
 
 
