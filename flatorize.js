@@ -92,13 +92,14 @@
                 {
                     var   x = part.x
                     , where = part.where
-                    ,   ret = code2str( x, opt, topopt ) + '[' + 
+                    ,   ret = code2str( x, opt, topopt ) + 
                         (
                             'number' === typeof where 
-                                ? where
-                                : '"' + part.where.replace( /"/g, '\\"' ) + '"'
-                        ) + 
-                        ']'
+                                ? '[' + where + ']'
+                                : /^[a-zA-Z_][a-zA-Z_0-9]*$/.test( where )
+                                ? '.' + where
+                                : '["' + part.where.replace( /"/g, '\\"' ) + '"]'
+                        )                        
                     ;
                 }
                 else
