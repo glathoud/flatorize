@@ -3,23 +3,23 @@ $ cAll_dftreal16.sh
 # Compiling
 #
 gcc -o c_dftreal16_print_NITER.bin    c_dftreal16_print_NITER.c 
-gcc -o c_dftreal16flat.bin           c_dftreal16flat.c
 gcc -o c_dftreal16fftw3.bin          c_dftreal16fftw3.c -lfftw3 -lm
+gcc -o c_dftreal16flat.bin           c_dftreal16flat.c
 #
 # Testing
 #
 c_dftreal16_print_NITER.bin
 NITER: 1e+07
 #
-time c_dftreal16fftw3.bin    # FFTW3.3.3 lib was compiled with -O3 (speed advantage)
+time c_dftreal16fftw3.bin    # FFTW3 lib was compiled with -O3 (speed advantage)
 
-real	0m0.562s
-user	0m0.552s
-sys	0m0.004s
+real	0m0.569s
+user	0m0.564s
+sys	0m0.000s
 #
 time c_dftreal16flat.bin     # Not compiled with -O3
 
-real	0m0.997s
+real	0m0.996s
 user	0m0.992s
 sys	0m0.000s
 #
@@ -28,37 +28,47 @@ set +v
 #
 # Compiling
 #
-gcc -O3 -c -o cO3_dftreal16_common.o    cO3_dftreal16_common.c
+gcc -O3 -fomit-frame-pointer -mtune=native -malign-double -fstrict-aliasing -fno-schedule-insns -ffast-math -c -o cO3_dftreal16_common.o    cO3_dftreal16_common.c  # Same optimization flags as used by in FFTW3.3.3
 gcc -o cO3_dftreal16_print_NITER.bin    cO3_dftreal16_common.o cO3_dftreal16_print_NITER.c 
-gcc -o cO3_dftreal16flat.bin           cO3_dftreal16_common.o cO3_dftreal16flat.c
+#
 gcc -o cO3_dftreal16fftw3.bin          cO3_dftreal16_common.o cO3_dftreal16fftw3.c -lfftw3 -lm
+gcc -o cO3_dftreal16flat.bin           cO3_dftreal16_common.o cO3_dftreal16flat.c
+gcc -o cO3_dftreal16fftw3real.bin          cO3_dftreal16_common.o cO3_dftreal16fftw3real.c -lfftw3 -lm
+gcc -o cO3_dftreal16flat_hh.bin           cO3_dftreal16_common.o cO3_dftreal16flat_hh.c
 #
 # Testing
 #
 cO3_dftreal16_print_NITER.bin
 NITER: 1e+07
 #
+#--- First comparison: compute the full X[0..N-1], ignoring that x is a real signal
+#
 time cO3_dftreal16fftw3.bin
 
-real	0m0.559s
-user	0m0.556s
-sys	0m0.000s
-#
-time cO3_dftreal16fftw3real.bin
-
-real	0m0.347s
-user	0m0.344s
+real	0m0.574s
+user	0m0.568s
 sys	0m0.004s
 #
 time cO3_dftreal16flat.bin
 
-real	0m0.361s
-user	0m0.352s
-sys	0m0.004s
+real	0m0.359s
+user	0m0.356s
+sys	0m0.000s
 #
-set +v
+#--- Second comparison: compute only X[0..1+N/2] because x is a real signal
+#
+time cO3_dftreal16fftw3real.bin
 
-# speed comparison:
-# (* 100 (- (/ 1 0.361) (/ 1 0.347)))
-# -11.17612779103836    
-# (slight slowdown)
+real	0m0.337s
+user	0m0.332s
+sys	0m0.000s
+#
+time cO3_dftreal16flat_hh.bin
+
+real	0m0.291s
+user	0m0.288s
+sys	0m0.000s
+#
+# speed of fftw3:   (/ 1e+07 0.337) => 29.7e6 iters/second
+# speed of flat_hh: (/ 1e+07 0.291) => 34.3e6 iters/second
+# speedup: (* 100 (/ (- (/ 1 0.291) (/ 1 0.337)) (/ 1 0.337))) => 16%

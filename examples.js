@@ -543,15 +543,20 @@ function dft_exprgenF( radix, /*?object?*/opt )
 // Based on:
 // <a href='http://en.wikipedia.org/wiki/Cooley%E2%80%93Tukey_FFT_algorithm#Pseudocode'>http://en.wikipedia.org/wiki/Cooley%E2%80%93Tukey_FFT_algorithm#Pseudocode</a>
 //
-// Options: `opt = { real : true | false (default) }`
+// Options: `opt = { real : true | false (default), hermihalf : true | false (default), true only makes sense when real==true as well }`
 {
-    var real = opt && opt.real;
+    var      real = opt && opt.real
+    ,   hermihalf = opt && opt.hermihalf
+    ;
 
     return exprfun;
 
     function exprfun(/*string*/arrname)
     {
-        return dft_ditfft2( arrname, 0, radix, 1 ); 
+        return hermihalf
+            ? dft_ditfft2( arrname, 0, radix, 1 ).slice( 0, 1 + (1 << (radix - 1)))
+            : dft_ditfft2( arrname, 0, radix, 1 )
+        ;
     }
 
     function dft_ditfft2( arrname, offset, radix, s )

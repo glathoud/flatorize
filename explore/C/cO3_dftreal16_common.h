@@ -32,3 +32,5 @@ static const double X_rand16real[][2] = {
 };
 
 void dftreal16flat ( const double * arr, /*output:*/ double ** X );
+
+void dftreal16flat_hh ( const double * arr, /*output:*/ double ** X );
