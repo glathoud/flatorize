@@ -87,16 +87,34 @@
             ret.__isExpr__ = function () { return true; };
             ret.__toStr__  = function ( /*?object?*/opt, /*?object?*/topopt ) 
             { 
-                // var ret = this.map( function (x) { return code2str( x, opt ); } ).join(' ');
-                // For performance reasons, implemented using a for loop.
+                var part = this.part;
+                if (part)
+                {
+                    var   x = part.x
+                    , where = part.where
+                    ,   ret = code2str( x, opt, topopt ) + 
+                        (
+                            'number' === typeof where 
+                                ? '[' + where + ']'
+                                : /^[a-zA-Z_][a-zA-Z_0-9]*$/.test( where )
+                                ? '.' + where
+                                : '["' + part.where.replace( /"/g, '\\"' ) + '"]'
+                        )                        
+                    ;
+                }
+                else
+                {
+                    // var ret = this.map( function (x) { return code2str( x, opt ); } ).join(' ');
+                    // For performance reasons, implemented using a for loop.
+                    
+                    var n = this.length
+                    , ret = new Array( n )
+                    ;
+                    for (var i = 0; i < n; i++)
+                        ret[ i ] = code2str( this[ i ], opt );
+                    ret = ret.join(' ');
+                }
                 
-                var n = this.length
-                , ret = new Array( n )
-                ;
-                for (var i = 0; i < n; i++)
-                    ret[ i ] = code2str( this[ i ], opt );
-                ret = ret.join(' ');
-
                 if (topopt  &&  topopt.no_paren)
                     return ret;
                 
