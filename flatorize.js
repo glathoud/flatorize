@@ -33,14 +33,11 @@
     flatorize.expr = expr;    // To build and expression.
     flatorize.part = part;    // To extract a property of an array or object.
 
-    // Tools used for other languages, e.g. ./flatorize_c.js
-    flatorize.isExpr = isExpr;
-    
     // ---------- Public API implementation ----------
 
     function part( x, where )
     {
-        if ('string' !== typeof x  &&  !isExpr( x ))   // Try to solve right away
+        if ('string' !== typeof x  &&  !x.__isExpr__)   // Try to solve right away
             return x[ where ];
 
         // Else form an expression string, and wrap it into `expr()` to
@@ -63,7 +60,7 @@
     {
         var ret = expr_simplify( Array.prototype.slice.call( arguments ) );
 
-        if (ret.length === 1  &&  isExpr(ret[0]))
+        if (ret.length === 1  &&  ret[0].__isExpr__)
             return ret[0];
 
         // Try to find an already existing expression that matches.
@@ -84,7 +81,7 @@
         {
             // Not found. Create a new expression object `ret`
             
-            ret.__isExpr__ = function () { return true; };
+            ret.__isExpr__ = true;  // not safe against overwrite, but faster than a function
             ret.__toStr__  = function ( /*?object?*/opt, /*?object?*/topopt ) 
             { 
                 var part = this.part;
@@ -132,7 +129,7 @@
             for (var n = ret.length, i = 0; i < n; i++)
             {
                 var x = ret[ i ];
-                if (!isExpr(x))
+                if (!x.__isExpr__)
                     continue;
 
                 var x_idnum = x.__exprIdnum__;
@@ -399,7 +396,7 @@
             for (var i = n; i--;)
             {
                 var x_i = x[ i ];
-                if (isExpr(x_i))
+                if (x_i.__isExpr__)
                 {
                     tmp[ i ] = '#' + x_i.__exprIdnum__;
                 }
@@ -478,7 +475,7 @@
         {
             ret = '' + code;
         }
-        else if (is_expr = isExpr( code ))
+        else if (is_expr = code.__isExpr__)
         {
             ret = expr2str( code, cfg, topopt );
         }
@@ -525,10 +522,6 @@
             code[ CODE2STR_CACHE ] = ret;
         
         return ret;
-    }
-    function isExpr( code )
-    {
-        return code.__isExpr__  &&  code.__isExpr__();
     }
     function expr2str( expr, opt, topopt )
     {

@@ -11,6 +11,7 @@ gcc -o cO3_dftreal16fftw3.bin          cO3_dftreal16_common.o cO3_dftreal16fftw3
 gcc -o cO3_dftreal16flat.bin           cO3_dftreal16_common.o cO3_dftreal16flat.c
 gcc -o cO3_dftreal16fftw3real.bin          cO3_dftreal16_common.o cO3_dftreal16fftw3real.c -lfftw3 -lm
 gcc -o cO3_dftreal16flat_hh.bin           cO3_dftreal16_common.o cO3_dftreal16flat_hh.c
+gcc -o cO3_dftreal16fftw3real_measure.bin          cO3_dftreal16_common.o cO3_dftreal16fftw3real_measure.c -lfftw3 -lm -lrt
 #
 # Testing
 #
