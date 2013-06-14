@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fftw3.h>
-#include "cO3_dftreal16_common.h"
 
 extern const int   NITER;
 extern const int   N;
@@ -14,27 +13,29 @@ int main()
 {
   int i;
 
-  /* Prepare input */
-  fftw_complex * x_in = (fftw_complex*) fftw_malloc( N * sizeof( fftw_complex ));
-  
+  /* Prepare input (need to copy because `x_randreal` has `const`) */
+
+  double * x_in = (double *) malloc( N * sizeof( double ) );
   for (i = 0; i < N; i++)
     {
-      x_in[ i ][ 0 ] = x_randreal[ i ];
-      x_in[ i ][ 1 ] = 0;
+      x_in[ i ] = x_randreal[ i ];
     }
   
+
   /* Prepare output */
-  fftw_complex * X    = (fftw_complex*) fftw_malloc( N * sizeof( fftw_complex ));
+  const int N_out = (N >> 1) + 1;
+
+  fftw_complex * X    = (fftw_complex*) fftw_malloc( N_out * sizeof( fftw_complex ));
   
   /* Prepare FFTW plan*/
-  fftw_plan p = fftw_plan_dft_1d(N, x_in, X, FFTW_FORWARD, FFTW_ESTIMATE);
+  fftw_plan p = fftw_plan_dft_r2c_1d(N, x_in, X, FFTW_ESTIMATE);
   
   /* --- Sanity check --- */
 
   fftw_execute( p );
   
   int ok_all = 1;
-  for (i = 0; i < N; i++)
+  for (i = 0; i < N_out; i++)
     {
       const double* result_i = X[ i ];
       const double* expected_i = X_randreal[ i ];
@@ -56,8 +57,8 @@ int main()
     fftw_execute( p );
   
   /* --- Cleanup --- */
+  free( x_in );
   fftw_destroy_plan( p );
-  fftw_free( x_in );  
   fftw_free( X );
   
   /* printf("\nDone.\n"); */

@@ -6,8 +6,8 @@
 extern const int   NITER;
 extern const int   N;
 extern const int   epsilon;
-extern const double x_rand16real[];
-extern const double X_rand16real[][2];
+extern const double x_randreal[];
+extern const double X_randreal[][2];
 
 extern void dftreal16flat ( const double * arr, /*output:*/ double ** X );
 
@@ -25,13 +25,13 @@ int main()
 
   /* --- Sanity check --- */
 
-  dftreal16flat( x_rand16real, X );
+  dftreal16flat( x_randreal, X );
   
   int ok_all = 1;
   for (i = 0; i < N; i++)
     {
       double*       result_i   = X[ i ];
-      const double* expected_i = X_rand16real[ i ];
+      const double* expected_i = X_randreal[ i ];
       double  delta_0 = fabs( result_i[ 0 ] - expected_i[ 0 ] );
       double  delta_1 = fabs( result_i[ 1 ] - expected_i[ 1 ] );
       int ok = EPSILON > delta_0  &&  EPSILON > delta_1;
@@ -47,7 +47,7 @@ int main()
   
   /* --- Performance test --- */
   for (i = NITER ; i-- ; )
-    dftreal16flat( x_rand16real, X );
+    dftreal16flat( x_randreal, X );
   
 
   /* --- Cleanup --- */

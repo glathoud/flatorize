@@ -8,8 +8,8 @@
 extern const int   NITER;
 extern const int   N;
 extern const int   epsilon;
-extern const double x_rand16real[];
-extern const double X_rand16real[][2];
+extern const double x_randreal[];
+extern const double X_randreal[][2];
 
 int main()
 {
@@ -35,9 +35,9 @@ int main()
   fftw_plan_duration = (double)(fftw_plan_end.tv_sec - fftw_plan_start.tv_sec) + 1e-9 * (double)(fftw_plan_end.tv_nsec - fftw_plan_start.tv_nsec); // get elapsed time in ns
   printf("fftw_plan_duration: %g\n", fftw_plan_duration);
 
-  /* Prepare input (need to copy because `x_rand16real` has `const`) */
+  /* Prepare input (need to copy because `x_randreal` has `const`) */
   for (i = 0; i < N; i++)
-      x_in[ i ] = x_rand16real[ i ];
+      x_in[ i ] = x_randreal[ i ];
   
   /* --- Sanity check --- */
 
@@ -47,7 +47,7 @@ int main()
   for (i = 0; i < N_out; i++)
     {
       const double* result_i = X[ i ];
-      const double* expected_i = X_rand16real[ i ];
+      const double* expected_i = X_randreal[ i ];
       double  delta_0 = fabs( result_i[ 0 ] - expected_i[ 0 ] );
       double  delta_1 = fabs( result_i[ 1 ] - expected_i[ 1 ] );
       int ok = EPSILON > delta_0  &&  EPSILON > delta_1;
