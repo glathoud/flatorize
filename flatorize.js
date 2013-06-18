@@ -385,7 +385,7 @@
             arr = expr_simplify_multiplications( arr );
             arr = expr_simplify_additions( arr );
             arr = expr_simplify_substractions( arr );
-
+            arr = expr_simplify_double_negations( arr );
         }
 
         return arr;
@@ -725,6 +725,14 @@
             
         }
         
+        return arr;
+    }
+
+    function expr_simplify_double_negations( arr )
+    {
+        if (2 === arr.length  &&  arr[0] === '-'  &&  arr[1] instanceof Array  &&  arr[1].length === 2  &&  arr[1][0] === '-')
+            return arr[1][1];
+
         return arr;
     }
     
