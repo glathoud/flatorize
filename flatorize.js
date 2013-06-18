@@ -60,8 +60,12 @@
     {
         var ret = expr_simplify( Array.prototype.slice.call( arguments ) );
 
-        if (ret.length === 1  &&  ret[0].__isExpr__)
-            return ret[0];
+        if (ret.length === 1)
+        {
+            if (ret[0].__isExpr__  ||  'number' === typeof ret[0])
+                return ret[0];
+        }
+            
 
         // Try to find an already existing expression that matches.
         var idstr2expr = exprCache.idstr2expr
