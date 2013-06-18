@@ -5,7 +5,7 @@ set -v
 # Compiling
 #
 # quite long - uncomment if needed, got circa 36s with it
-# gcc -O3 -fomit-frame-pointer -mtune=native -malign-double -fstrict-aliasing -fno-schedule-insns -ffast-math -c -o cO3_dftreal1024_common.o    cO3_dftreal1024_common.c  # Same optimization flags as used by in FFTW3.3.3
+gcc -O3 -fomit-frame-pointer -mtune=native -malign-double -fstrict-aliasing -fno-schedule-insns -ffast-math -c -o cO3_dftreal1024_common.o    cO3_dftreal1024_common.c  # Same optimization flags as used by in FFTW3.3.3
 #
 # 35s variant  # gcc -O3 -ffast-math -c -o cO3_dftreal1024_common.o    cO3_dftreal1024_common.c  # xxx
 # 1m8s variant # gcc  -c -o cO3_dftreal1024_common.o    cO3_dftreal1024_common.c  # xxx

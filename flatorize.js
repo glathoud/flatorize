@@ -386,7 +386,18 @@
             arr = expr_simplify_additions( arr );
             arr = expr_simplify_substractions( arr );
             arr = expr_simplify_double_negations( arr );
+            arr = expr_simplify_plus_minus( arr );
         }
+
+        while (true)
+        {
+            var newarr = expr_try_to_simplify_product_associativity( arr );
+            if (!newarr)
+                break;
+
+            arr = newarr;
+        }
+        
 
         return arr;
     }
@@ -734,6 +745,120 @@
             return arr[1][1];
 
         return arr;
+    }
+
+    function expr_simplify_plus_minus( arr )
+    {
+        for (var i = arr.length - 1; i--;)
+        {
+            if (arr[i] === '+'  &&  'number' === typeof arr[i+1]  &&  arr[i+1] < 0)
+            {
+                arr[i]   = '-';
+                arr[i+1] = -arr[i+1];
+            }
+        }
+        return arr;
+    }
+
+    function expr_try_to_simplify_product_associativity( arr )
+    // "Try": may return nulley if no modification found, else a new
+    // array.
+    {
+        var rx_pm = /(?:\+|\-)/
+            , epsilon = 1e-14
+        ;
+
+        if (Math.abs(arr[0] - 0.7071067811865476) < epsilon)
+            'xxx';
+
+        if ((arr.length === 7  ||  rx_pm.test( arr[7] ))
+            &&
+            (arr[1] === '*'  &&  rx_pm.test( arr[3] )  &&  arr[5] === '*')
+           )
+        {
+            var additive_rest = arr.slice( 7 )
+            ,   middle
+            ;
+            if (null != (middle = middle_if_almost_equal(arr[0], arr[4])))
+                return [ middle, '*', expr( arr[2], arr[3], arr[6] ) ].concat( additive_rest );
+
+            if (null != (middle = middle_if_almost_equal(arr[2], arr[4])))
+                return [ middle, '*', expr( arr[0], arr[3], arr[6] ) ].concat( additive_rest );
+
+            if (null != (middle = middle_if_almost_equal(arr[0], arr[6])))
+                return [ middle, '*', expr( arr[2], arr[3], arr[4] ) ].concat( additive_rest );
+
+            if (null != (middle = middle_if_almost_equal(arr[2], arr[6])))
+                return [ middle, '*', expr( arr[0], arr[3], arr[4] ) ].concat( additive_rest );
+
+
+            if (null != (middle = middle_if_almost_opposite(arr[0], arr[4])))
+                return [ middle, '*', expr( arr[2], arr[3] === '+'  ?  '-'  :  '+', arr[6] ) ].concat( additive_rest );
+
+            if (null != (middle = middle_if_almost_opposite(arr[2], arr[4])))
+                return [ middle, '*', expr( arr[0], arr[3] === '+'  ?  '-'  :  '+', arr[6] ) ].concat( additive_rest );
+
+            if (null != (middle = middle_if_almost_opposite(arr[0], arr[6])))
+                return [ middle, '*', expr( arr[2], arr[3] === '+'  ?  '-'  :  '+', arr[4] ) ].concat( additive_rest );
+
+            if (null != (middle = middle_if_almost_opposite(arr[2], arr[6])))
+                return [ middle, '*', expr( arr[0], arr[3] === '+'  ?  '-'  :  '+', arr[4] ) ].concat( additive_rest );
+
+            if (additive_rest.length)
+            {
+                var rest_simpl = expr_try_to_simplify_product_associativity( arr.slice( 4 ));
+                if (null != rest_simpl)
+                    return arr.slice( 0, 4 ).concat( expr( rest_simpl ) );
+            }
+            
+                
+        }
+
+        if (arr[0] instanceof Array  &&  rx_pm.test( arr[1] ))
+        {
+            return expr_try_to_simplify_product_associativity( arr[0].concat( 
+                arr[2] instanceof Array  ?  arr[2].concat( arr.slice( 3 ))  :  arr.slice(1)
+            ));
+        }
+                                                             
+                                                               
+
+        
+
+        function middle_if_almost_equal( a, b )
+        {
+            if ('number' === typeof a  &&  'number' === typeof b)
+            {
+                if (a === 0  &&   b === 0)
+                    return 0;
+
+                if (Math.abs((a-b)/(Math.abs(a||b))) < epsilon)
+                    return (a+b)/2;
+            }
+            
+            else if (a.__isExpr__  &&  b.__isExpr__  &&  a.__exprIdnum__ === b.__exprIdnum__)
+                return a;
+        }
+
+
+        function middle_if_almost_opposite( a, b )
+        {
+            if ('number' === typeof a  &&  'number' === typeof b)
+            {
+                if (a === 0  &&   b === 0)
+                    return 0;
+
+                if (Math.abs((a+b)/(Math.abs(a||b))) < epsilon)
+                    return (a-b)/2;
+            }
+            
+            else if (a.__isExpr__  &&  b.__isExpr__  &&  b.length === 2  &&  b[0] === '-'  &&  a.__exprIdnum__ === b[1].__exprIdnum__)
+                return a;
+
+            else if (a.__isExpr__  &&  b.__isExpr__  &&  a.length === 2  &&  a[0] === '-'  &&  b.__exprIdnum__ === a[1].__exprIdnum__)
+                return a;
+        }
+
     }
     
 })(this);

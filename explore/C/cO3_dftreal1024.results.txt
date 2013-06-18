@@ -18,13 +18,13 @@ NITER: 1e+06
 #
 time cO3_dftreal1024fftw3real.bin
 
-real	0m4.724s
-user	0m4.712s
+real	0m4.742s
+user	0m4.724s
 sys	0m0.004s
 #
 time cO3_dftreal1024flat_hh.bin
 
-real	0m38.664s
-user	0m38.558s
+real	0m35.029s
+user	0m34.934s
 sys	0m0.000s
 #

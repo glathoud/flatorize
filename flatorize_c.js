@@ -350,7 +350,16 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             if (jscode === outname)
             {
                 // e.g. intermediary value
-                if (e.length === 1  &&  'string' === typeof e[ 0 ])
+                
+                var toe = typeof e;
+
+                if ('number' === toe)
+                    return '' + e;
+                
+                if ('string' === toe)
+                    return e;
+                
+                else if (e.length === 1  &&  'string' === typeof e[ 0 ])
                 {
                     jscode = e[ 0 ];
                 }
