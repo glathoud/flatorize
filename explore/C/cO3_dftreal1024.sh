@@ -4,8 +4,14 @@ set -v
 #
 # Compiling
 #
-# quite long - uncomment if needed
+# quite long - uncomment if needed, got circa 36s with it
 # gcc -O3 -fomit-frame-pointer -mtune=native -malign-double -fstrict-aliasing -fno-schedule-insns -ffast-math -c -o cO3_dftreal1024_common.o    cO3_dftreal1024_common.c  # Same optimization flags as used by in FFTW3.3.3
+#
+# 35s variant  # gcc -O3 -ffast-math -c -o cO3_dftreal1024_common.o    cO3_dftreal1024_common.c  # xxx
+# 1m8s variant # gcc  -c -o cO3_dftreal1024_common.o    cO3_dftreal1024_common.c  # xxx
+# 37s variant  # gcc -O3 -c -o cO3_dftreal1024_common.o    cO3_dftreal1024_common.c  # xxx
+# 1m5s variant # gcc  -ffast-math -c -o cO3_dftreal1024_common.o    cO3_dftreal1024_common.c  # xxx
+
 gcc -o cO3_dftreal1024_print_NITER.bin    cO3_dftreal1024_common.o cO3_dftreal1024_print_NITER.c 
 #
 gcc -o cO3_dftreal1024fftw3real.bin          cO3_dftreal1024_common.o cO3_dftreal1024fftw3real.c -lfftw3 -lm
