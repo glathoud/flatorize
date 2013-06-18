@@ -699,7 +699,7 @@
                 continue;
             }
             
-            if (i > 0)
+            if (i === 1)
             {
                 var previous = arr[ i-1 ];
                 if (previous === 0  ||  previous === '0')
@@ -709,6 +709,11 @@
                         arr.splice( i-1, 3, -next );
                         continue;
                     }
+                    else
+                    {
+                        arr.splice( i-1, 1 );
+                    }
+                    
                 }
             }
 
