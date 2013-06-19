@@ -245,6 +245,79 @@ function generate_c_dftreal1024flat_sr_hh_now()
 
 
 
+<h3 class="anchorable" id="c-dft-msr"><code>dft-msr:</code> Discrete Fourier Transform using the modified split-radix algorithm (speedup example)<a href="#c-dft-msr" class="anchor">#</a></h3>
+
+<script type="text/javascript" id="script-gen-dftreal16flat_msr_hh">// note the type declarations, ignored by JavaScript but used later for C
+dftreal16flat_msr_hh = flatorize('arr:[16 double]->X:[9 [2 double]]',
+  dft_msr_exprgenF( 4, { real: true, hermihalf : true } ));</script>
+
+<p>A call to <code>flatorize()</code>:</p>
+<pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(document.getElementById("script-gen-dftreal16flat_msr_hh").textContent);</script></code></pre>
+
+<p>...generates flatorized JavaScript code:</p>
+
+<pre class="prettyprint lang-js pre-scroll"><code><script type="text/javascript">document.write(dftreal16flat_msr_hh.getDirect())</script></code></pre>
+
+<p>Then, a call to <code>flatorize.getCodeC()</code>:</p>
+<script type="text/javascript" id="script-gen-dftreal16flat_msr_hh_c_code">var dftreal16flat_msr_hh_c_code = flatorize.getCodeC( 
+    { switcher: dftreal16flat_msr_hh,
+      name: "dftreal16flat_msr_hh" });</script>
+<pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(document.getElementById("script-gen-dftreal16flat_msr_hh_c_code").textContent);</script></code></pre>
+
+<p>...generates flatorized C code:</p>
+
+<pre class="prettyprint lang-js pre-scroll"><code>// dftreal16flat_msr_hh_c_code
+<script type="text/javascript">document.write(dftreal16flat_msr_hh_c_code);</script></code></pre>
+
+
+
+
+
+
+
+
+
+
+
+<h3 class="anchorable" id="c-dft-msr-1024"><code>dft-msr-1024:</code> Speedup test on a DFT-1024 case using the modified split-radix algorithm<a href="#c-dft-msr-1024" class="anchor">#</a></h3>
+
+<script type="text/javascript" id="script-gen-dftreal1024flat_msr_hh">// note the type declarations, ignored by JavaScript but used later for C
+dftreal1024flat_msr_hh = flatorize('arr:[1024 double]->X:[513 [2 double]]',
+                             dft_msr_exprgenF( 10, { real: true, hermihalf : true } ));</script>
+
+<p>A call to <code>flatorize()</code>:</p>
+<pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(document.getElementById("script-gen-dftreal1024flat_msr_hh").textContent);</script></code></pre>
+
+<p>...generates flatorized JavaScript code.</p>
+
+
+<p>Then, a call to <code>flatorize.getCodeC()</code>: <button onclick="generate_c_dftreal1024flat_msr_hh_now()">Now!</button></p>
+<script type="text/javascript" id="script-gen-dftreal1024flat_msr_hh_c_code">var dftreal1024flat_msr_hh_c_code;
+function generate_c_dftreal1024flat_msr_hh_now() 
+{
+  dftreal1024flat_msr_hh_c_code = flatorize.getCodeC
+  ( 
+    { switcher: dftreal1024flat_msr_hh
+      , name: "dftreal1024flat_msr_hh" 
+    }
+  );
+  document.getElementById( "dftreal1024flat_msr_hh_c_code" ).textContent = "// dftreal1024flat_msr_hh_c_code\n" + dftreal1024flat_msr_hh_c_code;
+}</script>
+<pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(document.getElementById("script-gen-dftreal1024flat_msr_hh_c_code").textContent);</script></code></pre>
+
+<p>...generates flatorized C code:</p>
+
+<pre class="prettyprint lang-js pre-scroll"><code id="dftreal1024flat_msr_hh_c_code"></code></pre>
+
+
+
+
+
+
+
+
+
+
 
 
 

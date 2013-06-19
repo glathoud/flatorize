@@ -12,6 +12,7 @@ gcc -o cO3_dftreal16flat.bin           cO3_dftreal16_common.o cO3_dftreal16flat.
 gcc -o cO3_dftreal16fftw3real.bin          cO3_dftreal16_common.o cO3_dftreal16fftw3real.c -lfftw3 -lm
 gcc -o cO3_dftreal16flat_hh.bin           cO3_dftreal16_common.o cO3_dftreal16flat_hh.c
 gcc -o cO3_dftreal16flat_sr_hh.bin           cO3_dftreal16_common.o cO3_dftreal16flat_sr_hh.c
+gcc -o cO3_dftreal16flat_msr_hh.bin           cO3_dftreal16_common.o cO3_dftreal16flat_msr_hh.c
 gcc -o cO3_dftreal16fftw3real_measure.bin          cO3_dftreal16_common.o cO3_dftreal16fftw3real_measure.c -lfftw3 -lm -lrt
 #
 # Testing
@@ -31,5 +32,7 @@ time cO3_dftreal16fftw3real.bin
 time cO3_dftreal16flat_hh.bin
 #
 time cO3_dftreal16flat_sr_hh.bin
+#
+time cO3_dftreal16flat_msr_hh.bin
 #
 set +v
