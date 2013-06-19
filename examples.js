@@ -56,7 +56,7 @@ function generate_small_functions()
     cpol  = FZ('r,ang', function (r,ang) { 
         return [ FZ.expr( r, '*', 'Math.cos(' + ang + ')' ), FZ.expr( r, '*', 'Math.sin(' + ang + ')' ) ] ; 
     });
-    
+    conj  = FZ('a',     function (a)     { return cplx( creal( a ), FZ.expr( '-', cimag( a ) ) ); } );
 
     var a = cplx(1,2)
     ,   b = cplx(10,100)
