@@ -9,7 +9,7 @@ extern const int   epsilon;
 extern const double x_randreal[];
 extern const double X_randreal[][2];
 
-extern void dftreal1024flat_hh ( const double * arr, /*output:*/ double ** X );
+extern void dftreal1024flat_sr_hh ( const double * arr, /*output:*/ double ** X );
 
 int main()
 {
@@ -27,7 +27,7 @@ int main()
 
   /* --- Sanity check --- */
 
-  dftreal1024flat_hh( x_randreal, X );
+  dftreal1024flat_sr_hh( x_randreal, X );
   
   int ok_all = 1;
   for (i = 0; i < Nhh; i++)
@@ -50,7 +50,7 @@ int main()
   
   /* --- Performance test --- */
   for (i = NITER ; i-- ; )
-    dftreal1024flat_hh( x_randreal, X );
+    dftreal1024flat_sr_hh( x_randreal, X );
   
 
   /* --- Cleanup --- */

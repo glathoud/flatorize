@@ -9,7 +9,7 @@ extern const int   epsilon;
 extern const double x_randreal[];
 extern const double X_randreal[][2];
 
-extern void dftreal16flat ( const double * arr, /*output:*/ double ** X );
+extern void dftreal16flat_hh ( const double * arr, /*output:*/ double ** X );
 
 int main()
 {

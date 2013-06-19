@@ -45,13 +45,13 @@ NITER: 1e+07
 #
 time cO3_dftreal16fftw3.bin
 
-real	0m0.574s
-user	0m0.568s
-sys	0m0.004s
+real	0m0.558s
+user	0m0.556s
+sys	0m0.000s
 #
 time cO3_dftreal16flat.bin
 
-real	0m0.359s
+real	0m0.361s
 user	0m0.356s
 sys	0m0.000s
 #
@@ -59,16 +59,20 @@ sys	0m0.000s
 #
 time cO3_dftreal16fftw3real.bin
 
-real	0m0.337s
-user	0m0.332s
+real	0m0.340s
+user	0m0.336s
 sys	0m0.000s
 #
 time cO3_dftreal16flat_hh.bin
 
-real	0m0.291s
-user	0m0.288s
+real	0m0.295s
+user	0m0.296s
 sys	0m0.000s
 #
-# speed of fftw3:   (/ 1e+07 0.337) => 29.7e6 iters/second
-# speed of flat_hh: (/ 1e+07 0.291) => 34.3e6 iters/second
-# speedup: (* 100 (/ (- (/ 1 0.291) (/ 1 0.337)) (/ 1 0.337))) => 16%
+time cO3_dftreal16flat_sr_hh.bin
+
+real	0m0.286s
+user	0m0.284s
+sys	0m0.000s
+#
+set +v
