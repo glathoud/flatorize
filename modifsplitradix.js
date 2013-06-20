@@ -284,15 +284,15 @@ function dft_msr_exprgenF( radix, /*?object?*/opt )
             {
                 var  t  = tNk( N, k )
                 ,    tc = conj.evalnow( t )
-                ,  tz_f   = cmul( cmul( t,   z[ k ] ), cplx( sNk( N, k ) / sNk( 2 * N, k ), 0 ) )
-                ,  tczp_f = cmul( cmul( tc, zp[ k ] ), cplx( sNk( N, k ) / sNk( 2 * N, k + N_4 ), 0 ) )
-                ,  sum  = cadd( tz_f, tczp_f )
-                , idiff = cmul( cplx( 0, 1 ), csub( tz_f, tczp_f ) )
+                ,    tz   = cmul( t,   z[ k ] )
+                ,    tczp = cmul( tc, zp[ k ] )
+                ,  sum_f  = cmul( cadd( tz, tczp ), cplx( sNk( N, k ) / sNk( 2 * N, k ), 0 ) )
+                , idiff_f = cmul( csub( tz, tczp ), cplx( 0,                             sNk( N, k ) / sNk( 2 * N, k + N_4 ) ) )
                 ;  
-                ret[ k ]           = cadd( u[ k ], sum );
-                ret[ k +     N_2 ] = csub( u[ k ], sum );
-                ret[ k +     N_4 ] = csub( u[ k + N_4 ], idiff );
-                ret[ k + 3 * N_4 ] = cadd( u[ k + N_4 ], idiff );
+                ret[ k ]           = cadd( u[ k ], sum_f );
+                ret[ k +     N_2 ] = csub( u[ k ], sum_f );
+                ret[ k +     N_4 ] = csub( u[ k + N_4 ], idiff_f );
+                ret[ k + 3 * N_4 ] = cadd( u[ k + N_4 ], idiff_f );
             }
         }
         
@@ -313,11 +313,13 @@ function dft_msr_exprgenF( radix, /*?object?*/opt )
         }
         else if (N === 2)
         {
-            var x0_f = FZ.part( arrname, index( Ntop, shift, mul, 0 ) ) / sNk( 4 * N, 0 )
-            ,   x1_f = FZ.part( arrname, index( Ntop, shift, mul, 1 ) ) / sNk( 4 * N, 1 )
+            var x0   = FZ.part( arrname, index( Ntop, shift, mul, 0 ) )
+            ,   f0   =  1 / sNk( 4 * N, 0 )
+            ,   x1   = FZ.part( arrname, index( Ntop, shift, mul, 1 ) )
+            ,   f1   =  1 / sNk( 4 * N, 1 )
             ;
-            ret = [ real  ?  cplx( FZ.expr( x0_f, '+', x1_f ), 0 )  :  cadd( x0_f, x1_f ),
-                    real  ?  cplx( FZ.expr( x0_f, '-', x1_f ), 0 )  :  csub( x0_f, x1_f )
+            ret = [ real  ?  cplx( FZ.expr( f0, '*', FZ.expr( x0, '+', x1 ) ), 0 )  :  cmul( cplx( f0, 0 ), cadd( x0, x1 ) ),
+                    real  ?  cplx( FZ.expr( f1, '*', FZ.expr( x0, '-', x1 ) ), 0 )  :  cmul( cplx( f1, 1 ), csub( x0, x1 ) )
                   ];
         }
         else

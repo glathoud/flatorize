@@ -16,6 +16,7 @@ gcc -o cO3_dftreal1024flat_hh.bin           cO3_dftreal1024_common.o cO3_dftreal
 # xxx gcc -o cO3_dftreal1024fftw3real_measure.bin          cO3_dftreal1024_common.o cO3_dftreal1024fftw3real_measure.c -lfftw3 -lm -lrt
 
 gcc -o cO3_dftreal1024flat_sr_hh.bin           cO3_dftreal1024_common.o cO3_dftreal1024flat_sr_hh.c
+gcc -o cO3_dftreal1024flat_msr_hh.bin           cO3_dftreal1024_common.o cO3_dftreal1024flat_msr_hh.c
 #
 # Testing
 #
@@ -28,5 +29,7 @@ time cO3_dftreal1024fftw3real.bin
 time cO3_dftreal1024flat_hh.bin
 #
 time cO3_dftreal1024flat_sr_hh.bin
+#
+time cO3_dftreal1024flat_msr_hh.bin
 #
 set +v

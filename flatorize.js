@@ -67,6 +67,14 @@
         }
             
 
+        // xxx
+        for (var i = ret.length; i--;)
+        {
+            if ('number' === typeof ret[i]  &&  isNaN( ret[i] ))
+                xxx
+        }
+        
+
         // Try to find an already existing expression that matches.
         var idstr2expr = exprCache.idstr2expr
         ,  idnum2count = exprCache.idnum2count
