@@ -370,7 +370,7 @@ function dft_msr_exprgenF( radix, /*?object?*/opt )
     function wsNk( N, k )
     {
         var cache = N in wsNk  ?  wsNk[ N ]  :  (wsNk[ N ] = {});
-        return k in cache  ?  cache[ k ]  :  (cache[ k ] = cmul.evalnow( wNk( N, k ), cplx.evalnow( sNk( N, k ), 0 ) ) );
+        return k in cache  ?  cache[ k ]  :  (cache[ k ] = cmul.evalnow( wNk( N, k ), cplx.evalnow( sNk( N / 4, Math.abs( k ) ), 0 ) ) );
     }
 
     function sNk( N, k )
