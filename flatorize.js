@@ -395,14 +395,14 @@
             
             arr = expr_simplify_multiplications( arr );
             arr = expr_simplify_additions( arr );
-            arr = expr_simplify_substractions( arr );
+            arr = expr_simplify_substractions( arr );  // xxx  but okay
             arr = expr_simplify_double_negations( arr );
-            arr = expr_simplify_plus_minus( arr );
+            arr = expr_simplify_plus_minus( arr );  // xxx
             arr = expr_move_times_minus( arr );
             arr = expr_extract_minus_expr( arr );
-            arr = expr_normalize_all_minus( arr );
+            arr = expr_normalize_all_minus( arr );  // xxx
         }
-        
+        return arr;
         while (true)
         {
             var newarr = expr_try_to_simplify_product_associativity( arr );
@@ -724,8 +724,8 @@
     {
         arr = [].concat( arr );
 
-        if (arr[0]  instanceof Array  &&  arr[0].length === 2  &&   arr[0][0] === '-')
-            arr = arr[0].concat( arr.slice( 1 ) );
+        // xxx if (arr[0]  instanceof Array  &&  arr[0].length === 2  &&   arr[0][0] === '-'  &&  (arr[1] === '+'  ||  arr[1] === '-'))
+        // xxx    arr = arr[0].concat( arr.slice( 1 ) );
 
         for (var n_1 = arr.length - 1
              , i = 0; i < n_1; i++)
@@ -845,7 +845,7 @@
             {
                 var rest_simpl = expr_try_to_simplify_product_associativity( arr.slice( 4 ));
                 if (null != rest_simpl)
-                    return arr.slice( 0, 4 ).concat( expr( rest_simpl ) );
+                    return arr.slice( 0, 4 ).concat( expr.apply( null, rest_simpl ) );
             }
             
                 
