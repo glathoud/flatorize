@@ -395,6 +395,7 @@
             arr = expr_simplify_substractions( arr );
             arr = expr_simplify_double_negations( arr );
             arr = expr_simplify_plus_minus( arr );
+            arr = expr_extract_minus_expr( arr );
         }
 
         while (true)
@@ -750,7 +751,7 @@
     function expr_simplify_double_negations( arr )
     {
         if (2 === arr.length  &&  arr[0] === '-'  &&  arr[1] instanceof Array  &&  arr[1].length === 2  &&  arr[1][0] === '-')
-            return arr[1][1];
+            return uncount( arr[1] )[1];
 
         return arr;
     }
@@ -765,6 +766,23 @@
                 arr[i+1] = -arr[i+1];
             }
         }
+        return arr;
+    }
+
+    function expr_extract_minus_expr( arr )
+    {
+        for (var i = arr.length - 1; i--;)
+        {
+            var p = arr[ i ] === '+'
+            ,   m = arr[ i ] === '-'
+            ;
+            if ((p  ||  m)  &&  arr[ i+1 ] instanceof Array  &&  arr[ i+1 ].length === 2  &&  arr[ i+1 ][ 0 ] === '-')
+                arr.splice( i, 2, p ? '-' : '+', expr( uncount( arr[ i+1 ] )[ 1 ] ) );
+        }
+
+        if (arr[ 0 ] instanceof Array  &&   arr[ 0 ].length === 2  &&  arr[ 0 ][ 0 ] === '-')
+            arr = uncount( arr[ 0 ] ).concat( arr.slice( 1 ) );
+
         return arr;
     }
 
@@ -869,4 +887,14 @@
 
     }
     
+
+    function uncount( arr )
+    {
+        var idnum2count = exprCache.idnum2count;
+        if (arr.__isExpr__  &&  arr.__exprIdnum__ in idnum2count)
+            idnum2count[ arr.__exprIdnum__ ]--;
+
+        return arr;
+    }
+
 })(this);
