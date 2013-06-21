@@ -658,13 +658,18 @@
 
         // 1*   and  *1
 
-        while (close_to( arr[ 0 ], 1 )  &&  arr[ 1 ] === '*')
-            arr = arr.slice( 2 );
+        for (var i = 0; i < arr.length - 1; i++)
+        {
+            while (close_to( arr[ i ], 1 )  &&  arr[ i+1 ] === '*')
+                arr.splice( i, 2 );            
+        }
 
-        var n;
-        while (n = arr.length , (close_to( arr[ n-1 ], 1 )  &&  arr[ n - 2 ] === '*'))
-            arr = arr.slice( 0, n - 2 );
-
+        for (var i = 1; i < arr.length - 1; i++)
+        {
+            while (close_to( arr[ i + 1 ], 1 )  &&  arr[ i ] === '*')
+                arr.splice( i, 2 );            
+        }
+        
         // 0*   and  *0
 
         for (var i = 0; i < arr.length - 2; i++)
