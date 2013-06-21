@@ -118,13 +118,14 @@
                     ;
                     for (var i = 0; i < n; i++)
                         ret[ i ] = code2str( this[ i ], opt );
+                    
                     ret = ret.join(' ');
                 }
                 
                 if (topopt  &&  topopt.no_paren)
                     return ret;
                 
-                return /^\(.*\)$/.test( ret )  ?  ret  :  '(' + ret + ')';
+                return '(' + ret + ')';
             };
             
             // Update the cache
@@ -395,12 +396,12 @@
             
             arr = expr_simplify_multiplications( arr );
             arr = expr_simplify_additions( arr );
-            arr = expr_simplify_substractions( arr );  // xxx  but okay
+            arr = expr_simplify_substractions( arr );
             arr = expr_simplify_double_negations( arr );
-            arr = expr_simplify_plus_minus( arr );  // xxx
+            arr = expr_simplify_plus_minus( arr ); 
             arr = expr_move_times_minus( arr );
             arr = expr_extract_minus_expr( arr );
-            arr = expr_normalize_all_minus( arr );  // xxx
+            arr = expr_normalize_all_minus( arr ); 
         }
         return arr;
         while (true)
@@ -724,8 +725,8 @@
     {
         arr = [].concat( arr );
 
-        // xxx if (arr[0]  instanceof Array  &&  arr[0].length === 2  &&   arr[0][0] === '-'  &&  (arr[1] === '+'  ||  arr[1] === '-'))
-        // xxx    arr = arr[0].concat( arr.slice( 1 ) );
+        if (arr[0]  instanceof Array  &&  arr[0].length === 2  &&   arr[0][0] === '-'  &&  (arr[1] === '+'  ||  arr[1] === '-'))
+            arr = arr[0].concat( arr.slice( 1 ) );
 
         for (var n_1 = arr.length - 1
              , i = 0; i < n_1; i++)
