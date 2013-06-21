@@ -398,6 +398,7 @@
             arr = expr_simplify_substractions( arr );
             arr = expr_simplify_double_negations( arr );
             arr = expr_simplify_plus_minus( arr );
+            arr = expr_move_times_minus( arr );
             arr = expr_extract_minus_expr( arr );
             arr = expr_normalize_all_minus( arr );
         }
@@ -650,6 +651,15 @@
 
         while (n = arr.length , (arr[ n-1 ] === 0  &&  arr[ n - 2 ] === '*'))
             arr.splice( n-3, n, 0 );
+
+        // -1*   and  *-1
+
+        if (arr[ 0 ] === -1  &&  arr[ 1 ] === '*')
+            arr.splice( 0, 2, '-' );
+
+        var n;
+        while (n = arr.length , (arr[ n-1 ] === -1  &&  arr[ n - 2 ] === '*'))
+            arr.splice( n-2, 2, 'number' === typeof arr[n-3]  ?  -arr[n-3]  :  expr( '-', arr[ n-3 ] ) );
         
         return arr;
     }
@@ -680,8 +690,32 @@
 
     function expr_simplify_double_negations( arr )
     {
+        arr = [].concat( arr );
+
         if (2 === arr.length  &&  arr[0] === '-'  &&  arr[1] instanceof Array  &&  arr[1].length === 2  &&  arr[1][0] === '-')
-            return arr[1][1];
+            return arr[1][1];       
+
+        for (var n_1 = arr.length - 1
+             , i = 0; i < n_1; i++)
+        {
+            if (arr[i] === '-')
+            {
+                var next = arr[ i+1 ];
+                if ('number' === typeof next  &&  next < 0)
+                {
+                    arr[i] = '+';
+                    arr[i+1] = -next;
+                }
+                else if (next instanceof Array  &&  next.length === 2  &&  'number' === typeof next[0]  &&  next[0] < 0)
+                {
+                    arr[i] = '+';
+                    arr[i+1] = expr( -next[0], next[1] );
+                }
+                
+            }
+            
+        }
+        
 
         return arr;
     }
@@ -689,13 +723,34 @@
     function expr_simplify_plus_minus( arr )
     {
         arr = [].concat( arr );
+
+        if (arr[0]  instanceof Array  &&  arr[0].length === 2  &&   arr[0][0] === '-')
+            arr = arr[0].concat( arr.slice( 1 ) );
+
         for (var n_1 = arr.length - 1
              , i = 0; i < n_1; i++)
         {
-            if (arr[i] === '+'  &&  'number' === typeof arr[i+1]  &&  arr[i+1] < 0)
+            var p = arr[ i ] === '+'
+            ,   m = arr[ i ] === '-'
+            ;
+            if ((p || m)  &&  'number' === typeof arr[i+1]  &&  arr[i+1] < 0)
             {
-                arr[i]   = '-';
+                arr[i]   = p  ?  '-'  :  '+';
                 arr[i+1] = -arr[i+1];
+            }
+        }
+        return arr;
+    }
+
+    function expr_move_times_minus( arr )
+    {
+        arr = [].concat( arr );
+        for (var i = arr.length; i--;)
+        {
+            if (i > 1  &&  arr[i-1] === '*'  &&  arr[i] instanceof Array  &&  2 === arr[i].length  &&  arr[i][0] === '-')
+            {
+                arr[i-2] = expr( '-', arr[i-2] );
+                arr[i]   = arr[i][1];
             }
         }
         return arr;

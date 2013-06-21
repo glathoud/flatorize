@@ -627,6 +627,36 @@ function dft16_baseline(v)
 }
 
 
+function dftreal16_baseline(v)
+{
+    var ret = new Array(16)
+    ,   re0  = v[0]
+    ,   im0  = 0
+    ,   pi   = Math.PI
+    ;
+    for (var i = 0; i < 16; i++)
+    {
+        var re = re0
+        ,   im = im0
+        ;
+        for (var j = 1; j < 16; j++)
+        {
+            var 
+                re_j  = v[j]
+            ,   im_j  = 0
+            ,   angle = -2 * pi * i * j / 16
+            ,   cos_angle = Math.cos( angle )
+            ,   sin_angle = Math.sin( angle )
+            ;
+            re += re_j * cos_angle - im_j * sin_angle;
+            im += re_j * sin_angle + im_j * cos_angle;
+        }
+        ret[ i ] = [ re, im ];
+    }
+    return ret;
+}
+
+
 function dft_cooley_tukey_gen( radix, /*?object?*/opt )
 // *Implement* the Discrete Fourier Transform (DFT)
 // for a 2-radix (N == 1 << radix)
