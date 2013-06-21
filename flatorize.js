@@ -77,17 +77,11 @@
 
         // Try to find an already existing expression that matches.
         var idstr2expr = exprCache.idstr2expr
-        ,  idnum2count = exprCache.idnum2count
         ,        idstr = getExprIdstr( ret )
         ;
         if (idstr in idstr2expr)
         {
             ret = idstr2expr[ idstr ];
-
-            // Update the stats
-            
-            var idnum = ret.__exprIdnum__; 
-            idnum2count[ idnum ] = 1 + (idnum in idnum2count  ?  idnum2count[ idnum ]  :  1); // Start counting at 2, i.e. only the duplicates.
         }
         else
         {
@@ -143,9 +137,6 @@
                 var x = ret[ i ];
                 if (!x.__isExpr__)
                     continue;
-
-                var x_idnum = x.__exprIdnum__;
-                idnum2count[ x_idnum ] = 1 + (x_idnum in idnum2count  ?  idnum2count[ x_idnum ]  :  1); // Start counting at 2, i.e. only the duplicates.
             }
         }    
 
@@ -237,6 +228,15 @@
                 check_exprgen_if_possible( exprgen );
 
                 var e = exprgen.apply(null,vararr);
+              
+                // Input: gather statistics: how many time is each expression used?
+                //
+                // Implementation note: We gather those stats now (rather than
+                // at construction time `expr`) because the simplifications
+                // made during construction (`expr`) can be non trivial
+                // w.r.t. `idnum2count`.
+                
+                gather_count( e, exprCache.idnum2count );
                 
                 // To prevent name collision when creating local variable names
                 var varnameset = {};
@@ -396,6 +396,7 @@
             arr = expr_simplify_double_negations( arr );
             arr = expr_simplify_plus_minus( arr );
             arr = expr_extract_minus_expr( arr );
+            arr = expr_normalize_all_minus( arr );
         }
 
         while (true)
@@ -556,6 +557,7 @@
     {
         if (cfg.isTop)
         {
+            
             return code2stat( code, cfg = { 
                 duplicates : cfg.duplicates  ||  []
                 , dupliidnum2varname: {}
@@ -563,9 +565,7 @@
             } );
         }
         
-        // Input: statistics gathered while creating expressions
-        // (implicitely depth-first walk).
-
+        
         var idnum2count = exprCache.idnum2count
         ,   idnum2expr  = exprCache.idnum2expr
         
@@ -751,7 +751,7 @@
     function expr_simplify_double_negations( arr )
     {
         if (2 === arr.length  &&  arr[0] === '-'  &&  arr[1] instanceof Array  &&  arr[1].length === 2  &&  arr[1][0] === '-')
-            return uncount( arr[1] )[1];
+            return arr[1][1];
 
         return arr;
     }
@@ -777,12 +777,39 @@
             ,   m = arr[ i ] === '-'
             ;
             if ((p  ||  m)  &&  arr[ i+1 ] instanceof Array  &&  arr[ i+1 ].length === 2  &&  arr[ i+1 ][ 0 ] === '-')
-                arr.splice( i, 2, p ? '-' : '+', expr( uncount( arr[ i+1 ] )[ 1 ] ) );
+                arr.splice( i, 2, p ? '-' : '+', expr( arr[ i+1 ][ 1 ] ) );
         }
 
         if (arr[ 0 ] instanceof Array  &&   arr[ 0 ].length === 2  &&  arr[ 0 ][ 0 ] === '-')
-            arr = uncount( arr[ 0 ] ).concat( arr.slice( 1 ) );
+            arr = arr[ 0 ].concat( arr.slice( 1 ) );
 
+        return arr;
+    }
+
+    function expr_normalize_all_minus( arr )
+    // -a-b-c  ==>  -(a+b+c)   because a+b+c may have been computed somewhere else
+    {
+        if (arr.length > 2   &&  !(arr.length % 2))
+        {
+            var all_minus = true;
+            for (var i = 0, n = arr.length; i < n; i += 2)
+            {
+                if (arr[i] !== '-')
+                {
+                    all_minus = false;
+                    break;
+                }
+            }
+            
+            if (all_minus)
+            {
+                var new_subarr = new Array( arr.length - 1 );
+                for (var i = new_subarr.length; i--;)
+                    new_subarr[ i ] = i % 2  ?  '+'  :  arr[ i + 1 ];
+                
+                return [ '-', expr.apply( null, new_subarr ) ];
+            }
+        }
         return arr;
     }
 
@@ -793,9 +820,6 @@
         var rx_pm = /(?:\+|\-)/
             , epsilon = 1e-14
         ;
-
-        if (Math.abs(arr[0] - 0.7071067811865476) < epsilon)
-            'xxx';
 
         if ((arr.length === 7  ||  rx_pm.test( arr[7] ))
             &&
@@ -863,7 +887,9 @@
             }
             
             else if (a.__isExpr__  &&  b.__isExpr__  &&  a.__exprIdnum__ === b.__exprIdnum__)
+            {            
                 return a;
+            }
         }
 
 
@@ -879,22 +905,38 @@
             }
             
             else if (a.__isExpr__  &&  b.__isExpr__  &&  b.length === 2  &&  b[0] === '-'  &&  a.__exprIdnum__ === b[1].__exprIdnum__)
+            {
                 return a;
+            }
 
             else if (a.__isExpr__  &&  b.__isExpr__  &&  a.length === 2  &&  a[0] === '-'  &&  b.__exprIdnum__ === a[1].__exprIdnum__)
+            {
                 return a;
+            }
         }
 
     }
-    
 
-    function uncount( arr )
+    function gather_count( code, idnum2count )
     {
-        var idnum2count = exprCache.idnum2count;
-        if (arr.__isExpr__  &&  arr.__exprIdnum__ in idnum2count)
-            idnum2count[ arr.__exprIdnum__ ]--;
+        if (!(code instanceof Array))
+            return;
 
-        return arr;
+        var rest = [].concat( code );
+        while (rest.length)
+        {
+            var x = rest.shift();
+            if (x.__isExpr__)
+            {
+                var idnum = x.__exprIdnum__;
+                idnum2count[ idnum ] = 1 + (idnum in idnum2count  ?  idnum2count[ idnum ]  :  0);
+            }
+
+            if (x instanceof Array)
+            {
+                rest = x.concat( rest );
+            }
+        }
     }
 
 })(this);
