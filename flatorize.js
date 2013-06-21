@@ -60,6 +60,9 @@
     {
         var ret = expr_simplify( Array.prototype.slice.call( arguments ) );
 
+        if (ret.length === 0)
+            return 0;
+
         if (ret.length === 1)
         {
             if (ret[0].__isExpr__  ||  'number' === typeof ret[0])
@@ -398,7 +401,7 @@
             arr = expr_extract_minus_expr( arr );
             arr = expr_normalize_all_minus( arr );
         }
-
+        
         while (true)
         {
             var newarr = expr_try_to_simplify_product_associativity( arr );
@@ -629,121 +632,48 @@
 
     function expr_simplify_multiplications( arr )
     {
-        arr = [].concat( arr );  // shallow copy
-        for (var i = arr.length - 1; 0 < i--;)
-        {
-            if (arr[i] !== '*')
-                continue;
+        arr = [].concat( arr );
 
-            var next = arr[ i+1 ];
-            if (next === 1  ||  next === '1')
-            {
-                arr.splice( i, 2 );
-                continue;
-            }
-            if (next === 0  ||  next === '0')
-            {
-                arr.splice( i-1, 3, 0 );
-                continue;
-            }
-            
+        // 1*   and  *1
 
-            if (i > 0)
-            {
-                var previous = arr[ i-1 ];
-                if (previous === 1  ||  previous === '1' )
-                {
-                    arr.splice( i-1, 2 );
-                    continue;
-                }
-                if (previous === 0  ||  previous === '0')
-                {
-                    arr.splice( i-1, 3, 0 );
-                    continue;
-                }
-                if (previous === -1  ||  previous === '-1')
-                {
-                    arr.splice( i-1, 2, '-' );
-                    continue;
-                }
-            }
-        }
+        while (arr[ 0 ] === 1  &&  arr[ 1 ] === '*')
+            arr = arr.slice( 2 );
+
+        var n;
+        while (n = arr.length , (arr[ n-1 ] === 1  &&  arr[ n - 2 ] === '*'))
+            arr = arr.slice( 0, n - 2 );
+
+        // 0*   and  *0
+
+        while (arr[ 0 ] === 0  &&  arr[ 1 ] === '*')
+            arr.splice( 0, 3, 0 );
+
+        while (n = arr.length , (arr[ n-1 ] === 0  &&  arr[ n - 2 ] === '*'))
+            arr.splice( n-3, n, 0 );
+        
         return arr;
     }
 
     function expr_simplify_additions( arr ) 
     {
-        arr = [].concat( arr );  // shallow copy
-        for (var i = arr.length - 1; 0 < i--;)
-        {
-            if (arr[i] !== '+')
-                continue;
+        while (arr[ 0 ] === 0  &&  arr[ 1 ] === '+')
+            arr = arr.slice( 2 );
 
-            var next = arr[ i+1 ];
-            if (next === 0  ||  next === '0')
-            {
-                arr.splice( i, 2 );
-                continue;
-            }
-
-            if (i > 0)
-            {
-                var previous = arr[ i-1 ];
-                if (previous === 0  ||  previous === '0')
-                {
-                    arr.splice( i-1, 2 );
-                    continue;
-                }
-            }
-        }
+        var n;
+        while (n = arr.length , (arr[ n-1 ] === 0  &&  arr[ n - 2 ] === '+'))
+            arr = arr.slice( 0, n - 2 );
+        
         return arr;
     }
     
     function expr_simplify_substractions( arr )
     {
-        arr = [].concat( arr );  // shallow copy
-        for (var i = arr.length - 1; 0 < i--;)
-        {
-            if (arr[i] !== '-')
-                continue;
+        if (arr[ 0 ] === 0  &&  arr[ 1 ] === '-')
+            arr = arr.slice( 1 );
 
-            var next = arr[ i+1 ];
-            if (next === 0  ||  next === '0')
-            {
-                arr.splice( i, 2 );
-                continue;
-            }
-            if (next === '-')
-            {
-                arr.splice( i, 2, '+' );
-                continue;
-            }
-            
-            if (i === 1)
-            {
-                var previous = arr[ i-1 ];
-                if (previous === 0  ||  previous === '0')
-                {
-                    if ('number' === typeof next)
-                    {
-                        arr.splice( i-1, 3, -next );
-                        continue;
-                    }
-                    else
-                    {
-                        arr.splice( i-1, 1 );
-                    }
-                    
-                }
-            }
-
-            if ('number' === typeof next)
-            {
-                arr.splice( i, 2, '+', -next );
-                continue;
-            }
-            
-        }
+        var n;
+        while (n = arr.length , (arr[ n-1 ] === 0  &&  arr[ n - 2 ] === '-'))
+            arr = arr.slice( 0, n - 2 );
         
         return arr;
     }
@@ -758,7 +688,9 @@
 
     function expr_simplify_plus_minus( arr )
     {
-        for (var i = arr.length - 1; i--;)
+        arr = [].concat( arr );
+        for (var n_1 = arr.length - 1
+             , i = 0; i < n_1; i++)
         {
             if (arr[i] === '+'  &&  'number' === typeof arr[i+1]  &&  arr[i+1] < 0)
             {
@@ -771,17 +703,15 @@
 
     function expr_extract_minus_expr( arr )
     {
-        for (var i = arr.length - 1; i--;)
+        for (var n_1 = arr.length - 1
+             , i = 0; i < n_1; i++)
         {
             var p = arr[ i ] === '+'
             ,   m = arr[ i ] === '-'
             ;
             if ((p  ||  m)  &&  arr[ i+1 ] instanceof Array  &&  arr[ i+1 ].length === 2  &&  arr[ i+1 ][ 0 ] === '-')
-                arr.splice( i, 2, p ? '-' : '+', expr( arr[ i+1 ][ 1 ] ) );
+                arr.splice( i, 2, p ? '-' : '+', arr[ i+1 ][ 1 ] );
         }
-
-        if (arr[ 0 ] instanceof Array  &&   arr[ 0 ].length === 2  &&  arr[ 0 ][ 0 ] === '-')
-            arr = arr[ 0 ].concat( arr.slice( 1 ) );
 
         return arr;
     }
@@ -789,7 +719,7 @@
     function expr_normalize_all_minus( arr )
     // -a-b-c  ==>  -(a+b+c)   because a+b+c may have been computed somewhere else
     {
-        if (arr.length > 2   &&  !(arr.length % 2))
+        if (arr.length > 2   &&  !(arr.length % 2))  // if length is an odd number >= 3
         {
             var all_minus = true;
             for (var i = 0, n = arr.length; i < n; i += 2)
@@ -803,9 +733,11 @@
             
             if (all_minus)
             {
-                var new_subarr = new Array( arr.length - 1 );
-                for (var i = new_subarr.length; i--;)
-                    new_subarr[ i ] = i % 2  ?  '+'  :  arr[ i + 1 ];
+                var new_subarr = arr.slice( 1 );
+                for (var n = new_subarr.length
+                     , i = 1; i < n; i += 2
+                    )
+                    new_subarr[ i ] = '+';
                 
                 return [ '-', expr.apply( null, new_subarr ) ];
             }
