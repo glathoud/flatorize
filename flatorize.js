@@ -389,7 +389,20 @@
     function expr_simplify( arr )
     {
         if (arr.length < 3)
+        {
+            if ('number' === typeof arr[ 1 ])
+            {
+                if ('+' === arr[ 0 ])
+                    return arr[ 1 ];
+
+                if ('-' === arr[ 0 ])
+                    return -arr[ 1 ];
+                
+                throw new Error('bug and/or wrong expression');
+            }
+            
             return arr;
+        }
 
         for (var i = 2; i--;)
         {
