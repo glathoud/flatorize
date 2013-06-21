@@ -289,6 +289,8 @@
 
     // -------------------- Private implementation --------------------
 
+    var EPSILON = 1e-14;
+
     function get_types_from_typed_varstr( /*string*/typed_varstr )
     // Extract type information. Not used in the JavaScript case, but
     // useful for some other languages (e.g. ./flatorize_c.js).
@@ -645,34 +647,45 @@
 
     // ---------- expression simplification details ----------
 
+    function close_to( a, b )
+    {
+        return Math.abs( (a-b)/b ) < EPSILON;
+    }
+
     function expr_simplify_multiplications( arr )
     {
         arr = [].concat( arr );
 
         // 1*   and  *1
 
-        while (arr[ 0 ] === 1  &&  arr[ 1 ] === '*')
+        while (close_to( arr[ 0 ], 1 )  &&  arr[ 1 ] === '*')
             arr = arr.slice( 2 );
 
         var n;
-        while (n = arr.length , (arr[ n-1 ] === 1  &&  arr[ n - 2 ] === '*'))
+        while (n = arr.length , (close_to( arr[ n-1 ], 1 )  &&  arr[ n - 2 ] === '*'))
             arr = arr.slice( 0, n - 2 );
 
         // 0*   and  *0
 
-        while (arr[ 0 ] === 0  &&  arr[ 1 ] === '*')
-            arr.splice( 0, 3, 0 );
+        for (var i = 0; i < arr.length - 2; i++)
+        {
+            while (arr[ i ] === 0  &&  arr[ i+1 ] === '*')
+                arr.splice( i, 3, 0 );
+        }
 
-        while (n = arr.length , (arr[ n-1 ] === 0  &&  arr[ n - 2 ] === '*'))
-            arr.splice( n-3, n, 0 );
-
+        for (var i = arr.length; i > 1; i--)
+        {
+            if (arr[ i-1 ] === 0  &&  arr[ i - 2 ] === '*')
+                arr.splice( i-3, i, 0 );
+        }
+        
         // -1*   and  *-1
 
-        if (arr[ 0 ] === -1  &&  arr[ 1 ] === '*')
+        if (close_to( arr[ 0 ], -1 )  &&  arr[ 1 ] === '*')
             arr.splice( 0, 2, '-' );
 
         var n;
-        while (n = arr.length , (arr[ n-1 ] === -1  &&  arr[ n - 2 ] === '*'))
+        while (n = arr.length , (close_to( arr[ n-1 ], -1)  &&  arr[ n - 2 ] === '*'))
             arr.splice( n-2, 2, 'number' === typeof arr[n-3]  ?  -arr[n-3]  :  expr( '-', arr[ n-3 ] ) );
         
         return arr;
