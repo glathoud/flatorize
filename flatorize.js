@@ -68,7 +68,7 @@
             if (ret[0].__isExpr__  ||  'number' === typeof ret[0])
                 return ret[0];
         }
-            
+        
 
         for (var i = ret.length; i--;)
         {
@@ -82,71 +82,71 @@
         ,        idstr = getExprIdstr( ret )
         ;
         if (idstr in idstr2expr)
+            return idstr2expr[ idstr ];
+        
+        // Not found. Try to find all or part of a negative of the expression.
+                
+        var neg_arr   = getNegArr( ret )
+        ,   neg_idstr = neg_arr  &&  getExprIdstr( neg_arr )
+        ;
+        if (neg_idstr  &&  neg_idstr in idstr2expr)
         {
-            ret = idstr2expr[ idstr ];
+            ret   = [ '-', idstr2expr[ neg_idstr ] ];
+            idstr = getExprIdstr( ret ); 
+            
+            if (idstr in idstr2expr)   // The new compound expression may already be in the cache
+                return idstr2expr[ idstr ];
         }
-        else
-        {
-            // Not found. Create a new expression object `ret`
-            
-            ret.__isExpr__ = true;  // not safe against overwrite, but faster than a function
-            ret.__toStr__  = function ( /*?object?*/opt, /*?object?*/topopt ) 
-            { 
-                var part = this.part;
-                if (part)
-                {
-                    var   x = part.x
-                    , where = part.where
-                    ,   ret = code2str( x, opt, topopt ) + 
-                        (
-                            'number' === typeof where 
-                                ? '[' + where + ']'
-                                : /^[a-zA-Z_][a-zA-Z_0-9]*$/.test( where )
-                                ? '.' + where
-                                : '["' + part.where.replace( /"/g, '\\"' ) + '"]'
-                        )                        
-                    ;
-                }
-                else
-                {
-                    // var ret = this.map( function (x) { return code2str( x, opt ); } ).join(' ');
-                    // For performance reasons, implemented using a for loop.
-                    
-                    var n = this.length
-                    , ret = new Array( n )
-                    ;
-                    for (var i = 0; i < n; i++)
-                        ret[ i ] = code2str( this[ i ], opt );
-                    
-                    ret = ret.join(' ');
-                }
-                
-                if (topopt  &&  topopt.no_paren)
-                    return ret;
-                
-                return '(' + ret + ')';
-            };
-            
-            // Update the cache
 
-            var idnum = ret.__exprIdnum__ = exprCache.idnum_next++;
-
-            idstr2expr[ idstr ]  = exprCache.idnum2expr[ idnum ] = ret;
-
-            // Update the stats for the children
-
-            for (var n = ret.length, i = 0; i < n; i++)
+        // Create the expression object.
+        
+        ret.__isExpr__ = true;  // not safe against overwrite, but faster than a function
+        ret.__toStr__  = function ( /*?object?*/opt, /*?object?*/topopt ) 
+        { 
+            var part = this.part;
+            if (part)
             {
-                var x = ret[ i ];
-                if (!x.__isExpr__)
-                    continue;
+                var   x = part.x
+                , where = part.where
+                ,   ret = code2str( x, opt, topopt ) + 
+                    (
+                        'number' === typeof where 
+                            ? '[' + where + ']'
+                            : /^[a-zA-Z_][a-zA-Z_0-9]*$/.test( where )
+                            ? '.' + where
+                            : '["' + part.where.replace( /"/g, '\\"' ) + '"]'
+                    )                        
+                ;
             }
-        }    
+            else
+            {
+                // var ret = this.map( function (x) { return code2str( x, opt ); } ).join(' ');
+                // For performance reasons, implemented using a for loop.
+                
+                var n = this.length
+                , ret = new Array( n )
+                ;
+                for (var i = 0; i < n; i++)
+                    ret[ i ] = code2str( this[ i ], opt );
+                
+                ret = ret.join(' ');
+            }
+            
+            if (topopt  &&  topopt.no_paren)
+                return ret;
+            
+            return '(' + ret + ')';
+        };
+        
+        // Update the cache
 
-        // Et voilà
+        var idnum = ret.__exprIdnum__ = exprCache.idnum_next++;
 
-        return ret;
+        idstr2expr[ idstr ]  = exprCache.idnum2expr[ idnum ] = ret;
+        
+        return ret;  // Et voilà !
     }
+    
     function flatorize_now(/*string*/varstr, /*function*/exprgen)
     // Convenience shortcut. Returns a function.
     {
@@ -478,7 +478,18 @@
             return tmp.join(' ');
         }
         
-        return '' + x;
+        return 'number' === typeof x  
+            ?  x.toPrecision( EPSILON_DIGITS ).replace( /0+$/, '' )  
+            :  '' + x
+        ;
+    }
+
+    function getNegArr( arr )
+    {
+        if (arr.length === 3  &&  arr[1] === '*'  &&  'number' === typeof arr[0])
+            return [ -arr[0] ].concat( arr.slice( 1 ) );
+
+        // xxx more general cases
     }
 
     function check_exprgen_if_possible( exprgen )
