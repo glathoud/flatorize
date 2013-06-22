@@ -70,7 +70,6 @@
         }
             
 
-        // xxx
         for (var i = ret.length; i--;)
         {
             if ('number' === typeof ret[i]  &&  isNaN( ret[i] ))
@@ -289,7 +288,9 @@
 
     // -------------------- Private implementation --------------------
 
-    var EPSILON = 1e-14;
+    var EPSILON = 1e-14
+    ,   EPSILON_DIGITS = Math.floor( -Math.log( EPSILON ) / Math.log( 10 ) )
+    ;
 
     function get_types_from_typed_varstr( /*string*/typed_varstr )
     // Extract type information. Not used in the JavaScript case, but
@@ -434,7 +435,7 @@
             if (!(arr instanceof Array  &&  1 < arr.length))  break;
 
         }
-        return arr;
+        
         while (true)
         {
             var newarr = expr_try_to_simplify_product_associativity( arr );
@@ -466,8 +467,10 @@
                     var tox_i = typeof x_i;
                     if (tox_i === 'string')
                         tmp[ i ] = x_i;
-                    else if (tox_i === 'number'  ||  tox_i === 'boolean')
+                    else if (tox_i === 'boolean')
                         tmp[ i ] = '' + x_i;
+                    else if (tox_i === 'number')
+                        tmp[ i ] = x_i.toPrecision( EPSILON_DIGITS ).replace( /0+$/, '' );
                     else
                         throw new Error('getExprIdstr: probably a bug !');
                 }
