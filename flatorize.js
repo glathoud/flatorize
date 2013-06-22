@@ -409,14 +409,30 @@
         for (var i = 2; i--;)
         {
             
-            arr = expr_simplify_multiplications( arr );
-            arr = expr_simplify_additions( arr );
+            arr = expr_simplify_multiplications( arr ); 
+            if (!(arr instanceof Array  &&  1 < arr.length))  break;
+
+            arr = expr_simplify_additions( arr ); 
+            if (!(arr instanceof Array  &&  1 < arr.length))  break;
+
             arr = expr_simplify_substractions( arr );
+            if (!(arr instanceof Array  &&  1 < arr.length))  break;
+
             arr = expr_simplify_double_negations( arr );
+            if (!(arr instanceof Array  &&  1 < arr.length))  break;
+
             arr = expr_simplify_plus_minus( arr ); 
+            if (!(arr instanceof Array  &&  1 < arr.length))  break;
+
             arr = expr_move_times_minus( arr );
+            if (!(arr instanceof Array  &&  1 < arr.length))  break;
+
             arr = expr_extract_minus_expr( arr );
+            if (!(arr instanceof Array  &&  1 < arr.length))  break;
+
             arr = expr_normalize_all_minus( arr ); 
+            if (!(arr instanceof Array  &&  1 < arr.length))  break;
+
         }
         return arr;
         while (true)
@@ -661,14 +677,20 @@
 
         // 1*   and  *1
 
-        for (var i = 0; i < arr.length - 1; i++)
+        for (var i = arr.length; i--;)
         {
+            if ('number' !== typeof arr[ i ])
+                continue;
+            
             while (EPSILON > Math.abs( arr[ i ] - 1 )  &&  arr[ i+1 ] === '*')
                 arr.splice( i, 2 );            
         }
 
-        for (var i = 1; i < arr.length - 1; i++)
+        for (var i = arr.length; i--;)
         {
+            if ('number' !== typeof arr[ i ])
+                continue;
+            
             while (EPSILON > Math.abs( arr[ i + 1 ] - 1 )  &&  arr[ i ] === '*')
                 arr.splice( i, 2 );            
         }
@@ -694,8 +716,17 @@
 
         var n;
         while (n = arr.length , (EPSILON > Math.abs( arr[ n-1 ] + 1)  &&  arr[ n - 2 ] === '*'))
-            arr.splice( n-2, 2, 'number' === typeof arr[n-3]  ?  -arr[n-3]  :  expr( '-', arr[ n-3 ] ) );
-        
+        {
+            var p = arr[ n - 4 ] === '+'
+            ,   m = arr[ n - 4 ] === '-'
+            ;
+            if (p  ||  m)
+                arr.splice( n-4, 3, p ? '-' : '+', arr[ n - 3 ] );
+            
+            else
+                arr.splice( n-2, 2, 'number' === typeof arr[n-3]  ?  -arr[n-3]  :  expr( '-', arr[ n-3 ] ) );
+        }
+                    
         return arr;
     }
 
