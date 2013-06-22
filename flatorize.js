@@ -654,19 +654,22 @@
 
     function expr_simplify_multiplications( arr )
     {
+        if (arr.length < 3)
+            return arr;
+
         arr = [].concat( arr );
 
         // 1*   and  *1
 
         for (var i = 0; i < arr.length - 1; i++)
         {
-            while (close_to( arr[ i ], 1 )  &&  arr[ i+1 ] === '*')
+            while (EPSILON > Math.abs( arr[ i ] - 1 )  &&  arr[ i+1 ] === '*')
                 arr.splice( i, 2 );            
         }
 
         for (var i = 1; i < arr.length - 1; i++)
         {
-            while (close_to( arr[ i + 1 ], 1 )  &&  arr[ i ] === '*')
+            while (EPSILON > Math.abs( arr[ i + 1 ] - 1 )  &&  arr[ i ] === '*')
                 arr.splice( i, 2 );            
         }
         
@@ -686,11 +689,11 @@
         
         // -1*   and  *-1
 
-        if (close_to( arr[ 0 ], -1 )  &&  arr[ 1 ] === '*')
+        if (EPSILON > Math.abs( arr[ 0 ] + 1 )  &&  arr[ 1 ] === '*')
             arr.splice( 0, 2, '-' );
 
         var n;
-        while (n = arr.length , (close_to( arr[ n-1 ], -1)  &&  arr[ n - 2 ] === '*'))
+        while (n = arr.length , (EPSILON > Math.abs( arr[ n-1 ] + 1)  &&  arr[ n - 2 ] === '*'))
             arr.splice( n-2, 2, 'number' === typeof arr[n-3]  ?  -arr[n-3]  :  expr( '-', arr[ n-3 ] ) );
         
         return arr;
