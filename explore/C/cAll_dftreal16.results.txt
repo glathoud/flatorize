@@ -49,19 +49,19 @@ sys	0m0.000s
 #
 time cO3_dftreal16flat_hh.bin
 
-real	0m0.291s
-user	0m0.288s
+real	0m0.230s
+user	0m0.228s
 sys	0m0.000s
 #
 time cO3_dftreal16flat_sr_hh.bin
 
-real	0m0.269s
-user	0m0.264s
+real	0m0.231s
+user	0m0.228s
 sys	0m0.000s
 #
 time cO3_dftreal16flat_msr_hh.bin
 
-real	0m0.274s
-user	0m0.268s
-sys	0m0.004s
+real	0m0.234s
+user	0m0.232s
+sys	0m0.000s
 #
