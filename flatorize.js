@@ -76,6 +76,11 @@
                 xxx
         }
         
+        // Normalize a bit the order to increase the chance to match
+        // an existing expression.
+
+        normalize_a_bit_the_order_inplace( ret );
+
 
         // Try to find an already existing expression that matches.
         var idstr2expr = exprCache.idstr2expr
@@ -448,6 +453,40 @@
 
         return arr;
     }
+
+    function normalize_a_bit_the_order_inplace( arr )
+    {
+        for (var i = arr.length - 2; i >= 0; i--)
+        {
+            var a = arr[ i ]
+            ,   b = arr[ i+1 ]
+            ,   c = arr[ i+2 ]
+
+            , to_a = typeof a
+            , to_c = typeof c
+            ;
+            if (b === '*')
+            {
+                var anum = 'number' === to_a
+                ,   cnum = 'number' === to_c
+                ;
+                if (!anum  &&  cnum)
+                {
+                    // Swap multiplicands, number comes first
+                    arr[ i+2 ] = a;
+                    arr[ i ]   = c;
+                }
+                else if (!anum  &&  !cnum  &&  a.__isExpr__  &&  b.__isExpr__  &&  a.__exprIdnum__ > b.__exprIdnum__)
+                {
+                    // Swap multiplicands, expression with smallest id comes first
+                    arr[ i+2 ] = a;
+                    arr[ i ]   = c;
+                }               
+            }
+        }
+    }
+
+
     function getExprIdstr( x )
     {
         if (x instanceof Array)
@@ -486,10 +525,36 @@
 
     function getNegArr( arr )
     {
+        // Specific case:  a*b
+
         if (arr.length === 3  &&  arr[1] === '*'  &&  'number' === typeof arr[0])
             return [ -arr[0] ].concat( arr.slice( 1 ) );
 
-        // xxx more general cases
+        // A bit more general case: toggle +/- signs
+
+        var arr = [].concat( arr );
+        
+        if (arr[0] === '-')      
+            arr.shift();
+
+        else if (arr[0] === '+') 
+            arr[0] = '-';
+        
+        else if ('number' === typeof arr[0]) 
+            arr[0] = -arr[0];
+
+        else
+            arr.unshift( '-' );
+
+        for (var i = 1; i < arr.length; i++)
+        {
+            var x = arr[ i ];
+            arr[ i ] = x === '+' ? '-'
+                : x === '-'      ? '+'
+                : x
+            ;
+        }
+        return arr;
     }
 
     function check_exprgen_if_possible( exprgen )
