@@ -691,7 +691,7 @@
 
         for (var i = arr.length; i--;)
         {
-            if ('number' !== typeof arr[ i ])
+            if ('number' !== typeof arr[ i + 1 ])
                 continue;
             
             while (EPSILON > Math.abs( arr[ i + 1 ] - 1 )  &&  arr[ i ] === '*')
