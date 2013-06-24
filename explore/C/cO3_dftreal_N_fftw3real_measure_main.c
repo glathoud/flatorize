@@ -19,20 +19,13 @@ int main()
   fftw_complex * X    = (fftw_complex*) fftw_malloc( N_out * sizeof( fftw_complex ));
 
 
-  struct timespec fftw_plan_start, fftw_plan_end
-    , sanity_start, sanity_end
-    , test_start, test_end
-    ;
-  
-  double fftw_plan_duration;
-
   /* Prepare FFTW plan*/
-  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &fftw_plan_start);
+
+  PLAN_DURATION_BEGIN;
+ 
   fftw_plan p = fftw_plan_dft_r2c_1d(N, x_in, X, FFTW_MEASURE);
-  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &fftw_plan_end);
-  
-  fftw_plan_duration = (double)(fftw_plan_end.tv_sec - fftw_plan_start.tv_sec) + 1e-9 * (double)(fftw_plan_end.tv_nsec - fftw_plan_start.tv_nsec); // get elapsed time in ns
-  printf("\nfftw_plan_duration: %g\n", fftw_plan_duration);
+
+  PLAN_DURATION_END;
 
   /* Prepare input (need to copy because `x_randreal` has `const`) */
   for (i = 0; i < N; i++)
@@ -61,8 +54,13 @@ int main()
     }
   
   /* --- Performance test --- */
+
+  TEST_DURATION_BEGIN;
+
   for (i = NITER ; i-- ; )
     fftw_execute( p );
+
+  TEST_DURATION_END;
   
   /* --- Cleanup --- */
   free( x_in );

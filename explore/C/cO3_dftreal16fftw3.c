@@ -52,8 +52,13 @@ int main()
     }
   
   /* --- Performance test --- */
+
+  TEST_DURATION_BEGIN;
+
   for (i = NITER ; i-- ; )
     fftw_execute( p );
+
+  TEST_DURATION_END;
   
   /* --- Cleanup --- */
   fftw_destroy_plan( p );

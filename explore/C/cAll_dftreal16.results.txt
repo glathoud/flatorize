@@ -41,27 +41,26 @@ gcc -o cO3_dftreal16flat_hh.bin           cO3_dftreal16_common.o cO3_dftreal16fl
 cO3_dftreal16_print_NITER.bin
 NITER: 1e+07
 #
-time cO3_dftreal16fftw3real.bin
-
-real	0m0.338s
-user	0m0.336s
-sys	0m0.000s
+#--- First comparison: compute the full X[0..N-1], ignoring that x is a real signal
 #
-time cO3_dftreal16flat_hh.bin
-
-real	0m0.230s
-user	0m0.228s
-sys	0m0.000s
+./cO3_dftreal16fftw3.bin
+test duration: 0.585532 seconds (cO3_dftreal16fftw3.c)
 #
-time cO3_dftreal16flat_sr_hh.bin
-
-real	0m0.231s
-user	0m0.228s
-sys	0m0.000s
+#time cO3_dftreal16flat.bin
 #
-time cO3_dftreal16flat_msr_hh.bin
-
-real	0m0.234s
-user	0m0.232s
-sys	0m0.000s
+#--- Second comparison: compute only X[0..1+N/2] because x is a real signal
 #
+./cO3_dftreal16fftw3real.bin
+plan duration: 0.000320927 seconds (cO3_dftreal_N_fftw3real_main.c)
+test duration: 0.351769 seconds (cO3_dftreal_N_fftw3real_main.c)
+#
+./cO3_dftreal16flat_hh.bin
+test duration: 0.238871 seconds (cO3_dftreal16flat_hh.c)
+#
+./cO3_dftreal16flat_sr_hh.bin
+test duration: 0.238797 seconds (cO3_dftreal16flat_sr_hh.c)
+#
+./cO3_dftreal16flat_msr_hh.bin
+test duration: 0.238615 seconds (cO3_dftreal16flat_msr_hh.c)
+#
+set +v

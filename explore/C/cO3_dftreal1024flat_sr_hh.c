@@ -49,9 +49,13 @@ int main()
     }
   
   /* --- Performance test --- */
+
+  TEST_DURATION_BEGIN;
+  
   for (i = NITER ; i-- ; )
     dftreal1024flat_sr_hh( x_randreal, X );
   
+  TEST_DURATION_END;
 
   /* --- Cleanup --- */
   for (i = N; i--;)

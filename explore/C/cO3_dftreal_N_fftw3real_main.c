@@ -28,7 +28,12 @@ int main()
   fftw_complex * X    = (fftw_complex*) fftw_malloc( N_out * sizeof( fftw_complex ));
   
   /* Prepare FFTW plan*/
+
+  PLAN_DURATION_BEGIN;
+
   fftw_plan p = fftw_plan_dft_r2c_1d(N, x_in, X, FFTW_ESTIMATE);
+
+  PLAN_DURATION_END;
   
   /* --- Sanity check --- */
 
@@ -53,8 +58,13 @@ int main()
     }
   
   /* --- Performance test --- */
+
+  TEST_DURATION_BEGIN;
+
   for (i = NITER ; i-- ; )
     fftw_execute( p );
+
+  TEST_DURATION_END;
   
   /* --- Cleanup --- */
   free( x_in );

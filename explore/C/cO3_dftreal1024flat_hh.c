@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include "cO3_dftreal1024_common.h"
 
 extern const int   NITER;
@@ -24,7 +25,7 @@ int main()
       X[ i ] = malloc( 2 * sizeof( double ));
     }
   
-
+  
   /* --- Sanity check --- */
 
   dftreal1024flat_hh( x_randreal, X );
@@ -49,9 +50,13 @@ int main()
     }
   
   /* --- Performance test --- */
+
+  TEST_DURATION_BEGIN;
+
   for (i = NITER ; i-- ; )
     dftreal1024flat_hh( x_randreal, X );
-  
+
+  TEST_DURATION_END;
 
   /* --- Cleanup --- */
   for (i = N; i--;)
