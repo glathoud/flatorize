@@ -24,7 +24,7 @@ int main()
 
   for (i = 0; i < N; i++)
     {
-      X[ i ] = malloc( sizeof( double* ));
+      X[ i ] = malloc( 2 * sizeof( double ));
     }
   
   int radix = (int)(round( log( (float)(N) ) / log( 2.0 ) ));
