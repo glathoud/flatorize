@@ -1058,14 +1058,19 @@
         while (rest.length)
         {
             var x = rest.shift();
+            
             if (x.__isExpr__)
             {
-                var idnum = x.__exprIdnum__;
-                idnum2count[ idnum ] = 1 + (idnum in idnum2count  ?  idnum2count[ idnum ]  :  0);
+                var idnum = x.__exprIdnum__
+                ,   count = idnum2count[ idnum ] = 1 + (idnum in idnum2count  ?  idnum2count[ idnum ]  :  0)
+                ;
+                if (count > 1)
+                    continue;  // Already recursed through this expression.
             }
 
             if (x instanceof Array)
             {
+                // Have not recursed yet, do it now.
                 rest = x.concat( rest );
             }
         }
