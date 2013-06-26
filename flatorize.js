@@ -88,7 +88,9 @@
                 return ret[0];
         }
         
-        ret = wrap_simple_products( ret );
+        ret = wrap_products( ret );
+
+        ret = normalize_the_sum_order( ret );
 
         // Try to find an already existing expression that matches.
         var idstr2expr = exprCache.idstr2expr
@@ -539,7 +541,7 @@
     }
 
 
-    function wrap_simple_products( arr )
+    function wrap_products( arr )
     {
         if (arr.length < 4)
             return arr;
@@ -554,6 +556,82 @@
         return arr;
     }
 
+
+    function normalize_the_sum_order( arr )
+    {
+        if (arr.length < 3)
+            return arr;
+
+        var siArr = extract_sum_info_arr( arr );
+        if (siArr == null)
+            return arr;  // Not a pure sum
+        
+        siArr.sort( compare_sum_info );
+
+        return merge_sum_info_arr( siArr );
+
+        function compare_sum_info( a, b )
+        {
+            if (b.toe === 'number'  &&  a.toe !== 'number')
+                return +1;
+            
+            if (a.toe === 'number'  &&  b.toe !== 'number')
+                return -1;
+            
+            if (a.e.__isExpr__  &&  b.e.__isExpr__)
+                return a.e.__exprIdnum__ < b.e.__exprIdnum__  ?  -1  :  +1;
+
+            return 0;
+        }
+    }
+
+    function extract_sum_info_arr( arr )
+    {
+        var ret = [];
+        for (var i = arr.length; i--;)
+        {
+            var  e = arr[ i ]
+            ,  toe = typeof e
+            , sign = +1
+            ;
+            if (i > 0)
+            {
+                var prev = arr[ --i ];
+                if (prev === '+')
+                    sign = +1;
+                else if (prev === '-')
+                    sign = -1;
+                else
+                    return null;  // Not a pure sum
+            }
+            
+            si = {
+                sign  : sign
+                , e   : e
+                , toe : toe
+            };
+
+            ret.unshift( si );
+        }
+        return ret;
+    }
+
+    
+    function merge_sum_info_arr( siArr )
+    {
+        var ret = [];
+        for (var n = siArr.length
+             , i = 0; i < n; i++)
+        {
+            var si = siArr[ i ];
+            if (!(i === 0  &&  si.sign > 0))
+                ret.push( si.sign > 0  ?  '+'  :  '-' );
+            
+            ret.push( si.e );
+        }
+        return ret;
+    }
+    
 
     function getExprIdstr( x )
     {
