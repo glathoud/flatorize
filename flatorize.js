@@ -88,6 +88,8 @@
                 return ret[0];
         }
         
+        ret = wrap_simple_products( ret );
+
         // Try to find an already existing expression that matches.
         var idstr2expr = exprCache.idstr2expr
         ,        idstr = getExprIdstr( ret )
@@ -533,6 +535,22 @@
             arr = newarr[ 0 ] === '+'  ?  newarr.slice( 1 )  :  newarr;
         }
          
+        return arr;
+    }
+
+
+    function wrap_simple_products( arr )
+    {
+        if (arr.length < 4)
+            return arr;
+        
+        arr = [].concat( arr );
+        for (var i = arr.length - 3; i >= 0; i--)
+        {
+            if (arr[i+1] === '*')
+                arr.splice( i, 3, expr( arr[i], arr[i+1], arr[i+2] ) );
+        }
+        
         return arr;
     }
 
