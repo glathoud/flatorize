@@ -90,7 +90,7 @@
             return idstr2expr[ idstr ];
         
         // Not found. Try to find all or part of a negative of the expression.
-                
+        
         var neg_arr   = getNegArr( ret )
         ,   neg_idstr = neg_arr  &&  getExprIdstr( neg_arr )
         ;
@@ -165,7 +165,7 @@
         if (within)
             throw new Error('only one flatorize at a time!');
         within = true;
-     
+        
         // `varstr`: Ignore the type declarations (meant e.g. to
         // generate C code - not interesting for JS code).
         
@@ -236,7 +236,7 @@
                 check_exprgen_if_possible( exprgen );
 
                 var e = exprgen.apply(null,vararr);
-              
+                
                 // Input: gather statistics: how many time is each expression used?
                 //
                 // Implementation note: We gather those stats now (rather than
@@ -450,7 +450,10 @@
             arr = newarr;
         }
         
-
+        var factorized = try_to_factorize( arr );
+        if (null != factorized)
+            arr = factorized;
+        
         return arr;
     }
 
@@ -484,6 +487,9 @@
                 }               
             }
         }
+
+        // Only positive constants: extract the minus sign
+        "xxx"
     }
 
 
@@ -744,7 +750,10 @@
 
     function close_to( a, b )
     {
-        return Math.abs( (a-b)/b ) < EPSILON;
+        return 'number' === typeof a  &&  'number' === typeof b  
+            ?  Math.abs( (a-b)/b ) < EPSILON  
+            :  a === b
+        ;
     }
 
     function expr_simplify_multiplications( arr )
@@ -805,7 +814,7 @@
             else
                 arr.splice( n-2, 2, 'number' === typeof arr[n-3]  ?  -arr[n-3]  :  expr( '-', arr[ n-3 ] ) );
         }
-                    
+        
         return arr;
     }
 
@@ -993,7 +1002,7 @@
                     return arr.slice( 0, 4 ).concat( expr.apply( null, rest_simpl ) );
             }
             
-                
+            
         }
 
         if (arr[0] instanceof Array  &&  rx_pm.test( arr[1] ))
@@ -1002,12 +1011,6 @@
                 arr[2] instanceof Array  ?  arr[2].concat( arr.slice( 3 ))  :  arr.slice(1)
             ));
         }
-                                                             
-            
-        var cf_info;
-        if (is_pure_sum( arr )  &&  null != (cf_info = try_to_get_common_factor( arr )))
-            arr = [ cf_info.factor, '*', expr.apply( null, cf_info.sum_without_factor ) ];
-            
         
 
         function middle_if_almost_equal( a, b )
@@ -1049,24 +1052,143 @@
                 return a;
             }
         }
+    }
 
 
-        function is_pure_sum( arr )
+
+
+    function is_pure_product( arr )
+    {
+        for (var i = arr.length; --i;)
         {
-            for (var i = arr.length; i--;)
+            var x = arr[i];
+            if (!x  ||  !('number' === typeof arr[i]  ||  x.__isExpr__  ||  x === '*'))
+                return false;
+        }
+        return true;
+    }
+
+    function try_to_factorize( arr )
+    {
+        var commfact = try_to_get_common_factors_of_a_pure_sum_of_pure_products( arr );
+        if (!commfact)
+            return;
+        
+        // We found common factors, let us remove them from each term of the pure sum
+        var thinsum = remove_common_factors( arr, commfact );
+
+        // Build and return the factorized expression
+        var ret = [];
+        for (var n = commfact.length, i = 0; i < n; i++)
+            ret.push( commfact[ i ], '*' );
+        
+        ret.push( expr.apply( null, thinsum ) );
+        
+        return ret;
+    }
+    
+    function try_to_get_common_factors_of_a_pure_sum_of_pure_products( arr )
+    {
+        if (arr.length < 2)
+            return;
+        
+        var commfact = null;
+        for (var i = arr.length; i--;)
+        {
+            var x = arr[i];
+            if (x === '+'  ||  x === '-')
+                continue;
+
+            var arr2 = x.__isExpr__  ?  [].concat( x )  // copy
+                : 'number' === typeof x  ?  [ x ]
+                : null
+            ;
+            
+            if (!(arr2  &&  is_pure_product( arr2 )))
+                return;  // Not a pure sum of pure products
+            
+            if (!commfact)
             {
-                var x = arr[i];
-                if (!x  ||  !('number' === typeof arr[i]  ||  x.__isExpr__))
-                    return false;
+                commfact = arr2.filter( function (z) { return z !== '*'; } );
             }
-            return true;
-        }
+            else
+            {
+                var newcommfact = [];
+                for (var j = arr2.length; j--;)
+                {
+                    for (var k = commfact.length; k--;)
+                    {
+                        if (close_to( arr2[j], commfact[k]))
+                        {
+                            newcommfact.push( commfact[k] );
+                            commfact.splice( k, 1 );
+                            break;
+                        }
+                    }
+                    
+                }
+                commfact = newcommfact;
+            }
 
-        function try_to_get_common_factor( arr )
+            if (!(commfact  &&  commfact.length))
+                return;  // We did not find any common factor
+        }
+        return commfact;
+    }
+
+    function remove_common_factors( arr, commfact )
+    {
+        var n = arr.length
+        , ret = new Array(n)
+        ;
+        for (var i = n; i--;)
         {
-            "xxx"
-        }
+            var x = arr[ i ];
+            if ('+' === x  ||  '-' === x)
+            {
+                ret[ i ] = x;
+            }
+            else if (x.__isExpr__)
+            {
+                var x2 = [].concat( x )         // copy
+                ,  cf2 = [].concat( commfact )  // copy
+                ;
+                for (var j = x2.length; j--;)
+                {
+                    var x2j = x2[ j ];
+                    
+                    for (var k = cf2.length; k--;)
+                    {
+                        if (close_to( x2j, cf2[ k ]))
+                        {
+                            cf2.splice( k, 1 );
+                            var removed = j > 0  ?  x2.splice( j-1, 2 )  :  x2.splice( j, 2 );  // Also remove the '*' sign
+                            
+                            if (1 < removed.length  &&  !(removed[0] === '*'  ||  removed[1] === '*'))
+                                throw new Error('remove_common_factors: insanity detected!');
 
+                            break;
+                        }
+                    }
+
+                    if (!x2.length)
+                    {
+                        // Special case: the product contained only the common factors
+                        x2 = [ 1 ];
+                        break;
+                    }
+                }
+                if (0 !== cf2.length)
+                    throw new Error('remove_common_factors: could not remove all factors!');
+
+                ret[ i ] = expr.apply( null, x2 );
+            }
+            else
+            {
+                throw new Error('not a pure sum')
+            }
+        }
+        return ret;
     }
 
     function gather_count( code, idnum2count )
