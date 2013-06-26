@@ -1,7 +1,7 @@
 #include <math.h>
 #include "test_duration_macro.h"
 
-static const int NITER = 1e7;
+static const int NITER = 3e7;
 
 static const int N = 16;
 

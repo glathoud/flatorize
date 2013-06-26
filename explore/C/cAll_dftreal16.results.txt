@@ -1,4 +1,3 @@
-$ cAll_dftreal16.sh 
 #
 # Compiling
 #
@@ -13,14 +12,14 @@ NITER: 1e+07
 #
 time c_dftreal16fftw3.bin    # FFTW3 lib was compiled with -O3 (speed advantage)
 
-real	0m0.569s
-user	0m0.564s
+real	0m0.575s
+user	0m0.572s
 sys	0m0.000s
 #
 time c_dftreal16flat.bin     # Not compiled with -O3
 
-real	0m0.996s
-user	0m0.992s
+real	0m1.011s
+user	0m1.008s
 sys	0m0.000s
 #
 set +v
@@ -28,39 +27,45 @@ set +v
 #
 # Compiling
 #
-gcc -O3 -fomit-frame-pointer -mtune=native -malign-double -fstrict-aliasing -fno-schedule-insns -ffast-math -c -o cO3_dftreal16_common.o    cO3_dftreal16_common.c  # Same optimization flags as used by in FFTW3.3.3
+gcc -O3 -fomit-frame-pointer -mtune=native -malign-double -fstrict-aliasing -fno-schedule-insns -ffast-math    -lrt   -c -o cO3_dftreal16_common.o    cO3_dftreal16_common.c  # Same optimization flags as used by in FFTW3.3.3  +  -lrt for time.h
 gcc -o cO3_dftreal16_print_NITER.bin    cO3_dftreal16_common.o cO3_dftreal16_print_NITER.c 
 #
-gcc -o cO3_dftreal16fftw3.bin          cO3_dftreal16_common.o cO3_dftreal16fftw3.c -lfftw3 -lm
-gcc -o cO3_dftreal16flat.bin           cO3_dftreal16_common.o cO3_dftreal16flat.c
-gcc -o cO3_dftreal16fftw3real.bin          cO3_dftreal16_common.o cO3_dftreal16fftw3real.c -lfftw3 -lm
-gcc -o cO3_dftreal16flat_hh.bin           cO3_dftreal16_common.o cO3_dftreal16flat_hh.c
+gcc -o cO3_dftreal16fftw3.bin          cO3_dftreal16_common.o cO3_dftreal16fftw3.c -lfftw3 -lm   -lrt
+gcc -o cO3_dftreal16flat.bin           cO3_dftreal16_common.o cO3_dftreal16flat.c   -lrt
+gcc -o cO3_dftreal16fftw3real.bin          cO3_dftreal16_common.o cO3_dftreal16fftw3real.c -lfftw3 -lm   -lrt
+gcc -o cO3_dftreal16flat_hh.bin           cO3_dftreal16_common.o cO3_dftreal16flat_hh.c   -lrt
+gcc -o cO3_dftreal16flat_sr_hh.bin           cO3_dftreal16_common.o cO3_dftreal16flat_sr_hh.c   -lrt
+gcc -o cO3_dftreal16flat_msr_hh.bin           cO3_dftreal16_common.o cO3_dftreal16flat_msr_hh.c   -lrt
+gcc -o cO3_dftreal16fftw3real_measure.bin          cO3_dftreal16_common.o cO3_dftreal16fftw3real_measure.c -lfftw3 -lm    -lrt
 #
 # Testing
 #
 cO3_dftreal16_print_NITER.bin
-NITER: 1e+07
+NITER: 3e+07
 #
 #--- First comparison: compute the full X[0..N-1], ignoring that x is a real signal
 #
 ./cO3_dftreal16fftw3.bin
-test duration: 0.585532 seconds (cO3_dftreal16fftw3.c)
+test duration: 1.66896 seconds (cO3_dftreal16fftw3.c)
 #
-#time cO3_dftreal16flat.bin
+./cO3_dftreal16flat.bin
+test duration: 0.812764 seconds (cO3_dftreal16flat.c)
 #
 #--- Second comparison: compute only X[0..1+N/2] because x is a real signal
 #
 ./cO3_dftreal16fftw3real.bin
-plan duration: 0.000320927 seconds (cO3_dftreal_N_fftw3real_main.c)
-test duration: 0.351769 seconds (cO3_dftreal_N_fftw3real_main.c)
+plan duration: 0.000765196 seconds (cO3_dftreal_N_fftw3real_main.c)
+test duration: 1.07893 seconds (cO3_dftreal_N_fftw3real_main.c)
 #
 ./cO3_dftreal16flat_hh.bin
-test duration: 0.238871 seconds (cO3_dftreal16flat_hh.c)
+test duration: 0.672776 seconds (cO3_dftreal16flat_hh.c)
 #
 ./cO3_dftreal16flat_sr_hh.bin
-test duration: 0.238797 seconds (cO3_dftreal16flat_sr_hh.c)
+test duration: 0.67472 seconds (cO3_dftreal16flat_sr_hh.c)
 #
 ./cO3_dftreal16flat_msr_hh.bin
-test duration: 0.238615 seconds (cO3_dftreal16flat_msr_hh.c)
+test duration: 0.664497 seconds (cO3_dftreal16flat_msr_hh.c)
 #
 set +v
+gl@gl-ThinkPad-T420s:~/tobackup/flatorize/explore/C
+$ 

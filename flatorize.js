@@ -1003,8 +1003,11 @@
             ));
         }
                                                              
-                                                               
-
+            
+        var cf_info;
+        if (is_pure_sum( arr )  &&  null != (cf_info = try_to_get_common_factor( arr )))
+            arr = [ cf_info.factor, '*', expr.apply( null, cf_info.sum_without_factor ) ];
+            
         
 
         function middle_if_almost_equal( a, b )
@@ -1045,6 +1048,23 @@
             {
                 return a;
             }
+        }
+
+
+        function is_pure_sum( arr )
+        {
+            for (var i = arr.length; i--;)
+            {
+                var x = arr[i];
+                if (!x  ||  !('number' === typeof arr[i]  ||  x.__isExpr__))
+                    return false;
+            }
+            return true;
+        }
+
+        function try_to_get_common_factor( arr )
+        {
+            "xxx"
         }
 
     }
