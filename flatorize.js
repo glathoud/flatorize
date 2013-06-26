@@ -58,8 +58,9 @@
     
     function expr()
     {
-        var ret = expr_simplify( Array.prototype.slice.call( arguments ) );
-
+        var ret = Array.prototype.slice.call( arguments );
+        ret = expr_simplify( ret );
+        
         if (ret.length === 0)
             return 0;
 
@@ -80,6 +81,12 @@
         // an existing expression.
 
         ret = normalize_a_bit_the_order( ret );
+
+        if (ret.length === 1)
+        {
+            if (ret[0].__isExpr__  ||  'number' === typeof ret[0])
+                return ret[0];
+        }
         
         // Try to find an already existing expression that matches.
         var idstr2expr = exprCache.idstr2expr
@@ -496,18 +503,36 @@
 
         // Merge minus signs of products
         
-        var productArr = extract_productArr( arr )
-            .map( merge_minus_signs_of_product )
-        ;
-        
-        var newarr = [];
-        for (var n = productArr.length
-             , i = 0; i < n; i++
-            )
-            newarr.push.apply( newarr, productArr[ i ] );
-        
-        arr = newarr[ 0 ] === '+'  ?  newarr.slice( 1 )  :  newarr;
-                
+        if (arr.length > 2)
+        {
+            var productArr = extract_productArr( arr );
+
+            var piArr = productArr.map( merge_minus_signs_of_product );
+            
+            var newarr = [];
+            for (var n = piArr.length
+                 , i = 0; i < n; i++
+                )
+            {
+                var pi = piArr[ i ];
+                if (i < 1)
+                {
+                    if (pi.sign < 0)
+                        newarr.push( '-' );
+                }
+                else 
+                {
+                    newarr.push( pi.sign < 0  ?  '-'  :  '+' );
+                }
+                if (pi.e[0] === '+')
+                    xxx
+
+                newarr.push.apply( newarr, pi.e );
+            }
+            
+            arr = newarr[ 0 ] === '+'  ?  newarr.slice( 1 )  :  newarr;
+        }
+         
         return arr;
     }
 
@@ -1128,7 +1153,7 @@
             
             if (!commfact)
             {
-                commfact = arr2.filter( function (z) { return z !== '*'; } );
+                commfact = arr2.filter( function (z) { return z.__isExpr__  ||  'number' === typeof z; } );
             }
             else
             {
@@ -1249,7 +1274,7 @@
         return productArr;
     }
 
-    function merge_minus_signs_of_product( product )
+    function merge_minus_signs_of_product( product, opt )
     {
         var arr  = []
         ,   sign = +1
@@ -1268,16 +1293,32 @@
                 arr.unshift( -x );
                 sign = -sign;
             } 
-            else
+            else if (i === 0  &&  x === '-')
+            {
+                sign = -sign;
+            }
+            else if (!(i === 0  &&  x === '+'))
             {
                 arr.unshift( x );
             }
         }
         
-        return sign > 0  ?  (arr[0] === '+'  ||  arr[0] === '-'  ?  arr  :  ['+'].concat( arr ))
-        :  arr[ 0 ] === '-'  ?  ['+'].concat( arr.slice( 1 ) )
-            : [ '-', expr.apply( null, arr.slice( arr[ 0 ] === '+'  ?  1  :  0 ) ) ]
-        ;
+        var same = sign > 0  &&  (arr.length === product.length);
+        if (same)
+        {
+            for (var i = arr.length; i--;)
+            {
+                if (arr[ i ] !== product[ i ])
+                {
+                    same = false;
+                    break;
+                }
+            }
+            if (same)
+                return { sign: +1, e : product };
+        }
+        
+        return { sign : sign, e : arr };
     }
 
     function gather_count( code, idnum2count )
