@@ -485,6 +485,11 @@
                     arr[ i+2 ] = a;
                     arr[ i ]   = c;
                 }               
+                else if (anum  &&  cnum)
+                {
+                    arr.splice( i, 3, a * c );
+                }
+                
             }
         }
 
