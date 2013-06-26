@@ -79,9 +79,8 @@
         // Normalize a bit the order to increase the chance to match
         // an existing expression.
 
-        normalize_a_bit_the_order_inplace( ret );
-
-
+        ret = normalize_a_bit_the_order( ret );
+        
         // Try to find an already existing expression that matches.
         var idstr2expr = exprCache.idstr2expr
         ,        idstr = getExprIdstr( ret )
@@ -457,8 +456,10 @@
         return arr;
     }
 
-    function normalize_a_bit_the_order_inplace( arr )
+    function normalize_a_bit_the_order( arr )
     {
+        arr = [].concat( arr );
+
         for (var i = arr.length - 2; i >= 0; i--)
         {
             var a = arr[ i ]
@@ -493,8 +494,21 @@
             }
         }
 
-        // Only positive constants: extract the minus sign
-        "xxx"
+        // Merge minus signs of products
+        
+        var productArr = extract_productArr( arr )
+            .map( merge_minus_signs_of_product )
+        ;
+        
+        var newarr = [];
+        for (var n = productArr.length
+             , i = 0; i < n; i++
+            )
+            newarr.push.apply( newarr, productArr[ i ] );
+        
+        arr = newarr[ 0 ] === '+'  ?  newarr.slice( 1 )  :  newarr;
+                
+        return arr;
     }
 
 
@@ -1194,6 +1208,76 @@
             }
         }
         return ret;
+    }
+    
+    function extract_productArr( arr )
+    {
+        var productArr = [];
+     
+        for (var current_product = [], n = arr.length
+             , i = 0; i < n; i++)
+        {
+            var x = arr[ i ];
+            if (i < n-1)
+            {
+                var isExpr = x.__isExpr__
+                ,   isNum  = 'number' === typeof x
+                ;
+                if (!current_product.length  
+                    ?  x === '+'  ||  x === '-'  ||  isNum  ||  isExpr   // The first item may be a sign
+                    :  x === '*'  ||  isNum  ||  isExpr // in the future we may support '/' as well here, but first think about consequences elsewhere.
+                   )
+                {
+                    current_product.push( x );
+                }
+                else
+                {
+                    if (current_product.length)
+                        productArr.push( current_product );
+                    
+                    current_product = [ x ];
+                }
+            }
+            else
+            {
+                current_product.push( x );
+                productArr.push( current_product );
+                // End of loop
+            }
+        }
+        
+        return productArr;
+    }
+
+    function merge_minus_signs_of_product( product )
+    {
+        var arr  = []
+        ,   sign = +1
+        ;
+        for (var i = product.length; i--;)
+        {
+            var x = product[ i ];
+            if (x.__isExpr__  &&  x.length === 2  &&  (x[0] === '+'  ||  x[0] === '-'))
+            {
+                arr.unshift( x[ 1 ] );
+                if (x[0] === '-')
+                    sign = -sign;
+            }
+            else if ('number' === typeof x  &&  x < 0)
+            {
+                arr.unshift( -x );
+                sign = -sign;
+            } 
+            else
+            {
+                arr.unshift( x );
+            }
+        }
+        
+        return sign > 0  ?  (arr[0] === '+'  ||  arr[0] === '-'  ?  arr  :  ['+'].concat( arr ))
+        :  arr[ 0 ] === '-'  ?  ['+'].concat( arr.slice( 1 ) )
+            : [ '-', expr.apply( null, arr.slice( arr[ 0 ] === '+'  ?  1  :  0 ) ) ]
+        ;
     }
 
     function gather_count( code, idnum2count )
