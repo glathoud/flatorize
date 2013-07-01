@@ -114,7 +114,7 @@
         // find out common sums, which amounts to take over some of
         // the responsibility of the algorithm designer.
         
-        ret = soft_sum_factorized( ret );  // How well, actually, it did not bring much speedup at all on DFT tests.
+        // xxx ret = soft_sum_factorized( ret );  // How well, actually, it did not bring much speedup at all on DFT tests.
         
 
 
@@ -334,7 +334,7 @@
 
     // -------------------- Private implementation --------------------
 
-    var EPSILON = 1e-14
+    var EPSILON = 1e-12
     ,   EPSILON_DIGITS = Math.floor( -Math.log( EPSILON ) / Math.log( 10 ) )
     ;
 
@@ -1598,7 +1598,12 @@
                 ret[i]   = ret[i][ 1 ];
             }
         }
-        
+
+        // positive cst
+
+        if (ret[0] < 0)
+            ret = [ '-', expr.apply( null, [ -ret[0] ].concat( ret.slice( 1 ) ) ) ];
+                
         return ret;
     }
 
