@@ -31,6 +31,8 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
 (function () {
 
+    var INSERT_EARLY = true;
+
     // ---------- Public API
 
     flatorize.getCodeC = flatorize_getCodeC;
@@ -275,7 +277,8 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         
         // Intermediary calculations
 
-        ret.push( '/* intermediary calculations */' );
+        if (!INSERT_EARLY)
+            ret.push( '/* intermediary calculations */' );
 
         for (var n = duplicates.length, i = 0; i < n; i++)
         {
@@ -285,12 +288,16 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             ,   d_name = dupliidnum2varname[ idnum ]
             ;
             d_type.substring.call.a;  // Must be a simple type
-            ret.push( d_type + ' ' + d_name + ' = ' + expcode_cast_if_needed( d_type, d_e, d_name ) + ';' );
+            ret.push( function (s) {
+                return { toString : function () { return s; }, idnum : idnum };
+            }( d_type + ' ' + d_name + ' = ' + expcode_cast_if_needed( d_type, d_e, d_name ) + ';' )
+                    );
         }
         
         // Return
 
-        ret.push( '', '/* output */' );
+        if (!INSERT_EARLY)
+            ret.push( '', '/* output */' );
 
         if (is_out_type_simple)
         {
@@ -321,15 +328,27 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                 {
                     if (is_level_1)
                     {
-                        ret.push( typed_out_varname + '[' + i + '] = ' + expcode_cast_if_needed( basictype, out_e[ i ] ) + ';' );
+                        var ei = out_e[ i ]
+                        , code = typed_out_varname + '[' + i + '] = ' + expcode_cast_if_needed( basictype, out_e[ i ] ) + ';'
+                        ;
+                        if (INSERT_EARLY)
+                            insert_early( ret , ei ,  code );
+                        else
+                            ret.push( code );
                     }
                     else
                     {
                         for (var j = 0; j < p; j++)
                         {
-                            ret.push( typed_out_varname + '[' + i + ']' + '[' + j + ']' + ' = ' + expcode_cast_if_needed( basictype, out_e[ i ][ j ] ) + ';' );
+                            var eij = out_e[ i ][ j ]
+                            ,  code = typed_out_varname + '[' + i + ']' + '[' + j + ']' + ' = ' + expcode_cast_if_needed( basictype, eij ) + ';' 
+                            ;
+                            
+                            if (INSERT_EARLY)
+                                insert_early( ret , eij , code );
+                            else
+                                ret.push( code );
                         }
-                        
                     }
                 }
             }
@@ -341,6 +360,31 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         }
         
         return ret.map( indent );
+        
+        function insert_early( ret, e, code )
+        // Assumption: expr id num increases bottom-up with the
+        // construction (construct id num > all idnums of construct's
+        // dependencies).
+        {
+            var max = -Infinity;
+            for (var k = e.length; k--;)
+            {
+                var ek = e[ k ];
+                if (ek.__isExpr__)
+                    max = Math.max( max, ek.__exprIdnum__ );
+            }
+            
+            for (var n = ret.length, i = 0; i < n; i++)
+            {
+                if (ret[ i ].idnum > max)
+                {
+                    ret.splice( i, 0, code );
+                    return;
+                }
+            }
+            
+            ret.push( code );
+        }
 
         function expcode_cast_if_needed( outtype, e, /*?string?*/outname )
         {

@@ -30,12 +30,12 @@ plan duration: 0.0216224 seconds (cO3_dftreal_N_fftw3real_measure_main.c)
 test duration: 4.39921 seconds (cO3_dftreal_N_fftw3real_measure_main.c)
 #
 ./cO3_dftreal1024flat_hh.bin
-test duration: 20.4142 seconds (cO3_dftreal1024flat_hh.c)
+test duration: 19.4546 seconds (cO3_dftreal1024flat_hh.c)
 #
 ./cO3_dftreal1024flat_sr_hh.bin
-test duration: 15.1947 seconds (cO3_dftreal1024flat_sr_hh.c)
+test duration: 14.5336 seconds (cO3_dftreal1024flat_sr_hh.c)
 #
 ./cO3_dftreal1024flat_msr_hh.bin
-test duration: 13.736 seconds (cO3_dftreal1024flat_msr_hh.c)
+test duration: 12.6446 seconds (cO3_dftreal1024flat_msr_hh.c)
 #
 set +v
