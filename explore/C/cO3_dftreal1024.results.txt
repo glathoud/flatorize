@@ -1,4 +1,3 @@
-$ cO3_dftreal1024.sh 
 #
 # Compiling
 #
@@ -23,20 +22,20 @@ NITER: 1e+06
 #--- Comparison: compute only X[0..1+N/2] because x is a real signal
 #
 ./cO3_dftreal1024fftw3real.bin
-plan duration: 0.00395297 seconds (cO3_dftreal_N_fftw3real_main.c)
-test duration: 4.65703 seconds (cO3_dftreal_N_fftw3real_main.c)
+plan duration: 0.00388479 seconds (cO3_dftreal_N_fftw3real_main.c)
+test duration: 4.64958 seconds (cO3_dftreal_N_fftw3real_main.c)
 #
 ./cO3_dftreal1024fftw3real_measure.bin
-plan duration: 0.0228272 seconds (cO3_dftreal_N_fftw3real_measure_main.c)
-test duration: 4.31433 seconds (cO3_dftreal_N_fftw3real_measure_main.c)
+plan duration: 0.0216224 seconds (cO3_dftreal_N_fftw3real_measure_main.c)
+test duration: 4.39921 seconds (cO3_dftreal_N_fftw3real_measure_main.c)
 #
 ./cO3_dftreal1024flat_hh.bin
-test duration: 20.1081 seconds (cO3_dftreal1024flat_hh.c)
+test duration: 20.4142 seconds (cO3_dftreal1024flat_hh.c)
 #
 ./cO3_dftreal1024flat_sr_hh.bin
-test duration: 15.0761 seconds (cO3_dftreal1024flat_sr_hh.c)
+test duration: 15.1947 seconds (cO3_dftreal1024flat_sr_hh.c)
 #
 ./cO3_dftreal1024flat_msr_hh.bin
-test duration: 13.9317 seconds (cO3_dftreal1024flat_msr_hh.c)
+test duration: 13.736 seconds (cO3_dftreal1024flat_msr_hh.c)
 #
 set +v

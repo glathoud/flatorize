@@ -114,7 +114,7 @@
         // find out common sums, which amounts to take over some of
         // the responsibility of the algorithm designer.
         
-        ret = soft_sum_factorized( ret );
+        ret = soft_sum_factorized( ret );  // How well, actually, it did not bring much speedup at all on DFT tests.
         
 
 
