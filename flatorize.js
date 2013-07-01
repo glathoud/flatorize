@@ -99,7 +99,12 @@
 
         // Further "normalization" to extract factors
 
-        ret = hard_sum_factorized( ret );
+        // xxx deactivated for now: ret = hard_sum_factorized( ret );
+        // because it brought degradation to DFT1024 msr use case and
+        // no improvement to others (code actually longer) could try
+        // again later with "full flat sums", but then again need to
+        // find out common sums, which amounts to take over some of
+        // the responsibility of the algorithm designer.
         
         // xxx ret = soft_sum_factorized( ret );
         
