@@ -1032,7 +1032,7 @@
     {
         arr = [].concat( arr );
 
-        if (arr[0]  instanceof Array  &&  arr[0].length === 2  &&   arr[0][0] === '-'  &&  (arr[1] === '+'  ||  arr[1] === '-'))
+        if (arr[0]  instanceof Array  &&  (arr[0].length === 2  ||  arr[1] === '+'  ||  arr[1] === '-')  &&   arr[0][0] === '-'  &&  (arr[1] === '+'  ||  arr[1] === '-'))
             arr = arr[0].concat( arr.slice( 1 ) );
 
         for (var n_1 = arr.length - 1
@@ -1041,10 +1041,20 @@
             var p = arr[ i ] === '+'
             ,   m = arr[ i ] === '-'
             ;
-            if ((p || m)  &&  'number' === typeof arr[i+1]  &&  arr[i+1] < 0)
-            {
-                arr[i]   = p  ?  '-'  :  '+';
-                arr[i+1] = -arr[i+1];
+            if (p || m)
+            { 
+                var xp1 = arr[i+1];
+
+                if ('number' === typeof xp1  &&  xp1 < 0)
+                {
+                    arr[i]   = p  ?  '-'  :  '+';
+                    arr[i+1] = -xp1;
+                }
+                else if (xp1.__isExpr__  &&  xp1.length === 2  &&  xp1[ 0 ] === '-')
+                {
+                    arr[i]   = p  ?  '-'  :  '+';
+                    arr[i+1] = xp1[ 1 ];
+                }
             }
         }
         return arr;
@@ -1535,7 +1545,7 @@
         // xxx Should we always flatten everything ? But then we need post-processing: find common sums.
         
         if (fpiArr.length)
-            return merge_piArr( fpiArr.concat( piArr ) );
+            return expr_simplify_plus_minus( merge_piArr( fpiArr.concat( piArr ) ) );
         else
             return arr0;
         
