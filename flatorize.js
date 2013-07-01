@@ -23,6 +23,11 @@
 
 // -*- coding: utf-8 -*-
 
+// xxx the algebraic simplification functions have grown and should
+// better be placed in a separate file.
+
+/*global xxx xxxerror*/
+
 (function (global) {
 
     // ---------- Public API ----------
@@ -74,7 +79,7 @@
         for (var i = ret.length; i--;)
         {
             if ('number' === typeof ret[i]  &&  isNaN( ret[i] ))
-                xxx
+                xxxerror
         }
         
         // Normalize a bit the order to increase the chance to match
@@ -92,6 +97,12 @@
 
         ret = normalize_the_sum_order( ret );
 
+        // Further "normalization" to extract factors
+
+        ret = hard_sum_factorized( ret );
+        
+        // xxx ret = soft_sum_factorized( ret );
+        
         // Try to find an already existing expression that matches.
         var idstr2expr = exprCache.idstr2expr
         ,        idstr = getExprIdstr( ret )
@@ -536,7 +547,7 @@
             
             arr = newarr[ 0 ] === '+'  ?  newarr.slice( 1 )  :  newarr;
         }
-         
+        
         return arr;
     }
 
@@ -605,10 +616,11 @@
                     return null;  // Not a pure sum
             }
             
-            si = {
+            var si = {
                 sign  : sign
                 , e   : e
                 , toe : toe
+                , arr : e instanceof Array  ?  e  :  [ e ]  // For convenience, used e.g. by `hard_sum_factorized`
             };
 
             ret.unshift( si );
@@ -678,7 +690,7 @@
 
         // A bit more general case: toggle +/- signs
 
-        var arr = [].concat( arr );
+        arr = [].concat( arr );  // copy
         
         if (arr[0] === '-')      
             arr.shift();
@@ -1334,7 +1346,7 @@
     function extract_productArr( arr )
     {
         var productArr = [];
-     
+        
         for (var current_product = [], n = arr.length
              , i = 0; i < n; i++)
         {
@@ -1442,6 +1454,252 @@
                 rest = x.concat( rest );
             }
         }
+    }
+
+
+    function hard_sum_factorized( arr0 )
+    // Principle: reduce the number of multiplications.
+    // Returns an array, basis for an expression.
+    // 
+    // Basic example:
+    //
+    // A = a * .. + b * .. + .. * c + d
+    // B = .. * b + a * .. + c * .. + e
+    //
+    // A + B = a * ( .. + .. ) + b * ( .. + .. ) + c * ( .. + .. ) + d + e
+    // 
+    // -> down from 6 to 3 multiplications.
+    //
+    // We generalize on this example, having possibly multiple terms
+    // in the sum e.g. A + B + C and extracting possibly multiple
+    // factors of each subterm e.g. a1 * a2.
+    // 
+    // Overall we try to extract as many factors as possible.
+    //
+    // When in a tie situation, we prefer to extract constants.  This
+    // implicitly gives a chance for constants to go up the expression
+    // hierarchy, and merge together (constant * constant -> constant)
+    {
+        // Extract the necessary information and detect when not in
+        // such a case.
+
+        var siArr = extract_sum_info_arr( arr0 ); // e.g. `A + B`
+        if (!siArr)  // Not a pure sum
+            return arr0;
+
+        var piArr = flatten_all_sub_sums_into_one_sum_of_products( siArr )
+        ,  fpiArr = []
+        ;
+        
+        if (!(piArr  &&  1 < piArr.length))
+            return arr0;
+
+        while (true)
+        {
+            var countArr = count_how_many_times_each_factor_is_in_other_sum_terms( piArr );
+            
+            countArr.sort( compare_count );
+            
+            var best = countArr[ 0 ];
+            if (0 < best.other_count)
+            {
+                var o = factorized( best.match, piArr );
+                piArr = o.rest;
+                fpiArr.push( o.fpi );
+            }
+            else
+            {
+                // Did not find any further factorization
+                break; 
+            }
+        }
+        
+        return merge_piArr( fpiArr.concat( piArr ) );
+        
+        // --- Details
+
+
+        function merge_piArr( piArr )
+        {
+            var ret = [];
+            for (var ni = piArr.length , i = 0; i < ni; i++)
+            {
+                var pi = piArr[ i ];
+
+                if (pi.sign < 0)    
+                    ret.push( '-' );
+                
+                else if (ret.length)                
+                    ret.push( '+' );
+
+                ret.push( pi.e );
+            }
+            return ret;
+        }
+
+        function factorized( match, piArr )
+        // Note: destructive effect on `piArr`.
+        // You should use `<returned value>.rest` as future value for `piArr`
+        {
+            var sumArr = []
+            ,   iArr   = []
+            ,   factor 
+            ;
+            for (var nq = match.length , q = 0; q < nq; q++)
+            {
+                var m   = match[ q ]
+                ,   i   = m.i
+                ,   j   = m.j
+                ,   pi  = piArr[ i ]
+                ,   pie = pi.e
+
+                // Remove factor
+                ,   f   = pie.splice( j , 1 )[ 0 ]
+                ;               
+                if (null == factor)
+                    factor = f;                
+                else if (!close_to( factor, f ))
+                    throw new Error( 'Wrong factorization.' );
+
+                // Remove '*' sign as well
+                pie.splice( pie[ j-1 ] === '*'  ?  j-1  :  pie[ j ] === '*'  ?  j  :  xxxerror
+                            , 1 
+                          );
+                
+                // Note which terms of piArr have been factorized (used further below).
+                iArr.push( i );
+                
+                
+                if (pi.sign < 0)
+                    sumArr.push( '-' );
+                
+                else if (sumArr.length)
+                    sumArr.push( '+' );
+                
+                sumArr.push( pie.length  ?  pie  :  1 );
+            }
+            
+            iArr.sort( function (a,b) { return a < b  ?  -1  :  +1 } );
+
+            for (var j = iArr.length; j--;)
+                piArr.splice( iArr[ j ], 1 );
+            
+            // `merge_products` because `expr` could also have led to factorization(s).
+            var arr = merge_products( [ factor, '*', expr.apply( null, sumArr ) ] );  
+            
+            return {
+                fpi    : { sign : +1
+                           , e  : expr.apply( null, arr ) 
+                         }
+                , rest : piArr
+            };
+            
+
+            function merge_products( arr )
+            {
+                var prod = arr.slice( 0, 2 )
+                ,   e    = arr[ 2 ]
+                ;
+
+                while (e.__isExpr__  &&  e.length === 3  &&  e[ 1 ] === '*')
+                {
+                    prod.push( '*', e[ 0 ] );
+                    e = e[ 2 ];
+                }
+                
+                if (prod.length === 2)
+                    return arr;
+                
+                return [ expr.apply( null, prod ), '*', e ];
+            }
+        }
+        
+        
+        function count_how_many_times_each_factor_is_in_other_sum_terms( piArr )
+        {
+            var countArr = [];
+            
+            for (var ni = piArr.length , i = 0; i < ni; i++)
+            {
+                var pi  = piArr[ i ]
+                ,   pie = pi.e
+                ;
+                for (var nj = pie.length , j = 0; j < nj; j++)
+                {
+                    var factor = pie[ j ]
+                    ,   match  = [ { i : i, j : j } ]
+                    ;
+
+                    for (var ni2 = piArr.length , i2 = 0; i2 < ni2; i2++)
+                    {
+                        if (i === i2)
+                            continue;
+
+                        var pi2  = piArr[ i2 ]
+                        ,   pi2e = pi2.e
+                        ;
+                        for (var nj2 = pi2e.length , j2 = 0; j2 < nj2; j2++)
+                        {
+                            var factor2 = pi2e[ j2 ];
+                            if (close_to( factor, factor2 ))
+                                match.push( { i : i2, j : j2 });
+                        }
+                    }
+                    
+                    countArr.push({
+                        factor      : factor
+                        , is_number : 'number' === typeof factor
+
+                        , match       : match
+                        , other_count : match.length - 1
+                    });
+                }
+            }
+
+            return countArr;
+        }
+
+
+        function compare_count( a, b )
+        // Decreasing order: best first.
+        {
+            var aoc = a.other_count
+            ,   boc = b.other_count
+            ;
+
+            return aoc > boc  ?  -1
+                :  aoc < boc  ?  +1
+                :  a.factor_is_number   &&  !b.factor_is_number  ?  -1
+                :  !a.factor_is_number  &&  b.factor_is_number   ?  +1
+                :  0
+            ;
+        }
+        
+        
+        function flatten_all_sub_sums_into_one_sum_of_products( siArr )
+        {
+            var piArr = [];
+            for (var ni = siArr.length , i = 0; i < ni; i++)
+            {
+                var       si = siArr[ i ]
+                , productArr = extract_productArr( si.arr )  // e.g. `a * .. + b * .. + .. * c`
+                ;
+                if (!productArr)
+                    return null;  // Term is not a pure product
+                
+                var sipiArr = productArr.map( merge_minus_signs_of_product );
+                
+                for (var nj = sipiArr.length , j = 0; j < nj; j++)
+                {
+                    var pi = Object.create( sipiArr[ j ] );
+                    pi.sign *= si.sign;  // Merge the signs
+                    piArr.push( pi );
+                }
+            }
+            return piArr;
+        }
+
+
     }
 
 })(this);
