@@ -26,8 +26,6 @@
 // xxx the algebraic simplification functions have grown and should
 // better be placed in a separate file.
 
-/*global xxx xxxerror*/
-
 (function (global) {
 
     // ---------- Public API ----------
@@ -64,12 +62,6 @@
     function expr()
     {
         var ret = Array.prototype.slice.call( arguments );
-
-
-        var xxxtoto = code2str( ret );
-        if (xxxtoto === "[ - (0.3826834323650898 * (arr[1] - arr[9])) - (0.9238795325112867 * (arr[5] - arr[13])), -, (0.3826834323650898 * (arr[15] - arr[7])) - (0.9238795325112867 * (arr[3] - arr[11])) ]")
-            'xxx';
-        
         ret = expr_simplify( ret );
         
         if (ret.length === 0)
@@ -85,7 +77,7 @@
         for (var i = ret.length; i--;)
         {
             if ('number' === typeof ret[i]  &&  isNaN( ret[i] ))
-                xxxerror
+                throw new Error('expr() expected a number here.');
         }
         
         // Normalize a bit the order to increase the chance to match
@@ -107,14 +99,14 @@
 
         // Further "normalization" to extract factors
 
-        // xxx deactivated for now: ret = hard_sum_factorized( ret );
+        // Deactivated for now: ret = hard_sum_factorized( ret );
         // because it brought degradation to DFT1024 msr use case and
         // no improvement to others (code actually longer) could try
         // again later with "full flat sums", but then again need to
         // find out common sums, which amounts to take over some of
         // the responsibility of the algorithm designer.
         
-        // xxx ret = soft_sum_factorized( ret );  // How well, actually, it did not bring much speedup at all on DFT tests.
+        // Deactivated: ret = soft_sum_factorized( ret );  // How well, actually, it did not bring much speedup at all on DFT tests.
         
 
 
@@ -562,7 +554,7 @@
                     newarr.push( pi.sign < 0  ?  '-'  :  '+' );
                 }
                 if (pi.e[0] === '+')
-                    xxx
+                    throw new Error('merge minus signs: unexpected "+" sign.');  // not implemented or not right
 
                 newarr.push.apply( newarr, pi.e );
             }
@@ -1510,7 +1502,7 @@
         if (!siArr)  // Not a pure sum
             return arr0;
         
-        // xxx for now we implement only a specific case
+        // LATER: For now we implement only a specific case
         // to check whether the idea can bring performance.
         
         var siN = siArr.length
@@ -1560,9 +1552,6 @@
         if (!close_to( factor, sipiArr[1][0].e[0][0] ))
             return arr0;
 
-        if (/0\.9238795325112867,\*,arr\[3\],-,arr\[11\]/.test(arr0))
-            'xxx';
-        
         for (var i = siN; i--;)
         {
             var piArr = sipiArr[ i ];
@@ -1667,7 +1656,7 @@
             }
         }
         
-        // xxx Should we always flatten everything ? But then we need post-processing: find common sums.
+        // LATER: Should we always flatten everything ? But then we need post-processing: find common sums.
         
         if (fpiArr.length)
             return expr_simplify_plus_minus( merge_piArr( fpiArr.concat( piArr ) ) );
