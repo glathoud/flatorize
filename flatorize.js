@@ -450,7 +450,7 @@
 
             arr = expr_simplify_plus_minus( arr ); 
             if (!(arr instanceof Array  &&  1 < arr.length))  break;
-
+            
             arr = expr_move_times_minus( arr );
             if (!(arr instanceof Array  &&  1 < arr.length))  break;
 
@@ -460,6 +460,8 @@
             arr = expr_normalize_all_minus( arr ); 
             if (!(arr instanceof Array  &&  1 < arr.length))  break;
 
+            arr = expr_simplify_if_all_numbers( arr );
+            if (!(arr instanceof Array  &&  1 < arr.length))  break;
         }
         
         while (true)
@@ -978,7 +980,7 @@
         var n;
         while (n = arr.length , (arr[ n-1 ] === 0  &&  arr[ n - 2 ] === '+'))
             arr = arr.slice( 0, n - 2 );
-        
+
         return arr;
     }
     
@@ -1106,6 +1108,20 @@
         return arr;
     }
 
+
+    function expr_simplify_if_all_numbers( arr )
+    {
+        for (var i = arr.length; i--;)
+        {
+            var x = arr[ i ]
+            , tox = typeof x
+            ;
+            if (!('number' === tox  ||  ('string' === tox  &&  /^[\+\-\*\/]$/.test( x ))))
+                return arr;
+        }
+        return new Function ('return ' + arr.join(' '))();
+    }
+    
     function expr_try_to_simplify_product_associativity( arr )
     // "Try": may return nulley if no modification found, else a new
     // array.
@@ -1497,7 +1513,9 @@
         while (true)
         {
             var countArr = count_how_many_times_each_factor_is_in_other_sum_terms( piArr );
-            
+            if (!countArr.length)
+                break;
+
             countArr.sort( compare_count );
             
             var best = countArr[ 0 ];
@@ -1532,7 +1550,7 @@
                 else if (ret.length)                
                     ret.push( '+' );
 
-                ret.push( pi.e );
+                ret.push( expr.apply( null, pi.e ) );
             }
             return ret;
         }
@@ -1562,7 +1580,7 @@
                     throw new Error( 'Wrong factorization.' );
 
                 // Remove '*' sign as well
-                pie.splice( pie[ j-1 ] === '*'  ?  j-1  :  pie[ j ] === '*'  ?  j  :  xxxerror
+                pie.splice( pie[ j-1 ] === '*'  ?  j-1  :  pie[ j ] === '*'  ?  j  :  pie.length === 0  ?  'ok'  : function () { throw new Error('bug'); }()
                             , 1 
                           );
                 
@@ -1629,6 +1647,9 @@
                     var factor = pie[ j ]
                     ,   match  = [ { i : i, j : j } ]
                     ;
+
+                    if (!('number' === typeof factor  ||  factor.__isExpr__))
+                        continue;
 
                     for (var ni2 = piArr.length , i2 = 0; i2 < ni2; i2++)
                     {

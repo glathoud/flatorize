@@ -13,7 +13,7 @@ function c_code_sanity_check()
 
     [ y_flat, y_flat_sr, y_flat_msr ].forEach( check_y_against_truth );
 
-    function check_y_against_truth( y )
+    function check_y_against_truth( y, ind )
     {
         for (var k = y.length; k--;)
         {
