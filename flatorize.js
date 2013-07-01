@@ -1032,7 +1032,7 @@
     {
         arr = [].concat( arr );
 
-        if (arr[0]  instanceof Array  &&  (arr[0].length === 2  ||  arr[1] === '+'  ||  arr[1] === '-')  &&   arr[0][0] === '-'  &&  (arr[1] === '+'  ||  arr[1] === '-'))
+        if (arr[0]  instanceof Array  &&  arr[0].length === 2  &&   arr[0][0] === '-'  &&  (arr[1] === '+'  ||  arr[1] === '-'))
             arr = arr[0].concat( arr.slice( 1 ) );
 
         for (var n_1 = arr.length - 1
@@ -1564,7 +1564,10 @@
                 else if (ret.length)                
                     ret.push( '+' );
 
-                ret.push( expr.apply( null, pi.e ) );
+                ret.push( pi.e instanceof Array
+                          ? (pi.e.__isExpr__  ?  pi.e  :   expr.apply( null, pi.e ) )
+                          : pi.e
+                        );
             }
             return ret;
         }
