@@ -64,6 +64,12 @@
     function expr()
     {
         var ret = Array.prototype.slice.call( arguments );
+
+
+        var xxxtoto = code2str( ret );
+        if (xxxtoto === "[ - (0.3826834323650898 * (arr[1] - arr[9])) - (0.9238795325112867 * (arr[5] - arr[13])), -, (0.3826834323650898 * (arr[15] - arr[7])) - (0.9238795325112867 * (arr[3] - arr[11])) ]")
+            'xxx';
+        
         ret = expr_simplify( ret );
         
         if (ret.length === 0)
@@ -84,6 +90,8 @@
         
         // Normalize a bit the order to increase the chance to match
         // an existing expression.
+
+            
 
         ret = normalize_a_bit_the_order( ret );
 
@@ -106,7 +114,7 @@
         // find out common sums, which amounts to take over some of
         // the responsibility of the algorithm designer.
         
-        // xxx ret = soft_sum_factorized( ret );
+        ret = soft_sum_factorized( ret );
         
         // Try to find an already existing expression that matches.
         var idstr2expr = exprCache.idstr2expr
@@ -151,14 +159,17 @@
             }
             else
             {
-                // var ret = this.map( function (x) { return code2str( x, opt ); } ).join(' ');
-                // For performance reasons, implemented using a for loop.
-                
                 var n = this.length
                 , ret = new Array( n )
                 ;
                 for (var i = 0; i < n; i++)
-                    ret[ i ] = code2str( this[ i ], opt );
+                {
+                    var one = code2str( this[ i ], opt );
+                    ret[ i ] = -1 < one.indexOf( ' ' )  &&  one[0] !== '('  &&  one[ one.length - 1 ] !== ')'
+                        ?  '(' + one + ')'  
+                        :  one
+                    ;
+                }
                 
                 ret = ret.join(' ');
             }
@@ -1488,6 +1499,88 @@
     }
 
 
+    
+    function soft_sum_factorized(arr0)
+    {
+        var siArr = extract_sum_info_arr( arr0 );
+        if (!siArr)  // Not a pure sum
+            return arr0;
+        
+        // xxx for now we implement only a specific case
+        // to check whether the idea can bring performance.
+        
+        var siN = siArr.length
+        if (siN !== 2)
+            return arr0;
+
+        var sipiArr = new Array( siN );
+        for (var i = siN; i--;)
+        {
+            // Two terms, and both must have a multiplicative constant
+
+            var productArr = extract_productArr( siArr[ i ].arr );
+            if (!(productArr  &&  productArr.length === 2))
+                return arr0;
+
+            var piArr = productArr.map( merge_minus_signs_of_product );
+
+            if (!(piArr  &&  piArr.length === 2))
+                return arr0;
+
+            if (!(piArr[0].e instanceof Array  &&  piArr[1].e instanceof Array))
+                return arr0;
+
+            if (!(piArr[0].e.length === 1  &&  piArr[1].e.length === 1))
+                return arr0;
+
+            if (!(piArr[0].e[0] instanceof Array  &&  piArr[1].e[0] instanceof Array))
+                return arr0;
+
+            if (!(piArr[0].e[0].length === 3  &&  piArr[1].e[0].length === 3))
+                return arr0;
+
+            if (!(piArr[0].e[0][1] === '*'  &&  piArr[1].e[0][1] === '*'))
+                return arr0;
+            
+            if (!('number' === typeof piArr[0].e[0][0]  &&  'number' === typeof piArr[1].e[0][0]))
+                return arr0;
+
+            // Biggest multiplicative constant first
+            
+            piArr.sort( function (a,b) { return Math.abs( a.e[0][0] ) > Math.abs( b.e[0][0] )  ?  -1  :  +1 });
+
+            sipiArr[i] = piArr;
+        }
+        
+        var factor = sipiArr[0][0].e[0][0];
+        if (!close_to( factor, sipiArr[1][0].e[0][0] ))
+            return arr0;
+
+        if (/0\.9238795325112867,\*,arr\[3\],-,arr\[11\]/.test(arr0))
+            'xxx';
+        
+        for (var i = siN; i--;)
+        {
+            var piArr = sipiArr[ i ];
+
+            // Do not corrupt expression objects -> copy the arrays
+            piArr[ 0 ].e = [].concat( piArr[ 0 ].e )
+            piArr[ 1 ].e = [].concat( piArr[ 1 ].e )
+            
+            piArr[ 0 ].e[0] = piArr[ 0 ].e[0][ 2 ];
+
+            var arr1 = [].concat( piArr[ 1 ].e[0] );
+            arr1[ 0 ] /= factor;
+            piArr[ 1 ].e[0] = expr.apply( null, arr1 );
+        }
+        
+        return [ factor, '*', expr( siArr[0].sign > 0    ?  '+'  :  '-', expr.apply( null, merge_piArr( sipiArr[ 0 ] ) )
+                                    , siArr[1].sign > 0  ?  '+'  :  '-', expr.apply( null, merge_piArr( sipiArr[ 1 ] ) )
+                                  )
+               ];
+    }
+
+
     function hard_sum_factorized( arr0 )
     // Principle: reduce the number of multiplications.
     // Returns an array, basis for an expression.
@@ -1555,27 +1648,6 @@
             return arr0;
         
         // --- Details
-
-        function merge_piArr( piArr )
-        {
-            var ret = [];
-            for (var ni = piArr.length , i = 0; i < ni; i++)
-            {
-                var pi = piArr[ i ];
-
-                if (pi.sign < 0)    
-                    ret.push( '-' );
-                
-                else if (ret.length)                
-                    ret.push( '+' );
-
-                ret.push( pi.e instanceof Array
-                          ? (pi.e.__isExpr__  ?  pi.e  :   expr.apply( null, pi.e ) )
-                          : pi.e
-                        );
-            }
-            return ret;
-        }
 
         function factorized( match, piArr )
         // Note: destructive effect on `piArr`.
@@ -1754,6 +1826,29 @@
         }
 
 
+    }
+
+
+
+    function merge_piArr( piArr )
+    {
+        var ret = [];
+        for (var ni = piArr.length , i = 0; i < ni; i++)
+        {
+            var pi = piArr[ i ];
+
+            if (pi.sign < 0)    
+                ret.push( '-' );
+            
+            else if (ret.length)                
+                ret.push( '+' );
+
+            ret.push( pi.e instanceof Array
+                      ? (pi.e.__isExpr__  ?  pi.e  :   expr.apply( null, pi.e ) )
+                      : pi.e
+                    );
+        }
+        return ret;
     }
 
 })(this);
