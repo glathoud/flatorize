@@ -116,6 +116,10 @@
         
         ret = soft_sum_factorized( ret );
         
+
+
+
+
         // Try to find an already existing expression that matches.
         var idstr2expr = exprCache.idstr2expr
         ,        idstr = getExprIdstr( ret )
@@ -1574,10 +1578,28 @@
             piArr[ 1 ].e[0] = expr.apply( null, arr1 );
         }
         
-        return [ factor, '*', expr( siArr[0].sign > 0    ?  '+'  :  '-', expr.apply( null, merge_piArr( sipiArr[ 0 ] ) )
-                                    , siArr[1].sign > 0  ?  '+'  :  '-', expr.apply( null, merge_piArr( sipiArr[ 1 ] ) )
-                                  )
-               ];
+        var ret = [ factor, '*', expr( siArr[0].sign > 0    ?  '+'  :  '-', expr.apply( null, merge_piArr( sipiArr[ 0 ] ) )
+                                       , siArr[1].sign > 0  ?  '+'  :  '-', expr.apply( null, merge_piArr( sipiArr[ 1 ] ) )
+                                     )
+                  ];
+
+        // cst * (- expression)
+
+        for (var i = ret.length; i--;)
+        {
+            if (i < 2)
+                break;
+            
+            if (ret[i].__isExpr__  &&  ret[i-1] === '*'  &&  'number' === typeof ret[i-2]  &&
+                ret[i].length === 2  &&  ret[i][0] === '-'
+               )
+            {
+                ret[i-2] = -ret[ i-2 ];
+                ret[i]   = ret[i][ 1 ];
+            }
+        }
+        
+        return ret;
     }
 
 
