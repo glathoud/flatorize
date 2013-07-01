@@ -1532,10 +1532,14 @@
             }
         }
         
-        return merge_piArr( fpiArr.concat( piArr ) );
+        // xxx Should we always flatten everything ? But then we need post-processing: find common sums.
+        
+        if (fpiArr.length)
+            return merge_piArr( fpiArr.concat( piArr ) );
+        else
+            return arr0;
         
         // --- Details
-
 
         function merge_piArr( piArr )
         {
@@ -1569,7 +1573,12 @@
                 ,   i   = m.i
                 ,   j   = m.j
                 ,   pi  = piArr[ i ]
-                ,   pie = pi.e
+                ;
+
+                if (pi.e.__isExpr__)
+                    pi.e = [].concat( pi.e ); // ...destruct/modify pi, but not the original expression object, otherwise the whole flatorize process will be corrupt.
+                
+                var pie = pi.e
 
                 // Remove factor
                 ,   f   = pie.splice( j , 1 )[ 0 ]
@@ -1594,7 +1603,7 @@
                 else if (sumArr.length)
                     sumArr.push( '+' );
                 
-                sumArr.push( pie.length  ?  pie  :  1 );
+                sumArr.push( pie.length  ?  expr.apply( null, pie )  :  1 );
             }
             
             iArr.sort( function (a,b) { return a < b  ?  -1  :  +1 } );
@@ -1714,6 +1723,12 @@
                 {
                     var pi = Object.create( sipiArr[ j ] );
                     pi.sign *= si.sign;  // Merge the signs
+
+                    var e = pi.e;
+                    while (e instanceof Array  &&  e.length === 1)
+                        e = e[ 0 ];
+
+                    pi.e = e;
                     piArr.push( pi );
                 }
             }
