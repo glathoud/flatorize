@@ -31,12 +31,9 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
 (function () {
 
-    var INSERT_EARLY = false;
-    var ALIGNED_DATA = false;
+    var INSERT_EARLY = true;
+    var ALIGNED_DATA = true;
     
-    if (INSERT_EARLY  &&  ALIGNED_DATA)
-        throw new Error( 'Not supported yet.' );
-
     // ---------- Public API
 
     flatorize.getCodeC = flatorize_getCodeC;
@@ -314,7 +311,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             // Do not use return
          
             var is_level_1, basictype;
-   
+            
             if (
                 typeIsArraySametype( typed_out_vartype )  &&  
                     (
@@ -327,12 +324,20 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                 ,   p = !is_level_1  &&  typed_out_vartype[ 0 ].length
                 ;
                 basictype.substring.call.a;  // Must be a string
+
+                if (ALIGNED_DATA)
+                {
+                    var outptr = '__outptr__'; // xxx check against "duplicates" varnames to prevent collision.
+                    ret.unshift( basictype + '*' + outptr + ' = ' + typed_out_varname + '[0];' );
+                }
+                
                 
                 for (var i = 0; i < n; i++)
                 {
                     if (is_level_1)
                     {
                         var ei = out_e[ i ]
+                        // xxx , assign = ALIGNED_DATA  ?  
                         , code = typed_out_varname + '[' + i + '] = ' + expcode_cast_if_needed( basictype, out_e[ i ] ) + ';'
                         ;
                         if (INSERT_EARLY)
@@ -345,7 +350,12 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                         for (var j = 0; j < p; j++)
                         {
                             var eij = out_e[ i ][ j ]
-                            ,  code = typed_out_varname + '[' + i + ']' + '[' + j + ']' + ' = ' + expcode_cast_if_needed( basictype, eij ) + ';' 
+
+                            , assign = ALIGNED_DATA 
+                                ? outptr + '[' + ( p * i + j ) + ']'
+                                : typed_out_varname + '[' + i + ']' + '[' + j + ']'
+
+                            ,  code = assign + ' = ' + expcode_cast_if_needed( basictype, eij ) + ';' 
                             ;
                             
                             if (INSERT_EARLY)
