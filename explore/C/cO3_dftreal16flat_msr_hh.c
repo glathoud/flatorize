@@ -17,14 +17,10 @@ int main()
 
   const Nhh = 1 + (N >> 1);
 
-  double ** X = malloc( N * sizeof( double* ));
+  double ** X;
 
-  for (i = 0; i < N; i++)
-    {
-      X[ i ] = malloc( 2 * sizeof( double ));
-    }
+  ALIGNED_MALLOC_CPLX_ARRAY( X, N );  
   
-
   /* --- Sanity check --- */
 
   dftreal16flat_msr_hh( x_randreal, X );
@@ -58,12 +54,8 @@ int main()
   TEST_DURATION_END;
 
   /* --- Cleanup --- */
-  for (i = N; i--;)
-    {
-      free( X[ i ] );
-    }
-  
-  free( X );
+
+  ALIGNED_FREE_CPLX_ARRAY( X, N );  
 
   /* printf("\nDone.\n"); */
   return 0;
