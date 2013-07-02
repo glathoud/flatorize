@@ -1,5 +1,6 @@
 #include <math.h>
 #include "test_duration_macro.h"
+#include "aligned_malloc_macro.h"
 
 static const int NITER = 1e6;
 
