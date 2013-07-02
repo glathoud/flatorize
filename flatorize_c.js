@@ -31,7 +31,11 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
 (function () {
 
-    var INSERT_EARLY = true;
+    var INSERT_EARLY = false;
+    var ALIGNED_DATA = false;
+    
+    if (INSERT_EARLY  &&  ALIGNED_DATA)
+        throw new Error( 'Not supported yet.' );
 
     // ---------- Public API
 
