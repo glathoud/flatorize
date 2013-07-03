@@ -289,10 +289,19 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             ,   d_name = dupliidnum2varname[ idnum ]
             ;
             d_type.substring.call.a;  // Must be a simple type
-            ret.push( function (s) {
-                return { toString : function () { return s; }, idnum : idnum };
-            }( d_type + ' ' + d_name + ' = ' + expcode_cast_if_needed( d_type, d_e, d_name ) + ';' )
+            ret.push
+            (
+                (function (s, e) {
+                    return complete_with_dependency_information
+                    ( 
+                        { toString : function () { return s; }, idnum : idnum }
+                        , e
                     );
+                })( 
+                    d_type + ' ' + d_name + ' = ' + expcode_cast_if_needed( d_type, d_e, d_name ) + ';'
+                    , d_e
+                )
+            );
         }
         
         // Return
@@ -356,15 +365,31 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                                 : typed_out_varname + '[' + i + ']' + '[' + j + ']'
 
                             ,  code = assign + ' = ' + expcode_cast_if_needed( basictype, eij ) + ';' 
+                            ,  codeObj = 
+                                (function (s, e)
+                                 {
+                                     return complete_with_dependency_information(
+                                         { toString : function () { return s; } }
+                                         , e
+                                     );
+                                 })
+                                (
+                                    code
+                                    , eij
+                                )
                             ;
                             
                             if (INSERT_EARLY)
-                                insert_early( ret , eij , code );
+                                insert_early( ret , eij , codeObj );
                             else
-                                ret.push( code );
+                                ret.push( codeObj );
                         }
+
                     }
                 }
+
+                if (!is_level_1)
+                    heuristic_proof_of_concept_reorder_a_bit_to_reduce_register_spill( ret );
             }
             else
             {
@@ -375,6 +400,70 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         
         return ret.map( indent );
         
+        function heuristic_proof_of_concept_reorder_a_bit_to_reduce_register_spill( arr )
+        // Before we try a more general implementation, let us first
+        // check whether this can bring performance at all.
+        {
+            var already = {};
+            
+            for (var i = arr.length - 1; i > 0;)
+            {
+                var co = arr[ i ]
+                , ddsi = co.depSortedId
+                , changed = false;
+                ;
+                if (ddsi  &&  !(ddsi in already))
+                {
+                    already[ ddsi ] = true;
+                    for (var j = i-1; j >= 0; j--)
+                    {
+                        var aj = arr[ j ];
+                        if (ddsi === aj.depSortedId  &&  i-j > 1)
+                        {
+                            arr.splice( j + 1, 0, arr.splice( i, 1 )[ 0 ] );
+                            changed = true;
+                            break;
+                        }
+                    }                    
+                }
+                if (!changed)
+                    i--;
+            }
+            
+
+        }
+
+        function complete_with_dependency_information( codeObj, e )
+        {
+            var depSortedArr = get_depSortedArr( e );
+            var ret = Object.create( codeObj );
+            ret.depSortedArr = depSortedArr;
+            ret.depSortedId  = depSortedArr.join( ',' );
+
+            return ret;
+        }
+
+        function get_depSortedArr( e )
+        {
+            var depSortedArr = [];
+            for (var n = e.length , i = 0; i < n; i++)
+            {
+                var ei = e[ i ];
+                if (ei.__isExpr__)
+                {
+                    var idnum = ei.__exprIdnum__;
+                    idnum.toPrecision.call.a;  // Must be a number
+
+                    if (idnum in dupliidnum2varname)
+                        depSortedArr.push( idnum );
+                    else
+                        depSortedArr.push.apply( depSortedArr, get_depSortedArr( ei ) );
+                }
+            }
+            depSortedArr.sort( function (a,b) { return a < b  ?  -1  :  +1; } );
+            return depSortedArr;
+        }
+
         function insert_early( ret, e, code )
         // Assumption: expr id num increases bottom-up with the
         // construction (construct id num > all idnums of construct's
