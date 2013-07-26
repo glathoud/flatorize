@@ -271,8 +271,17 @@
                 // made during construction (`expr`) can be non trivial
                 // w.r.t. `idnum2count`.
                 
-                gather_count( e, exprCache.idnum2count = {} );
+                var tmp_idnum2count = {};
+                gather_count( e, tmp_idnum2count );
                 
+                // Now that we know idnum2count we can simplify a little bit
+                // the remaining -<expr>
+                // simplify_a_bit_minus_expr_using_idnum2count( e, tmp_idnum2count );
+
+                // Final usage count
+
+                gather_count( e, exprCache.idnum2count = {} );
+
                 // To prevent name collision when creating local variable names
                 var varnameset = {};
                 for (var i = vararr.length; i--;)
