@@ -276,7 +276,7 @@
                 
                 // Now that we know idnum2count we can simplify a little bit
                 // the remaining -<expr>
-                // simplify_a_bit_minus_expr_using_idnum2count( e, tmp_idnum2count );
+                simplify_a_bit_minus_expr_using_idnum2count( exprCache.idnum2expr, tmp_idnum2count );
 
                 // Final usage count
 
@@ -1588,6 +1588,26 @@
                     );
         }
         return ret;
+    }
+
+    function simplify_a_bit_minus_expr_using_idnum2count( idnum2expr, tmp_idnum2count )
+    {
+        var _empty = {};
+
+        for (var idnum in tmp_idnum2count) { if (!(idnum in _empty)) {
+
+            var e = idnum2expr[ idnum ]
+            ,  se
+            ,  sid
+            ;
+            if (e.length === 2  &&  e[ 0 ] === '-'  &&  (se = e[ 1 ]).__isExpr__  &&  2 > tmp_idnum2count[ sid = se.__exprIdnum__ ])
+            {
+                delete idnum2expr[ sid ];
+                delete tmp_idnum2count[ sid ];
+                e.splice( 0, e.length );
+                e.push.apply( e, getNegArr( se ) );
+            }
+        }}
     }
 
 })(this);

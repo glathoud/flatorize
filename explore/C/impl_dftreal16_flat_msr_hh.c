@@ -24,7 +24,7 @@ void dftreal16flat_msr_hh ( const double * arr, /*output:*/ double ** X )
   double _g = _e + _f;
   double _h = _e - _f;
   double _i = _c + _g;
-  double _j = _c - _g;  /* spill -> stack -8(%rsp) */
+  double _j = _c - _g;
   __outptr__[8] = _8 - _i;
   double _k = _8 + _i;
   double _l = 0.7071067811865476 * (_d + _h);
@@ -32,7 +32,7 @@ void dftreal16flat_msr_hh ( const double * arr, /*output:*/ double ** X )
   double _n = _3 + _l;
   double _p = _3 - _l;
   double _o = - _7 + _m;
-  double _q = _7 + _m;
+  double _q = - _7 - _m;
   double _r = arr[1];
   double _s = arr[9];
   double _t = _r + _s;
@@ -53,8 +53,8 @@ void dftreal16flat_msr_hh ( const double * arr, /*output:*/ double ** X )
   double _18 = _15 - _16;
   double _19 = _13 + _17;
   double _1a = _13 - _17;
+  __outptr__[9] = - _z + _19;
   double _1b = _z + _19;
-  __outptr__[9] = - (_z - _19);
   __outptr__[0] = _k + _1b;
   __outptr__[16] = _k - _1b;
   double _1c = - (0.3826834323650898 * _y) + (0.9238795325112867 * _u);
@@ -68,15 +68,15 @@ void dftreal16flat_msr_hh ( const double * arr, /*output:*/ double ** X )
   double _1h = _1d + _1f;
   double _1j = _1d - _1f;
   __outptr__[3] = _o + _1h;
-  __outptr__[15] = - (_o - _1h);
+  __outptr__[15] = - _o + _1h;
+  __outptr__[7] = - _q - _1i;
+  __outptr__[11] = _q - _1i;
   __outptr__[6] = _p - _1j;
   __outptr__[10] = _p + _1j;
-  __outptr__[7] = - (- _q + _1i);
-  __outptr__[11] = - (_q + _1i);
   double _1k = 0.7071067811865476 * (_10 + _1a);
   double _1l = 0.7071067811865476 * (- _10 + _1a);
   __outptr__[4] = _9 + _1k;
   __outptr__[12] = _9 - _1k;
-  __outptr__[5] = - _j + _1l;  /* take _j from %(rsp) */
+  __outptr__[5] = - _j + _1l;
   __outptr__[13] = _j + _1l;
 }
