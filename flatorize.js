@@ -255,7 +255,7 @@
                 exprCache = { idstr2expr:   {}
                               , idnum2expr: {}
                               , idnum_next: 0
-                              , idnum2count:  {}
+                              , idnum2count:  null
                             };
                 
                 check_exprgen_if_possible( exprgen );
@@ -271,7 +271,7 @@
                 // made during construction (`expr`) can be non trivial
                 // w.r.t. `idnum2count`.
                 
-                gather_count( e, exprCache.idnum2count );
+                gather_count( e, exprCache.idnum2count = {} );
                 
                 // To prevent name collision when creating local variable names
                 var varnameset = {};
