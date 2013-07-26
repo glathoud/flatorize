@@ -4698,22 +4698,6 @@ void dftreal1024flat_msr_hh ( const double * arr, /*output:*/ double ** X )
   double _3mb = _1jy - _3m4;
   double _3ma = _1jz - _3m3;
   double _3mc = _1jz + _3m3;
-  double _3md = (0.02256396137479263 * _2ll) + (0.9191538846731759 * _2lk);
-  double _3me = - (0.02256396137479263 * _2lk) + (0.9191538846731759 * _2ll);
-  double _3mf = - (0.02256396137479263 * _3fp) + (0.9191538846731759 * _3fo);
-  double _3mg = (0.02256396137479263 * _3fo) + (0.9191538846731759 * _3fp);
-  double _3mh = _3md + _3mf;
-  double _3mj = _3md - _3mf;
-  double _3mi = _3me + _3mg;
-  double _3mk = _3me - _3mg;
-  double _3ml = _1kc + _3mh;
-  double _3mn = _1kc - _3mh;
-  double _3mm = _1kd + _3mi;
-  double _3mo = _1kd - _3mi;
-  double _3mp = _1ke + _3mk;
-  double _3mr = _1ke - _3mk;
-  double _3mq = _1kf - _3mj;
-  double _3ms = _1kf + _3mj;
   double _3mt = (0.02140613352858428 * _2m1) + (0.5811801785938198 * _2m0);
   double _3mu = - (0.02140613352858428 * _2m0) + (0.5811801785938198 * _2m1);
   double _3mv = - (0.02140613352858428 * _3g5) + (0.5811801785938198 * _3g4);
@@ -5658,22 +5642,6 @@ void dftreal1024flat_msr_hh ( const double * arr, /*output:*/ double ** X )
   double _4cz = _1kw - _4cs;
   double _4cy = _1kx + _4cr;
   double _4d0 = - _1kx + _4cr;
-  double _4d1 = - (0.6339848147078131 * _2ln) + (0.6658950749049077 * _2lm);
-  double _4d2 = - (0.6339848147078131 * _2lm) - (0.6658950749049077 * _2ln);
-  double _4d3 = (0.6339848147078131 * _3fr) + (0.6658950749049077 * _3fq);
-  double _4d4 = (0.6339848147078131 * _3fq) - (0.6658950749049077 * _3fr);
-  double _4d5 = _4d1 + _4d3;
-  double _4d7 = _4d1 - _4d3;
-  double _4d6 = _4d2 + _4d4;
-  double _4d8 = _4d2 - _4d4;
-  double _4d9 = _1ki + _4d5;
-  double _4db = _1ki - _4d5;
-  double _4da = - _1kj + _4d6;
-  double _4dc = _1kj + _4d6;
-  double _4dd = _1kg + _4d8;
-  double _4df = _1kg - _4d8;
-  double _4de = _1kh + _4d7;
-  double _4dg = - _1kh + _4d7;
   double _4dh = - (0.4837544363356841 * _2l7) + (0.4957756828733287 * _2l6);
   double _4di = - (0.4837544363356841 * _2l6) - (0.4957756828733287 * _2l7);
   double _4dj = (0.4837544363356841 * _3fb) + (0.4957756828733287 * _3fa);
@@ -7716,22 +7684,10 @@ void dftreal1024flat_msr_hh ( const double * arr, /*output:*/ double ** X )
   double _5y5 = _51n - _5xy;
   double _5y4 = _51o - _5xx;
   double _5y6 = _51o + _5xx;
-  double _5y7 = _5ib + (0.049126849769467254 * _5ic);
-  double _5y8 = _5ic - (0.049126849769467254 * _5ib);
-  double _5y9 = _5v1 - (0.049126849769467254 * _5v2);
-  double _5ya = _5v2 + (0.049126849769467254 * _5v1);
-  double _5yb = _5y7 + _5y9;
-  double _5yd = _5y7 - _5y9;
-  double _5yc = _5y8 + _5ya;
-  double _5ye = _5y8 - _5ya;
-  double _5yf = _521 + _5yb;
-  double _5yh = _521 - _5yb;
-  double _5yg = _522 + _5yc;
-  double _5yi = _522 - _5yc;
-  double _5yj = _523 + _5ye;
-  double _5yl = _523 - _5ye;
-  double _5yk = _524 - _5yd;
-  double _5ym = _524 + _5yd;
+
+
+
+
   double _5yn = _5ir + (0.0737644315224493 * _5is);
   double _5yo = _5is - (0.0737644315224493 * _5ir);
   double _5yp = _5vh - (0.0737644315224493 * _5vi);
@@ -10222,22 +10178,6 @@ void dftreal1024flat_msr_hh ( const double * arr, /*output:*/ double ** X )
   double _7vr = _6z9 - _7vk;
   double _7vq = _6za - _7vj;
   double _7vs = _6za + _7vj;
-  double _7vt = _7fx + (0.049126849769467254 * _7fy);
-  double _7vu = _7fy - (0.049126849769467254 * _7fx);
-  double _7vv = _7sn - (0.049126849769467254 * _7so);
-  double _7vw = _7so + (0.049126849769467254 * _7sn);
-  double _7vx = _7vt + _7vv;
-  double _7vz = _7vt - _7vv;
-  double _7vy = _7vu + _7vw;
-  double _7w0 = _7vu - _7vw;
-  double _7w1 = _6zn + _7vx;
-  double _7w3 = _6zn - _7vx;
-  double _7w2 = _6zo + _7vy;
-  double _7w4 = _6zo - _7vy;
-  double _7w5 = _6zp + _7w0;
-  double _7w7 = _6zp - _7w0;
-  double _7w6 = _6zq - _7vz;
-  double _7w8 = _6zq + _7vz;
   double _7w9 = _7gd + (0.0737644315224493 * _7ge);
   double _7wa = _7ge - (0.0737644315224493 * _7gd);
   double _7wb = _7t3 - (0.0737644315224493 * _7t4);
@@ -10728,22 +10668,6 @@ void dftreal1024flat_msr_hh ( const double * arr, /*output:*/ double ** X )
   __outptr__[511] = - (_3m8 + _89i);
   __outptr__[510] = _3m7 - _89j;
   __outptr__[514] = _3m7 + _89j;
-  double _89k = (0.008500304945083857 * _5yg) + (0.6926323896691602 * _5yf);
-  double _89l = - (0.008500304945083857 * _5yf) + (0.6926323896691602 * _5yg);
-  double _89m = - (0.008500304945083857 * _7w2) + (0.6926323896691602 * _7w1);
-  double _89n = (0.008500304945083857 * _7w1) + (0.6926323896691602 * _7w2);
-  double _89o = _89k + _89m;
-  double _89q = _89k - _89m;
-  __outptr__[4] = _3ml + _89o;
-  __outptr__[1020] = _3ml - _89o;
-  double _89p = _89l + _89n;
-  double _89r = _89l - _89n;
-  __outptr__[5] = _3mm + _89p;
-  __outptr__[1021] = - (_3mm - _89p);
-  __outptr__[517] = _3mo - _89q;
-  __outptr__[509] = - (_3mo + _89q);
-  __outptr__[508] = _3mn - _89r;
-  __outptr__[516] = _3mn + _89r;
   double _89s = (0.016229252215074583 * _5yw) + (0.8815527129124615 * _5yv);
   double _89t = - (0.016229252215074583 * _5yv) + (0.8815527129124615 * _5yw);
   double _89u = - (0.016229252215074583 * _7wi) + (0.8815527129124615 * _7wh);
@@ -11688,22 +11612,6 @@ void dftreal1024flat_msr_hh ( const double * arr, /*output:*/ double ** X )
   __outptr__[634] = _4cv + _8mv;
   __outptr__[391] = - (- _4cw + _8mu);
   __outptr__[635] = - (_4cw + _8mu);
-  double _8mw = - (0.25720568248696113 * _5ym) + (0.6431618142422538 * _5yl);
-  double _8mx = - (0.25720568248696113 * _5yl) - (0.6431618142422538 * _5ym);
-  double _8my = (0.25720568248696113 * _7w8) + (0.6431618142422538 * _7w7);
-  double _8mz = (0.25720568248696113 * _7w7) - (0.6431618142422538 * _7w8);
-  double _8n0 = _8mw + _8my;
-  double _8n2 = _8mw - _8my;
-  __outptr__[124] = _4d9 + _8n0;
-  __outptr__[900] = _4d9 - _8n0;
-  double _8n1 = _8mx + _8mz;
-  double _8n3 = _8mx - _8mz;
-  __outptr__[125] = _4da + _8n1;
-  __outptr__[901] = - (_4da - _8n1);
-  __outptr__[388] = _4db - _8n3;
-  __outptr__[636] = _4db + _8n3;
-  __outptr__[389] = - (- _4dc + _8n2);
-  __outptr__[637] = - (_4dc + _8n2);
   double _8n4 = - (0.3465278256509944 * _5y6) + (0.8513297420855117 * _5y5);
   double _8n5 = - (0.3465278256509944 * _5y5) - (0.8513297420855117 * _5y6);
   double _8n6 = (0.3465278256509944 * _7vs) + (0.8513297420855117 * _7vr);
@@ -11752,22 +11660,6 @@ void dftreal1024flat_msr_hh ( const double * arr, /*output:*/ double ** X )
   __outptr__[383] = - (_4du + _8nq);
   __outptr__[382] = _4dt - _8nr;
   __outptr__[642] = _4dt + _8nr;
-  double _8ns = (0.272912198004696 * _5yk) + (0.6366559624971845 * _5yj);
-  double _8nt = - (0.272912198004696 * _5yj) + (0.6366559624971845 * _5yk);
-  double _8nu = - (0.272912198004696 * _7w6) + (0.6366559624971845 * _7w5);
-  double _8nv = (0.272912198004696 * _7w5) + (0.6366559624971845 * _7w6);
-  double _8nw = _8ns + _8nu;
-  double _8ny = _8ns - _8nu;
-  __outptr__[132] = _4df + _8nw;
-  __outptr__[892] = _4df - _8nw;
-  double _8nx = _8nt + _8nv;
-  double _8nz = _8nt - _8nv;
-  __outptr__[133] = - _4dg + _8nx;
-  __outptr__[893] = _4dg + _8nx;
-  __outptr__[645] = _4de - _8ny;
-  __outptr__[381] = - (_4de + _8ny);
-  __outptr__[380] = _4dd - _8nz;
-  __outptr__[644] = _4dd + _8nz;
   double _8o0 = (0.3523494919375682 * _5z0) + (0.8082378423472381 * _5yz);
   double _8o1 = - (0.3523494919375682 * _5yz) + (0.8082378423472381 * _5z0);
   double _8o2 = - (0.3523494919375682 * _7wm) + (0.8082378423472381 * _7wl);
@@ -12669,7 +12561,7 @@ void dftreal1024flat_msr_hh ( const double * arr, /*output:*/ double ** X )
   double _90i = (0.5540007267312125 * _7xg) + (0.5890810432223359 * _7xf);
   double _90j = (0.5540007267312125 * _7xf) - (0.5890810432223359 * _7xg);
   double _90k = _90g + _90i;
-  double _90m = _90g - _90i;
+  double _90m = -_90g + _90i;
   __outptr__[246] = _3o3 + _90k;
   __outptr__[778] = _3o3 - _90k;
   double _90l = _90h + _90j;
@@ -12678,8 +12570,8 @@ void dftreal1024flat_msr_hh ( const double * arr, /*output:*/ double ** X )
   __outptr__[779] = _3o4 + _90l;
   __outptr__[266] = _3o1 - _90n;
   __outptr__[758] = _3o1 + _90n;
-  __outptr__[267] = - (- _3o2 + _90m);
-  __outptr__[759] = - (_3o2 + _90m);
+  __outptr__[267] = _3o2 + _90m;
+  __outptr__[759] = - _3o2 + _90m;
   double _90o = - (0.6339848147078131 * _5ze) + (0.6658950749049077 * _5zd);
   double _90p = - (0.6339848147078131 * _5zd) - (0.6658950749049077 * _5ze);
   double _90q = (0.6339848147078131 * _7x0) + (0.6658950749049077 * _7wz);
@@ -12712,6 +12604,95 @@ void dftreal1024flat_msr_hh ( const double * arr, /*output:*/ double ** X )
   __outptr__[762] = _3n5 + _913;
   __outptr__[263] = - (- _3n6 + _912);
   __outptr__[763] = - (_3n6 + _912);
+
+
+
+  {
+  double _3md = (0.02256396137479263 * _2ll) + (0.9191538846731759 * _2lk);
+  double _3me = - (0.02256396137479263 * _2lk) + (0.9191538846731759 * _2ll);
+  double _3mf = - (0.02256396137479263 * _3fp) + (0.9191538846731759 * _3fo);
+  double _3mg = (0.02256396137479263 * _3fo) + (0.9191538846731759 * _3fp);
+  double _3mh = _3md + _3mf;
+  double _3mj = _3md - _3mf;
+  double _3mi = _3me + _3mg;
+  double _3mk = _3me - _3mg;
+  double _3ml = _1kc + _3mh;
+  double _3mn = _1kc - _3mh;
+  double _3mm = _1kd + _3mi;
+  double _3mo = _1kd - _3mi;
+  double _3mp = _1ke + _3mk;
+  double _3mr = _1ke - _3mk;
+  double _3mq = _1kf - _3mj;
+  double _3ms = _1kf + _3mj;
+
+  double _4d1 = - (0.6339848147078131 * _2ln) + (0.6658950749049077 * _2lm);
+  double _4d2 = - (0.6339848147078131 * _2lm) - (0.6658950749049077 * _2ln);
+  double _4d3 = (0.6339848147078131 * _3fr) + (0.6658950749049077 * _3fq);
+  double _4d4 = (0.6339848147078131 * _3fq) - (0.6658950749049077 * _3fr);
+  double _4d5 = _4d1 + _4d3;
+  double _4d7 = _4d1 - _4d3;
+  double _4d6 = _4d2 + _4d4;
+  double _4d8 = _4d2 - _4d4;
+  double _4d9 = _1ki + _4d5;
+  double _4db = _1ki - _4d5;
+  double _4da = - _1kj + _4d6;
+  double _4dc = _1kj + _4d6;
+  double _4dd = _1kg + _4d8;
+  double _4df = _1kg - _4d8;
+  double _4de = _1kh + _4d7;
+  double _4dg = - _1kh + _4d7;
+
+  double _5y7 = _5ib + (0.049126849769467254 * _5ic);
+  double _5y8 = _5ic - (0.049126849769467254 * _5ib);
+  double _5y9 = _5v1 - (0.049126849769467254 * _5v2);
+  double _5ya = _5v2 + (0.049126849769467254 * _5v1);
+  double _5yb = _5y7 + _5y9;
+  double _5yd = _5y7 - _5y9;
+  double _5yc = _5y8 + _5ya;
+  double _5ye = _5y8 - _5ya;
+  double _5yf = _521 + _5yb;
+  double _5yh = _521 - _5yb;
+  double _5yg = _522 + _5yc;
+  double _5yi = _522 - _5yc;
+  double _5yj = _523 + _5ye;
+  double _5yl = _523 - _5ye;
+  double _5yk = _524 - _5yd;
+  double _5ym = _524 + _5yd;
+
+  double _7vt = _7fx + (0.049126849769467254 * _7fy);
+  double _7vu = _7fy - (0.049126849769467254 * _7fx);
+  double _7vv = _7sn - (0.049126849769467254 * _7so);
+  double _7vw = _7so + (0.049126849769467254 * _7sn);
+  double _7vx = _7vt + _7vv;
+  double _7vz = _7vt - _7vv;
+  double _7vy = _7vu + _7vw;
+  double _7w0 = _7vu - _7vw;
+  double _7w1 = _6zn + _7vx;
+  double _7w3 = _6zn - _7vx;
+  double _7w2 = _6zo + _7vy;
+  double _7w4 = _6zo - _7vy;
+  double _7w5 = _6zp + _7w0;
+  double _7w7 = _6zp - _7w0;
+  double _7w6 = _6zq - _7vz;
+  double _7w8 = _6zq + _7vz;
+  
+  double _89k = (0.008500304945083857 * _5yg) + (0.6926323896691602 * _5yf);
+  double _89l = - (0.008500304945083857 * _5yf) + (0.6926323896691602 * _5yg);
+  double _89m = - (0.008500304945083857 * _7w2) + (0.6926323896691602 * _7w1);
+  double _89n = (0.008500304945083857 * _7w1) + (0.6926323896691602 * _7w2);
+  double _89o = _89k + _89m;
+  double _89q = _89k - _89m;
+  __outptr__[4] = _3ml + _89o;
+  __outptr__[1020] = _3ml - _89o;
+  double _89p = _89l + _89n;
+  double _89r = _89l - _89n;
+  __outptr__[5] = _3mm + _89p;
+  __outptr__[1021] = - (_3mm - _89p);
+  __outptr__[517] = _3mo - _89q;
+  __outptr__[509] = - (_3mo + _89q);
+  __outptr__[508] = _3mn - _89r;
+  __outptr__[516] = _3mn + _89r;
+
   double _914 = - (0.4837544363356841 * _5yi) + (0.4957756828733287 * _5yh);
   double _915 = - (0.4837544363356841 * _5yh) - (0.4957756828733287 * _5yi);
   double _916 = (0.4837544363356841 * _7w4) + (0.4957756828733287 * _7w3);
@@ -12728,6 +12709,52 @@ void dftreal1024flat_msr_hh ( const double * arr, /*output:*/ double ** X )
   __outptr__[764] = _3mp + _91b;
   __outptr__[261] = - (- _3mq + _91a);
   __outptr__[765] = - (_3mq + _91a);
+
+  double _8ns = (0.272912198004696 * _5yk) + (0.6366559624971845 * _5yj);
+  double _8nt = - (0.272912198004696 * _5yj) + (0.6366559624971845 * _5yk);
+  double _8nu = - (0.272912198004696 * _7w6) + (0.6366559624971845 * _7w5);
+  double _8nv = (0.272912198004696 * _7w5) + (0.6366559624971845 * _7w6);
+  double _8nw = _8ns + _8nu;
+  double _8ny = _8ns - _8nu;
+  __outptr__[132] = _4df + _8nw;
+  __outptr__[892] = _4df - _8nw;
+  double _8nx = _8nt + _8nv;
+  double _8nz = _8nt - _8nv;
+  __outptr__[133] = - _4dg + _8nx;
+  __outptr__[893] = _4dg + _8nx;
+  __outptr__[645] = _4de - _8ny;
+  __outptr__[381] = - (_4de + _8ny);
+  __outptr__[380] = _4dd - _8nz;
+  __outptr__[644] = _4dd + _8nz;
+
+  double _8mw = - (0.25720568248696113 * _5ym) + (0.6431618142422538 * _5yl);
+  double _8mx = - (0.25720568248696113 * _5yl) - (0.6431618142422538 * _5ym);
+  double _8my = (0.25720568248696113 * _7w8) + (0.6431618142422538 * _7w7);
+  double _8mz = (0.25720568248696113 * _7w7) - (0.6431618142422538 * _7w8);
+  double _8n0 = _8mw + _8my;
+  double _8n2 = _8mw - _8my;
+  __outptr__[124] = _4d9 + _8n0;
+  __outptr__[900] = _4d9 - _8n0;
+  double _8n1 = _8mx + _8mz;
+  double _8n3 = _8mx - _8mz;
+  __outptr__[125] = _4da + _8n1;
+  __outptr__[901] = - (_4da - _8n1);
+  __outptr__[388] = _4db - _8n3;
+  __outptr__[636] = _4db + _8n3;
+  __outptr__[389] = - (- _4dc + _8n2);
+  __outptr__[637] = - (_4dc + _8n2);
+
+  }
+
+
+
+
+
+
+
+
+
+
   double _91c = - (0.6459397533403636 * _5y2) + (0.6539156664007829 * _5y1);
   double _91d = - (0.6459397533403636 * _5y1) - (0.6539156664007829 * _5y2);
   double _91e = (0.6459397533403636 * _7vo) + (0.6539156664007829 * _7vn);

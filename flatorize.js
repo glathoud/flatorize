@@ -97,17 +97,9 @@
 
         ret = normalize_the_sum_order( ret );
 
-        // Further "normalization" to extract factors
-
-        // Deactivated for now: ret = hard_sum_factorized( ret );
-        // because it brought degradation to DFT1024 msr use case and
-        // no improvement to others (code actually longer) could try
-        // again later with "full flat sums", but then again need to
-        // find out common sums, which amounts to take over some of
-        // the responsibility of the algorithm designer.
+        // Finally
         
-        // Deactivated: ret = soft_sum_factorized( ret );  // How well, actually, it did not bring much speedup at all on DFT tests.
-        
+        ret = expr_flatten_minus( ret );
 
 
 
@@ -269,6 +261,8 @@
                 check_exprgen_if_possible( exprgen );
 
                 var e = exprgen.apply(null,vararr);
+                
+                e = expr_flatten_minus( e, { recursive : true } );
                 
                 // Input: gather statistics: how many time is each expression used?
                 //
@@ -469,8 +463,17 @@
             arr = expr_extract_minus_expr( arr );
             if (!(arr instanceof Array  &&  1 < arr.length))  break;
 
-            arr = expr_normalize_all_minus( arr ); 
-            if (!(arr instanceof Array  &&  1 < arr.length))  break;
+            if (true)
+            {
+                arr = expr_flatten_minus( arr );
+                if (!(arr instanceof Array  &&  1 < arr.length))  break;
+            }
+            else
+            {
+                arr = expr_normalize_all_minus( arr );
+                if (!(arr instanceof Array  &&  1 < arr.length))  break;                
+            }
+            
 
             arr = expr_simplify_if_all_numbers( arr );
             if (!(arr instanceof Array  &&  1 < arr.length))  break;
@@ -758,6 +761,7 @@
         , is_object = ('object' === typeof code)
         , topopt_do_not_cache = topopt  &&  topopt.do_not_cache
         , topopt_no_paren     = topopt  &&  topopt.no_paren
+	, code_replace_numberstring_with_constant = opt  &&  opt.code_replace_numberstring_with_constant  // Useful e.g. when generating C code, see ./flatorize_c.js
         , ret 
         ;
 
@@ -786,6 +790,8 @@
         else if (is_number = (typeof_code === 'number'))
         {
             ret = '' + code;
+	    if (code_replace_numberstring_with_constant)
+		ret = code_replace_numberstring_with_constant( ret );
         }
         else if (is_expr = code.__isExpr__)
         {
@@ -1099,6 +1105,64 @@
         }
 
         return arr;
+    }
+
+    function expr_flatten_minus( arr, opt )
+    // -(a+b-c) ==> -a-b+c
+    {
+        if (!(arr instanceof Array))
+            return arr;
+        
+        var recursive = opt  &&  opt.recursive;
+        if (recursive)
+        {
+            var   ret = [].concat( arr )
+            , changed = false
+            ;
+            for (var n = ret.length, i = 0; i < n; i++)
+            {
+                var   ri = ret[ i ]
+                , new_ri = expr_flatten_minus( ret[ i ], opt )
+                ;
+                if (ri !== new_ri)
+                {
+                    changed = true;
+                    ret[ i ] = ri.__isExpr__  ?  expr.apply( null, new_ri )  :  new_ri;
+                }
+            }
+            if (changed)
+                arr = ret;
+        }
+        
+        
+        if (!(arr.length === 2  &&  arr[ 0 ] === '-'  &&  arr[ 1 ] instanceof Array  &&  arr[ 1 ].length > 1))
+            return arr;
+        
+        var ret = [].concat( arr[ 1 ] );
+        for (var last, i = last = ret.length; i--;)
+        {
+            var ri = ret[ i ]
+            ,   p  = '+' === ri
+            ,   m  = '-' === ri
+            ,   pm = p  ||  m
+            ,  two = last - i === 2
+            ,   ok = pm ^ !two
+            ;
+            if (!ok)
+                return arr;
+            
+            if (pm)
+                ret[ i ] = p  ?  '-'  :  '+';
+        }
+        
+        var r0 = ret[ 0 ];
+        
+        if (r0 === '+')
+            ret.splice( 0, 1 );
+        else if (r0 !== '-') 
+            ret.splice( 0, 0, '-' );
+        
+        return ret;
     }
 
     function expr_normalize_all_minus( arr )
@@ -1494,357 +1558,7 @@
         }
     }
 
-
     
-    function soft_sum_factorized(arr0)
-    {
-        var siArr = extract_sum_info_arr( arr0 );
-        if (!siArr)  // Not a pure sum
-            return arr0;
-        
-        // LATER: For now we implement only a specific case
-        // to check whether the idea can bring performance.
-        
-        var siN = siArr.length
-        if (siN !== 2)
-            return arr0;
-
-        var sipiArr = new Array( siN );
-        for (var i = siN; i--;)
-        {
-            // Two terms, and both must have a multiplicative constant
-
-            var productArr = extract_productArr( siArr[ i ].arr );
-            if (!(productArr  &&  productArr.length === 2))
-                return arr0;
-
-            var piArr = productArr.map( merge_minus_signs_of_product );
-
-            if (!(piArr  &&  piArr.length === 2))
-                return arr0;
-
-            if (!(piArr[0].e instanceof Array  &&  piArr[1].e instanceof Array))
-                return arr0;
-
-            if (!(piArr[0].e.length === 1  &&  piArr[1].e.length === 1))
-                return arr0;
-
-            if (!(piArr[0].e[0] instanceof Array  &&  piArr[1].e[0] instanceof Array))
-                return arr0;
-
-            if (!(piArr[0].e[0].length === 3  &&  piArr[1].e[0].length === 3))
-                return arr0;
-
-            if (!(piArr[0].e[0][1] === '*'  &&  piArr[1].e[0][1] === '*'))
-                return arr0;
-            
-            if (!('number' === typeof piArr[0].e[0][0]  &&  'number' === typeof piArr[1].e[0][0]))
-                return arr0;
-
-            // Biggest multiplicative constant first
-            
-            piArr.sort( function (a,b) { return Math.abs( a.e[0][0] ) > Math.abs( b.e[0][0] )  ?  -1  :  +1 });
-
-            sipiArr[i] = piArr;
-        }
-        
-        var factor = sipiArr[0][0].e[0][0];
-        if (!close_to( factor, sipiArr[1][0].e[0][0] ))
-            return arr0;
-
-        for (var i = siN; i--;)
-        {
-            var piArr = sipiArr[ i ];
-
-            // Do not corrupt expression objects -> copy the arrays
-            piArr[ 0 ].e = [].concat( piArr[ 0 ].e )
-            piArr[ 1 ].e = [].concat( piArr[ 1 ].e )
-            
-            piArr[ 0 ].e[0] = piArr[ 0 ].e[0][ 2 ];
-
-            var arr1 = [].concat( piArr[ 1 ].e[0] );
-            arr1[ 0 ] /= factor;
-            piArr[ 1 ].e[0] = expr.apply( null, arr1 );
-        }
-        
-        var ret = [ factor, '*', expr( siArr[0].sign > 0    ?  '+'  :  '-', expr.apply( null, merge_piArr( sipiArr[ 0 ] ) )
-                                       , siArr[1].sign > 0  ?  '+'  :  '-', expr.apply( null, merge_piArr( sipiArr[ 1 ] ) )
-                                     )
-                  ];
-
-        // cst * (- expression)
-
-        for (var i = ret.length; i--;)
-        {
-            if (i < 2)
-                break;
-            
-            if (ret[i].__isExpr__  &&  ret[i-1] === '*'  &&  'number' === typeof ret[i-2]  &&
-                ret[i].length === 2  &&  ret[i][0] === '-'
-               )
-            {
-                ret[i-2] = -ret[ i-2 ];
-                ret[i]   = ret[i][ 1 ];
-            }
-        }
-
-        // positive cst
-
-        if (ret[0] < 0)
-            ret = [ '-', expr.apply( null, [ -ret[0] ].concat( ret.slice( 1 ) ) ) ];
-                
-        return ret;
-    }
-
-
-    function hard_sum_factorized( arr0 )
-    // Principle: reduce the number of multiplications.
-    // Returns an array, basis for an expression.
-    // 
-    // Basic example:
-    //
-    // A = a * .. + b * .. + .. * c + d
-    // B = .. * b + a * .. + c * .. + e
-    //
-    // A + B = a * ( .. + .. ) + b * ( .. + .. ) + c * ( .. + .. ) + d + e
-    // 
-    // -> down from 6 to 3 multiplications.
-    //
-    // We generalize on this example, having possibly multiple terms
-    // in the sum e.g. A + B + C and extracting possibly multiple
-    // factors of each subterm e.g. a1 * a2.
-    // 
-    // Overall we try to extract as many factors as possible.
-    //
-    // When in a tie situation, we prefer to extract constants.  This
-    // implicitly gives a chance for constants to go up the expression
-    // hierarchy, and merge together (constant * constant -> constant)
-    {
-        // Extract the necessary information and detect when not in
-        // such a case.
-
-        var siArr = extract_sum_info_arr( arr0 ); // e.g. `A + B`
-        if (!siArr)  // Not a pure sum
-            return arr0;
-
-        var piArr = flatten_all_sub_sums_into_one_sum_of_products( siArr )
-        ,  fpiArr = []
-        ;
-        
-        if (!(piArr  &&  1 < piArr.length))
-            return arr0;
-
-        while (true)
-        {
-            var countArr = count_how_many_times_each_factor_is_in_other_sum_terms( piArr );
-            if (!countArr.length)
-                break;
-
-            countArr.sort( compare_count );
-            
-            var best = countArr[ 0 ];
-            if (0 < best.other_count)
-            {
-                var o = factorized( best.match, piArr );
-                piArr = o.rest;
-                fpiArr.push( o.fpi );
-            }
-            else
-            {
-                // Did not find any further factorization
-                break; 
-            }
-        }
-        
-        // LATER: Should we always flatten everything ? But then we need post-processing: find common sums.
-        
-        if (fpiArr.length)
-            return expr_simplify_plus_minus( merge_piArr( fpiArr.concat( piArr ) ) );
-        else
-            return arr0;
-        
-        // --- Details
-
-        function factorized( match, piArr )
-        // Note: destructive effect on `piArr`.
-        // You should use `<returned value>.rest` as future value for `piArr`
-        {
-            var sumArr = []
-            ,   iArr   = []
-            ,   factor 
-            ;
-            for (var nq = match.length , q = 0; q < nq; q++)
-            {
-                var m   = match[ q ]
-                ,   i   = m.i
-                ,   j   = m.j
-                ,   pi  = piArr[ i ]
-                ;
-
-                if (pi.e.__isExpr__)
-                    pi.e = [].concat( pi.e ); // ...destruct/modify pi, but not the original expression object, otherwise the whole flatorize process will be corrupt.
-                
-                var pie = pi.e
-
-                // Remove factor
-                ,   f   = pie.splice( j , 1 )[ 0 ]
-                ;               
-                if (null == factor)
-                    factor = f;                
-                else if (!close_to( factor, f ))
-                    throw new Error( 'Wrong factorization.' );
-
-                // Remove '*' sign as well
-                pie.splice( pie[ j-1 ] === '*'  ?  j-1  :  pie[ j ] === '*'  ?  j  :  pie.length === 0  ?  'ok'  : function () { throw new Error('bug'); }()
-                            , 1 
-                          );
-                
-                // Note which terms of piArr have been factorized (used further below).
-                iArr.push( i );
-                
-                
-                if (pi.sign < 0)
-                    sumArr.push( '-' );
-                
-                else if (sumArr.length)
-                    sumArr.push( '+' );
-                
-                sumArr.push( pie.length  ?  expr.apply( null, pie )  :  1 );
-            }
-            
-            iArr.sort( function (a,b) { return a < b  ?  -1  :  +1 } );
-
-            for (var j = iArr.length; j--;)
-                piArr.splice( iArr[ j ], 1 );
-            
-            // `merge_products` because `expr` could also have led to factorization(s).
-            var arr = merge_products( [ factor, '*', expr.apply( null, sumArr ) ] );  
-            
-            return {
-                fpi    : { sign : +1
-                           , e  : expr.apply( null, arr ) 
-                         }
-                , rest : piArr
-            };
-            
-
-            function merge_products( arr )
-            {
-                var prod = arr.slice( 0, 2 )
-                ,   e    = arr[ 2 ]
-                ;
-
-                while (e.__isExpr__  &&  e.length === 3  &&  e[ 1 ] === '*')
-                {
-                    prod.push( '*', e[ 0 ] );
-                    e = e[ 2 ];
-                }
-                
-                if (prod.length === 2)
-                    return arr;
-                
-                return [ expr.apply( null, prod ), '*', e ];
-            }
-        }
-        
-        
-        function count_how_many_times_each_factor_is_in_other_sum_terms( piArr )
-        {
-            var countArr = [];
-            
-            for (var ni = piArr.length , i = 0; i < ni; i++)
-            {
-                var pi  = piArr[ i ]
-                ,   pie = pi.e
-                ;
-                for (var nj = pie.length , j = 0; j < nj; j++)
-                {
-                    var factor = pie[ j ]
-                    ,   match  = [ { i : i, j : j } ]
-                    ;
-
-                    if (!('number' === typeof factor  ||  factor.__isExpr__))
-                        continue;
-
-                    for (var ni2 = piArr.length , i2 = 0; i2 < ni2; i2++)
-                    {
-                        if (i === i2)
-                            continue;
-
-                        var pi2  = piArr[ i2 ]
-                        ,   pi2e = pi2.e
-                        ;
-                        for (var nj2 = pi2e.length , j2 = 0; j2 < nj2; j2++)
-                        {
-                            var factor2 = pi2e[ j2 ];
-                            if (close_to( factor, factor2 ))
-                                match.push( { i : i2, j : j2 });
-                        }
-                    }
-                    
-                    countArr.push({
-                        factor      : factor
-                        , is_number : 'number' === typeof factor
-
-                        , match       : match
-                        , other_count : match.length - 1
-                    });
-                }
-            }
-
-            return countArr;
-        }
-
-
-        function compare_count( a, b )
-        // Decreasing order: best first.
-        {
-            var aoc = a.other_count
-            ,   boc = b.other_count
-            ;
-
-            return aoc > boc  ?  -1
-                :  aoc < boc  ?  +1
-                :  a.factor_is_number   &&  !b.factor_is_number  ?  -1
-                :  !a.factor_is_number  &&  b.factor_is_number   ?  +1
-                :  0
-            ;
-        }
-        
-        
-        function flatten_all_sub_sums_into_one_sum_of_products( siArr )
-        {
-            var piArr = [];
-            for (var ni = siArr.length , i = 0; i < ni; i++)
-            {
-                var       si = siArr[ i ]
-                , productArr = extract_productArr( si.arr )  // e.g. `a * .. + b * .. + .. * c`
-                ;
-                if (!productArr)
-                    return null;  // Term is not a pure product
-                
-                var sipiArr = productArr.map( merge_minus_signs_of_product );
-                
-                for (var nj = sipiArr.length , j = 0; j < nj; j++)
-                {
-                    var pi = Object.create( sipiArr[ j ] );
-                    pi.sign *= si.sign;  // Merge the signs
-
-                    var e = pi.e;
-                    while (e instanceof Array  &&  e.length === 1)
-                        e = e[ 0 ];
-
-                    pi.e = e;
-                    piArr.push( pi );
-                }
-            }
-            return piArr;
-        }
-
-
-    }
-
-
 
     function merge_piArr( piArr )
     {

@@ -6,7 +6,7 @@ static const int NITER = 1e6;
 
 static const int N = 1024;
 
-static const double EPSILON = 1e-6;
+static const double EPSILON = 1e-5;
 
 double getPI();
 

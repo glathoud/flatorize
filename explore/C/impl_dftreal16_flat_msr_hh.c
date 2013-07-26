@@ -24,7 +24,7 @@ void dftreal16flat_msr_hh ( const double * arr, /*output:*/ double ** X )
   double _g = _e + _f;
   double _h = _e - _f;
   double _i = _c + _g;
-  double _j = _c - _g;
+  double _j = _c - _g;  /* spill -> stack -8(%rsp) */
   __outptr__[8] = _8 - _i;
   double _k = _8 + _i;
   double _l = 0.7071067811865476 * (_d + _h);
@@ -77,6 +77,6 @@ void dftreal16flat_msr_hh ( const double * arr, /*output:*/ double ** X )
   double _1l = 0.7071067811865476 * (- _10 + _1a);
   __outptr__[4] = _9 + _1k;
   __outptr__[12] = _9 - _1k;
-  __outptr__[5] = - _j + _1l;
+  __outptr__[5] = - _j + _1l;  /* take _j from %(rsp) */
   __outptr__[13] = _j + _1l;
 }
