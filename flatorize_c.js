@@ -889,9 +889,11 @@
             sfa_f.toPrecision.call.a;
             sfb_f.toPrecision.call.a;
             
-            return   sfa_p < sfb_p    ?  -1  :    sfa_p > sfb_p    ?  +1    // First:  reduce spill w.r.t. past   (stuff just coded)
-                :    sfa_f < sfb_f    ?  -1  :    sfa_f > sfb_f    ?  +1    // Second: reduce spill w.r.t. future (stuff to code next)
-                :  a.idnum < b.idnum  ?  -1  :  a.idnum > b.idnum  ?  +1    // Fallback order if equal match: idnum
+            var a_pf = sfa_p + sfa_f
+            ,   b_pf = sfa_p + sfa_f
+            ;
+            return a_pf < b_pf  ?  -1  :  a_pf > b_pf  ?  +1 
+            :  a.idnum < b.idnum  ?  -1  :  a.idnum > b.idnum  ?  +1    // Fallback order if equal match: idnum
                 :  error.bug
             ;
         }
