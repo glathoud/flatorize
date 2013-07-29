@@ -888,12 +888,13 @@
             sfb_p.toPrecision.call.a;
             sfa_f.toPrecision.call.a;
             sfb_f.toPrecision.call.a;
-            
-            var a_pf = sfa_p + sfa_f
-            ,   b_pf = sfa_p + sfa_f
+
+            /* xxx not using them yet
+            var a_pf = sfa_p * sfa_f
+            ,   b_pf = sfb_p * sfb_f
             ;
-            return a_pf < b_pf  ?  -1  :  a_pf > b_pf  ?  +1 
-            :  a.idnum < b.idnum  ?  -1  :  a.idnum > b.idnum  ?  +1    // Fallback order if equal match: idnum
+            */
+            return a.idnum < b.idnum  ?  -1  :  a.idnum > b.idnum  ?  +1    // Fallback order if equal match: idnum
                 :  error.bug
             ;
         }
