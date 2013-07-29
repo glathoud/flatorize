@@ -707,6 +707,7 @@
                 ,             o = get_idnum2needArrObj( idnum2expr, idnum2codeline )
                 , idnum2needArr = o.idnum2needArr
                 , idnum2needObj = o.idnum2needObj
+                , idnum2useline = o.idnum2useline
                 , ran
                 ;
                 while (ran = restArr.length)
@@ -714,7 +715,7 @@
                     // Evaluate some metrics for each remaining codeline
 
                     var spillinfoArr = new Array( ran );
-                    for (var i = ran; i--;)
+                    for (var i = 0; i < ran; i++)
                     {
                         var idnum = restArr[ i ]
                         ,      si = { idnum : idnum }
@@ -776,8 +777,8 @@
                             if (rem_need_n !== 0)
                                 error.bug;
 
-                            spillforce_past = sumsq / needArr_n;
-
+                            spillforce_past = needArr_n  ?  sumsq / needArr_n  :  0;
+                            
                             // Metric: spillforce_future := mean
                             // square over usages of: 
                             //
@@ -785,34 +786,41 @@
                             // usage.
 
                             var sumsq   = 0
-                            ,   usage   = idnum2usage[ idnum ]
-                            ,   usage_n = usage.length
+                            ,   useline   = idnum2useline[ idnum ]  ||  []
+                            ,   useline_n = useline.length
                             ;
-                            for (var j = usage_n; j--; )
+                            for (var j = useline_n; j--; )
                             {
-                                var uj         = usage[ j ];
-                                if (uj === out_e  ||  !('__exprIdnum__' in uj))
+                                var uj_idnum   = useline[ j ];
+                                if (uj_idnum === out_e.__exprIdnum__)
                                     continue;
                                 
-                                var uj_idnum   = uj.__exprIdnum__
-                                ,   uj_needArr = idnum2needArr[ uj_idnum ]
+                                var uj_needArr = idnum2needArr[ uj_idnum ]
                                 ,   uj_n_future = 0
                                 ;
                                 for (var k = uj_needArr.length; k--;)
                                 {
-                                    if (uj_needArr[ k ] in restSet)
+                                    var uj_nak = uj_needArr[ k ];
+                                    if (uj_nak in restSet)
                                         uj_n_future++;
                                 }
                                 sumsq += uj_n_future * uj_n_future;
                             }
 
-                            spillforce_future = sumsq / usage_n;
+                            spillforce_future = useline_n  ?  sumsq / useline_n  :  0;
                         }
+                        
+                        spillforce_past  .toPrecision.call.a;  // Cheap assert: must be a number
+                        spillforce_future.toPrecision.call.a;  // Cheap assert: must be a number
                         
                         si.spillforce_past   = spillforce_past;
                         si.spillforce_future = spillforce_future;
 
-                        spillinfoArr.push( si );
+                        // For debugging
+                        si.e = idnum2expr[ idnum ];
+                        si.__code2str_cache_cfgSTAT = si.e.__code2str_cache_cfgSTAT;
+
+                        spillinfoArr[ i ] = si;
                     }
 
                     // Based on the metrics, chose the next best
@@ -974,7 +982,11 @@
     {
         var idnum2needArr = {}
         ,   idnum2needObj = {}
-        ,   ret = { idnum2needArr : idnum2needArr , idnum2needObj : idnum2needObj }
+        ,   idnum2useline = {}
+        ,   ret = { idnum2needArr   : idnum2needArr 
+                    , idnum2needObj : idnum2needObj 
+                    , idnum2useline : idnum2useline
+                  }
         ;
         for (var idnum in idnum2expr) { if (!(idnum in ret)) {
 
@@ -986,7 +998,7 @@
             {
                 var ei = e[ i ];
                 if (ei  &&  ei.__isExpr__)
-                    update_needArr_needObj( ei, needArr, needObj, idnum2codeline );
+                    update_needArr_needObj( ei, needArr, needObj, idnum2codeline, idnum2useline, ei.__exprIdnum__ );
             }
             
             idnum2needArr[ idnum ] = needArr;
@@ -995,13 +1007,15 @@
         return ret;
     }
 
-    function update_needArr_needObj( e, needArr, needObj, idnum2codeline )
+    function update_needArr_needObj( e, needArr, needObj, idnum2codeline, idnum2useline, orig_idnum )
     {
         var e_idnum = e.__exprIdnum__;
         if (e_idnum in idnum2codeline  &&  !(e_idnum in needObj))
         {
             needArr.push( e_idnum );
             needObj[ e_idnum ] = 1;
+
+            (idnum2useline[ e_idnum ]  ||  (idnum2useline[ e_idnum ] = [])).push( orig_idnum );
         }
         else
         {
@@ -1009,7 +1023,7 @@
             {
                 var ei = e[ i ];
                 if (ei  &&  ei.__isExpr__)
-                    update_needArr_needObj( ei, needArr, needObj, idnum2codeline );
+                    update_needArr_needObj( ei, needArr, needObj, idnum2codeline, idnum2useline, orig_idnum );
             }
         }
     }
