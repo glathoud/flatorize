@@ -1665,6 +1665,9 @@
                 if (!(tsuc.n_full_negative > tsuc.n_alone_positive))
                     continue;
 
+                if ('number' === typeof term[ 0 ]  &&  term[ 0 ] > 0)
+                    continue;
+
                 // Change the sign of this term...
                 
                 var negArr = getNegArr( term );
