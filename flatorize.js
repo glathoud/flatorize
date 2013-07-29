@@ -255,7 +255,8 @@
                 exprCache = { idstr2expr:   {}
                               , idnum2expr: {}
                               , idnum_next: 0
-                              , idnum2count:  null
+                              , idnum2count: null
+                              , idnum2usage: null
                             };
                 
                 check_exprgen_if_possible( exprgen );
@@ -293,7 +294,7 @@
 
                 // Final usage count
 
-                gather_count( e, exprCache.idnum2count = {} );
+                gather_count( e, exprCache.idnum2count = {}, exprCache.idnum2usage = {} );
 
                 // To prevent name collision when creating local variable names
                 var varnameset = {};
