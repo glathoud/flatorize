@@ -998,7 +998,7 @@
     function update_needArr_needObj( e, needArr, needObj, idnum2codeline )
     {
         var e_idnum = e.__exprIdnum__;
-        if (e_idnum in idnum2codeline)
+        if (e_idnum in idnum2codeline  &&  !(e_idnum in needObj))
         {
             needArr.push( e_idnum );
             needObj[ e_idnum ] = 1;
