@@ -877,6 +877,7 @@
 
         function spillinfoCompare( a, b )
         {
+            /* xxx not using them yet
             var sfa_p = a.spillforce_past
             ,   sfb_p = b.spillforce_past
             ,   sfa_f = a.spillforce_future
@@ -889,7 +890,6 @@
             sfa_f.toPrecision.call.a;
             sfb_f.toPrecision.call.a;
 
-            /* xxx not using them yet
             var a_pf = sfa_p * sfa_f
             ,   b_pf = sfb_p * sfb_f
             ;
