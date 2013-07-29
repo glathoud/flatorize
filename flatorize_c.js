@@ -748,9 +748,6 @@
                         }
                         else
                         {
-                            spillforce_past = spillforce_future = 0; // xxx not using them yet
-                            /*
-
                             // Metric: spillforce_past := mean square
                             // over needs of:
                             //
@@ -780,7 +777,8 @@
                             if (rem_need_n !== 0)
                                 error.bug;
 
-                            spillforce_past = needArr_n  ?  sumsq / needArr_n  :  0;
+                            var z = needArr_n  &&  (sumsq / needArr_n);
+                            spillforce_past = needArr_n  ?  -1-1/(1+z)  :  0;
                             
                             // Metric: spillforce_future := mean
                             // square over usages of: 
@@ -810,8 +808,8 @@
                                 sumsq += uj_n_future * uj_n_future;
                             }
 
-                            spillforce_future = useline_n  ?  sumsq / useline_n  :  0;
-                            */
+                            var z = useline_n  &&  (sumsq / useline_n);
+                            spillforce_future = useline_n  ?  -1-1/(1+z)  :  0;
                         }
                         
                         spillforce_past  .toPrecision.call.a;  // Cheap assert: must be a number
@@ -881,7 +879,6 @@
 
         function spillinfoCompare( a, b )
         {
-            /* xxx not using them yet
             var sfa_p = a.spillforce_past
             ,   sfb_p = b.spillforce_past
             ,   sfa_f = a.spillforce_future
@@ -894,13 +891,18 @@
             sfa_f.toPrecision.call.a;
             sfb_f.toPrecision.call.a;
 
-            var a_pf = sfa_p * sfa_f
-            ,   b_pf = sfb_p * sfb_f
+            var sfa_pf = sfa_p * sfa_f
+            ,   sfb_pf = sfb_p * sfb_f
             ;
-            */
-            return a.idnum < b.idnum  ?  -1  :  a.idnum > b.idnum  ?  +1    // Fallback order if equal match: idnum
+/*            var ret = sfa_p < sfb_p  ?  -1  :  sfa_p > sfb_p  ?  +1
+                :     sfa_f < sfb_f  ?  -1  :  sfa_f > sfb_f  ?  +1
+*/
+            var ret = sfa_p < sfb_p  ?  -1  :  sfa_p > sfb_p  ?  +1
+                :  a.idnum < b.idnum  ?  -1  :  a.idnum > b.idnum  ?  +1    // Fallback order if equal match: idnum
                 :  error.bug
             ;
+
+            return ret;
         }
         
         function expcode_cast_if_needed( outtype, e, /*?string?*/outname )
@@ -1005,24 +1007,37 @@
             {
                 var ei = e[ i ];
                 if (ei  &&  ei.__isExpr__)
-                    update_needArr_needObj( ei, needArr, needObj, idnum2codeline, idnum2useline, ei.__exprIdnum__ );
+                    update_needArr_needObj( ei, needArr, needObj, idnum2codeline );
             }
             
             idnum2needArr[ idnum ] = needArr;
             idnum2needObj[ idnum ] = needObj;
+
+            if (idnum in idnum2codeline)
+            {
+                for (var n = needArr.length
+                     , i = 0; i < n; i++)
+                {
+                    var nai = needArr[ i ];
+                    (nai in idnum2useline  ?  idnum2useline[ nai ]  :  (idnum2useline[ nai ] = []))
+                        .push( idnum )
+                    ;
+                }
+                
+            }
         }}
         return ret;
     }
 
-    function update_needArr_needObj( e, needArr, needObj, idnum2codeline, idnum2useline, orig_idnum )
+    function update_needArr_needObj( e, needArr, needObj, idnum2codeline )
     {
-        var e_idnum = e.__exprIdnum__;
+        var e_idnum = e.__exprIdnum__
+        ,   error
+        ;
         if (e_idnum in idnum2codeline  &&  !(e_idnum in needObj))
         {
             needArr.push( e_idnum );
             needObj[ e_idnum ] = 1;
-
-            (idnum2useline[ e_idnum ]  ||  (idnum2useline[ e_idnum ] = [])).push( orig_idnum );
         }
         else
         {
@@ -1030,7 +1045,7 @@
             {
                 var ei = e[ i ];
                 if (ei  &&  ei.__isExpr__)
-                    update_needArr_needObj( ei, needArr, needObj, idnum2codeline, idnum2useline, orig_idnum );
+                    update_needArr_needObj( ei, needArr, needObj, idnum2codeline );
             }
         }
     }
