@@ -986,22 +986,34 @@
             {
                 var ei = e[ i ];
                 if (ei  &&  ei.__isExpr__)
-                {
-                    var ei_idnum = ei.__exprIdnum__;
-                    if (ei_idnum in idnum2codeline)
-                    {
-                        needArr.push( ei_idnum );
-                        needObj[ ei_idnum ] = 1;
-                    }
-                }
+                    update_needArr_needObj( ei, needArr, needObj, idnum2codeline );
             }
-
+            
             idnum2needArr[ idnum ] = needArr;
             idnum2needObj[ idnum ] = needObj;
         }}
         return ret;
     }
 
+    function update_needArr_needObj( e, needArr, needObj, idnum2codeline )
+    {
+        var e_idnum = e.__exprIdnum__;
+        if (e_idnum in idnum2codeline)
+        {
+            needArr.push( e_idnum );
+            needObj[ e_idnum ] = 1;
+        }
+        else
+        {
+            for (var n = e.length, i = 0; i < n; i++)
+            {
+                var ei = e[ i ];
+                if (ei  &&  ei.__isExpr__)
+                    update_needArr_needObj( ei, needArr, needObj, idnum2codeline );
+            }
+        }
+    }
+    
     function get_restArrSet( idnum2expr, idnum2codeline )
     {
         var restArr = []
