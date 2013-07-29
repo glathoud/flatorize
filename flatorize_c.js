@@ -751,33 +751,46 @@
                             // Metric: spillforce_past := mean square
                             // over needs of:
                             //
-                            // the number of codelines between the
-                            // need and now.
+                            // the number of codelines between now and 
+                            // past creation/usage of the need.
                             
-                            var sumsq = 0;
-                            for (var  order_n = order.length
-                                 , rem_need_n = needArr_n
-                                 , j = order_n
-                                 ; 
-                                 rem_need_n  &&  j--
-                                 ;
-                                )
+                            var sumsq = 0
+                            ,   n_past_creation   = 0
+                            ,   n_past_common_use = 0
+                            ;
+                            for (var order_n = order.length
+                                 , j = order_n ; j-- ; )
                             {
                                 var tmp_idnum = order[ j ];
                                 tmp_idnum.toPrecision.call.a;  // Must be a number
                                 
                                 if (tmp_idnum in needObj)
                                 {
+                                    n_past_creation++;
                                     var between = order_n - j - 1;
                                     sumsq += between * between;
-                                    rem_need_n--;
+                                }
+                                else
+                                {
+                                    var tmp_needObj = idnum2needObj[ tmp_idnum ];
+                                    for (var k = needArr.length; k--;)
+                                    {
+                                        if (needArr[ k ] in tmp_needObj)
+                                        {
+                                            n_past_common_use++;
+                                            var between = order_n - j - 1;
+                                            sumsq += between * between;
+                                        }
+                                    }
                                 }
                             }
                             
-                            if (rem_need_n !== 0)
+                            if (needArr.length !== n_past_creation)
                                 error.bug;
 
-                            var z = needArr_n  &&  (sumsq / needArr_n);
+                            var n_past_total = n_past_creation + n_past_common_use
+                            ,   z = n_past_total  &&  (sumsq / n_past_total)
+                            ;
                             spillforce_past = needArr_n  ?  -1-1/(1+z)  :  0;
                             
                             // Metric: spillforce_future := mean
@@ -894,11 +907,9 @@
             var sfa_pf = sfa_p * sfa_f
             ,   sfb_pf = sfb_p * sfb_f
             ;
-/*            var ret = sfa_p < sfb_p  ?  -1  :  sfa_p > sfb_p  ?  +1
+            var ret = /*sfa_p < sfb_p  ?  -1  :  sfa_p > sfb_p  ?  +1
                 :     sfa_f < sfb_f  ?  -1  :  sfa_f > sfb_f  ?  +1
-*/
-            var ret = sfa_p < sfb_p  ?  -1  :  sfa_p > sfb_p  ?  +1
-                :  a.idnum < b.idnum  ?  -1  :  a.idnum > b.idnum  ?  +1    // Fallback order if equal match: idnum
+                :  */a.idnum < b.idnum  ?  -1  :  a.idnum > b.idnum  ?  +1    // Fallback order if equal match: idnum
                 :  error.bug
             ;
 
