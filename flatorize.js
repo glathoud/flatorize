@@ -278,6 +278,19 @@
                 // the remaining -<expr>
                 simplify_a_bit_minus_expr_using_idnum2count( exprCache.idnum2expr, tmp_idnum2count );
 
+                // Now we can try to save a few sign inversions.
+                // Should be particularly useful when generating C
+                // code, to minimize the number of floating sign
+                // inversion, so as to reduce the corresponding 
+                // memory accesses and register spills.
+                
+                var tmp_idnum2count = {}
+                ,   tmp_idnum2usage = {}
+                ;
+                gather_count( e, tmp_idnum2count, tmp_idnum2usage );
+
+                try_to_save_a_few_sign_inversions_where_beneficial( exprCache.idnum2expr, tmp_idnum2count, tmp_idnum2usage );
+
                 // Final usage count
 
                 gather_count( e, exprCache.idnum2count = {} );
@@ -331,6 +344,7 @@
 
     var EPSILON = 1e-12
     ,   EPSILON_DIGITS = Math.floor( -Math.log( EPSILON ) / Math.log( 10 ) )
+    ,   _empty = {}
     ;
 
     function get_types_from_typed_varstr( /*string*/typed_varstr )
@@ -1540,21 +1554,27 @@
         return { sign : sign, e : arr };
     }
 
-    function gather_count( code, idnum2count )
+    function gather_count( code, /*object*/idnum2count, /*?object?*/idnum2usage )
     {
         if (!(code instanceof Array))
             return;
 
-        var rest = [].concat( code );
+        var rest = [].concat( { usage : null, x : code } );
         while (rest.length)
         {
-            var x = rest.shift();
+            var   o = rest.shift()
+            , usage = o.usage
+            ,     x = o.x
+            ;
             
             if (x.__isExpr__)
             {
                 var idnum = x.__exprIdnum__
                 ,   count = idnum2count[ idnum ] = 1 + (idnum in idnum2count  ?  idnum2count[ idnum ]  :  0)
                 ;
+                if (usage != null  &&  idnum2usage)
+                    (idnum2usage[ idnum ]  ||  (idnum2usage[ idnum ] = [])).push( usage );
+                
                 if (count > 1)
                     continue;  // Already recursed through this expression.
             }
@@ -1562,7 +1582,17 @@
             if (x instanceof Array)
             {
                 // Have not recursed yet, do it now.
-                rest = x.concat( rest );
+                for (var n = x.length, arr = new Array( n )
+                     , i = n; i--;
+                    )
+                {
+                    arr[i] = { 
+                        usage : x
+                        , x   : x[ i ] 
+                    };
+                }
+                
+                rest = arr.concat( rest );
             }
         }
     }
@@ -1592,8 +1622,6 @@
 
     function simplify_a_bit_minus_expr_using_idnum2count( idnum2expr, tmp_idnum2count )
     {
-        var _empty = {};
-
         for (var idnum in tmp_idnum2count) { if (!(idnum in _empty)) {
 
             var e = idnum2expr[ idnum ]
@@ -1610,4 +1638,150 @@
         }}
     }
 
+    function try_to_save_a_few_sign_inversions_where_beneficial( idnum2expr, tmp_idnum2count, tmp_idnum2usage )
+    {
+        ((tmp_idnum2usage  &&  tmp_idnum2count)  ||  null).hasOwnProperty.call.a;  // Both must be non-null objects.
+
+        for (var idnum in idnum2expr) { if (!(idnum in _empty)) {
+        
+            if (!(tmp_idnum2count[ idnum ]))
+                continue;
+
+            var  e = idnum2expr[ idnum ]
+            , info = getNegativeSumInfo( e )
+            ;
+            if (!info.isNegativeSum)
+                continue;
+                
+            for (var i = info.terms.length; i--;)
+            {
+                var term = info.terms[ i ];
+                if (!(term  &&  term.__isExpr__))
+                    continue;
+                
+                var tid  = term.__exprIdnum__
+                ,   tsuc = getTermSignUsageCount( tmp_idnum2usage[ tid ], term )
+                ;
+                if (!(tsuc.n_full_negative > tsuc.n_alone_positive))
+                    continue;
+
+                // Change the sign of this term...
+                
+                var negArr = getNegArr( term );
+                
+                term.splice( 0, term.length );
+                term.push.apply( term, negArr );
+
+                // ...and change the corresponding sign in usages of that term.
+
+                var termUsageArr = tmp_idnum2usage[ tid ];
+                for (var j = termUsageArr.length; j--;)
+                {
+                    var ue = termUsageArr[ j ];
+                    for (var k = ue.length; k--;)
+                    {
+                        var uek = ue[ k ];
+                        if (uek !== term)
+                            continue;
+
+                        var uek_m_1 = ue[ k - 1 ];
+
+                        if (uek_m_1 === '+')
+                            ue[ k - 1 ] = '-';
+
+                        else if (uek_m_1 === '-')
+                            ue[ k - 1 ] = '+';
+
+                        else
+                            ue.splice( k, 0, '-' );
+                    }
+                }
+            }
+            
+        }}
+    }
+
+    function getTermSignUsageCount( usageArr, term )
+    {
+        var n_full_negative  = 0
+        ,   n_alone_positive = 0
+        ;
+
+        for (var i = usageArr.length; i--;)
+        {
+            var u = usageArr[ i ]
+            , nsi = getNegativeSumInfo( u, term )
+            ;
+            if (nsi.isNegativeSum)
+                n_full_negative++;
+
+            else if (nsi.isAlonePositive)
+                n_alone_positive++;
+        }
+        
+        return { n_full_negative : n_full_negative, n_alone_positive : n_alone_positive };
+    }
+    
+
+    function getNegativeSumInfo( e, /*?object?*/term )
+    {
+        var isNegativeSum   = true
+        ,   isAlonePositive
+        ,   terms           = []
+        ,   n_term_p_used   = 0
+        ,   n_term_m_used   = 0
+        ;
+        
+        if (!term  &&  (e.length % 2))
+            return { isNegativeSum : false };
+
+        for (var n = e.length, i = n; i--  &&  (isNegativeSum  ||  isAlonePositive);)
+        {
+            var one = (n - i) % 2
+            ,   ei  = e[ i ]
+            ,   eip = ei === '+'
+            ,   eim = ei === '-'
+            ;
+            if (!(one  ?  ei  &&  ei.__isExpr__  :  eip  ||  eim))
+            {
+                isNegativeSum = isAlonePositive = false;
+                break;
+            }
+            
+            if (one)
+            {
+                terms.unshift( ei );
+            }
+            else if (eim)
+            {
+                if (ei === term)
+                    n_term_m_used++;
+            }
+            else if (eip)
+            {
+                isNegativeSum = false;
+
+                if (ei === term)
+                    n_term_p_used++;
+            }
+        }
+
+        if (term)
+            isAlonePositive = n_term_p_used === 1  &&  n_term_m_used === 0;
+        
+        if (isAlonePositive  &&  isNegativeSum)
+            throw new Error( 'Bug.' );
+        
+        // done
+
+        if (!(isNegativeSum  ||  isAlonePositive))
+            terms = null;
+
+        return { 
+            isNegativeSum     : isNegativeSum
+            , isAlonePositive : isAlonePositive
+            , terms           : terms
+        };
+    }
+    
 })(this);
