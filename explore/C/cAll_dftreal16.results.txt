@@ -47,24 +47,24 @@ NITER: 1e+07
 #--- First comparison: compute the full X[0..N-1], ignoring that x is a real signal
 #
 ./cO3_dftreal16fftw3.bin
-test duration: 0.566675 seconds (cO3_dftreal16fftw3.c)
+test duration: 0.556506 seconds (cO3_dftreal16fftw3.c)
 #
 ./cO3_dftreal16flat.bin
-test duration: 0.282378 seconds (cO3_dftreal16flat.c)
+test duration: 0.280822 seconds (cO3_dftreal16flat.c)
 #
 #--- Second comparison: compute only X[0..1+N/2] because x is a real signal
 #
 ./cO3_dftreal16fftw3real.bin
-plan duration: 0.000791032 seconds (cO3_dftreal_N_fftw3real_main.c)
-test duration: 0.356916 seconds (cO3_dftreal_N_fftw3real_main.c)
+plan duration: 0.000778254 seconds (cO3_dftreal_N_fftw3real_main.c)
+test duration: 0.361578 seconds (cO3_dftreal_N_fftw3real_main.c)
 #
 ./cO3_dftreal16flat_hh.bin
-test duration: 0.228578 seconds (cO3_dftreal16flat_hh.c)
+test duration: 0.224344 seconds (cO3_dftreal16flat_hh.c)
 #
 ./cO3_dftreal16flat_sr_hh.bin
-test duration: 0.200041 seconds (cO3_dftreal16flat_sr_hh.c)
+test duration: 0.195017 seconds (cO3_dftreal16flat_sr_hh.c)
 #
 ./cO3_dftreal16flat_msr_hh.bin
-test duration: 0.1991 seconds (cO3_dftreal16flat_msr_hh.c)
+test duration: 0.193625 seconds (cO3_dftreal16flat_msr_hh.c)
 #
 set +v
