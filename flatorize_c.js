@@ -662,7 +662,7 @@
                     {
                         var ei = out_e[ i ]
                         , ei_idnum = ei.__exprIdnum__
-                        , code = typed_out_varname + '[' + i + ']' + expcode_cast_if_needed( basictype, out_e[ i ] ) + ';'
+                        , code = typed_out_varname + '[' + i + '] = ' + expcode_cast_if_needed( basictype, out_e[ i ] ) + ';'
                         ;
                         ei_idnum.toPrecision.call.a;  // Must be a number
                         idnum2codeline[ ei_idnum ] = code;
@@ -791,7 +791,7 @@
                             for (var j = usage_n; j--; )
                             {
                                 var uj         = usage[ j ];
-                                if (uj === out_e)
+                                if (uj === out_e  ||  !('__exprIdnum__' in uj))
                                     continue;
                                 
                                 var uj_idnum   = uj.__exprIdnum__
