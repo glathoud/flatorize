@@ -748,6 +748,9 @@
                         }
                         else
                         {
+                            spillforce_past = spillforce_future = 0; // xxx not using them yet
+                            /*
+
                             // Metric: spillforce_past := mean square
                             // over needs of:
                             //
@@ -808,6 +811,7 @@
                             }
 
                             spillforce_future = useline_n  ?  sumsq / useline_n  :  0;
+                            */
                         }
                         
                         spillforce_past  .toPrecision.call.a;  // Cheap assert: must be a number
