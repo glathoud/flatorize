@@ -904,9 +904,6 @@
             sfa_f.toPrecision.call.a;
             sfb_f.toPrecision.call.a;
 
-            var sfa_pf = sfa_p * sfa_f
-            ,   sfb_pf = sfb_p * sfb_f
-            ;
             var ret = /*sfa_p < sfb_p  ?  -1  :  sfa_p > sfb_p  ?  +1
                 :     sfa_f < sfb_f  ?  -1  :  sfa_f > sfb_f  ?  +1
                 :  */a.idnum < b.idnum  ?  -1  :  a.idnum > b.idnum  ?  +1    // Fallback order if equal match: idnum
