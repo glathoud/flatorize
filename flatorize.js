@@ -466,8 +466,8 @@
         for (var i = 2; i--;)
         {
             // xxx temporarily deactivated: bug at least on dft16 use case
-            // arr = expr_simplify_multiplications( arr ); 
-            // if (!(arr instanceof Array  &&  1 < arr.length))  break;
+            arr = expr_simplify_multiplications( arr ); 
+            if (!(arr instanceof Array  &&  1 < arr.length))  break;
 
             arr = expr_simplify_additions( arr ); 
             if (!(arr instanceof Array  &&  1 < arr.length))  break;
@@ -947,7 +947,7 @@
 
     function close_to( a, b )
     {
-        return 'number' === typeof a  &&  'number' === typeof b  
+        return 'number' === typeof a  &&  'number' === typeof b  &&  b
             ?  Math.abs( (a-b)/b ) < EPSILON  
             :  a === b
         ;
@@ -979,21 +979,21 @@
             while (EPSILON > Math.abs( arr[ i + 1 ] - 1 )  &&  arr[ i ] === '*')
                 arr.splice( i, 2 );            
         }
-        
+
         // 0*   and  *0
 
+/*xxx
         for (var i = 0; i < arr.length - 2; i++)
         {
             while (arr[ i ] === 0  &&  arr[ i+1 ] === '*')
                 arr.splice( i, 3, 0 );
         }
-
         for (var i = arr.length; i > 1; i--)
         {
             if (arr[ i-1 ] === 0  &&  arr[ i - 2 ] === '*')
                 arr.splice( i-3, i, 0 );
         }
-        
+*/
         // -1*   and  *-1
 
         if (EPSILON > Math.abs( arr[ 0 ] + 1 )  &&  arr[ 1 ] === '*')
