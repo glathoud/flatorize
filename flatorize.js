@@ -502,8 +502,7 @@
             if (!(arr instanceof Array  &&  1 < arr.length))  break;
         }
         
-        // xxx temporarily deactivated: bug at least on dft16 use case
-        while ('xxx',true,false)
+        while (true)
         {
             var newarr = expr_try_to_simplify_product_associativity( arr );
             if (!newarr)
