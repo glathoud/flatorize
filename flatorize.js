@@ -290,7 +290,7 @@
                 ;
                 gather_count( e, tmp_idnum2count, tmp_idnum2usage );
 
-                // xxx try_to_save_a_few_sign_inversions_where_beneficial( exprCache.idnum2expr, tmp_idnum2count, tmp_idnum2usage );
+                try_to_save_a_few_sign_inversions_where_beneficial( exprCache.idnum2expr, tmp_idnum2count, tmp_idnum2usage );
 
                 // Final usage count
 
@@ -1650,7 +1650,7 @@
             var  e = idnum2expr[ idnum ]
             , info = getNegativeSumInfo( e )
             ;
-            if (!info.isNegativeSum)
+            if (!(e.__isExpr__  &&  info.isNegativeSum))
                 continue;
                 
             for (var i = info.terms.length; i--;)
@@ -1668,6 +1668,12 @@
                 if ('number' === typeof term[ 0 ]  &&  term[ 0 ] > 0)
                     continue;
 
+                var termUsageArr = tmp_idnum2usage[ tid ]
+                ,   allUsageExpr = termUsageArr.reduce( function (a,b) { return a  &&  b.__isExpr__; }, true )
+                ;
+                if (!allUsageExpr)
+                    continue;
+                
                 // Change the sign of this term...
                 
                 var negArr = getNegArr( term );
@@ -1677,7 +1683,6 @@
 
                 // ...and change the corresponding sign in usages of that term.
 
-                var termUsageArr = tmp_idnum2usage[ tid ];
                 for (var j = termUsageArr.length; j--;)
                 {
                     var ue = termUsageArr[ j ];
