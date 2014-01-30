@@ -290,7 +290,7 @@
                 ;
                 gather_count( e, tmp_idnum2count, tmp_idnum2usage );
 
-                try_to_save_a_few_sign_inversions_where_beneficial( exprCache.idnum2expr, tmp_idnum2count, tmp_idnum2usage );
+                // xxx try_to_save_a_few_sign_inversions_where_beneficial( exprCache.idnum2expr, tmp_idnum2count, tmp_idnum2usage );
 
                 // Final usage count
 
@@ -465,7 +465,6 @@
 
         for (var i = 2; i--;)
         {
-            // xxx temporarily deactivated: bug at least on dft16 use case
             arr = expr_simplify_multiplications( arr ); 
             if (!(arr instanceof Array  &&  1 < arr.length))  break;
 
@@ -982,7 +981,6 @@
 
         // 0*   and  *0
 
-/*xxx
         for (var i = 0; i < arr.length - 2; i++)
         {
             while (arr[ i ] === 0  &&  arr[ i+1 ] === '*')
@@ -993,7 +991,7 @@
             if (arr[ i-1 ] === 0  &&  arr[ i - 2 ] === '*')
                 arr.splice( i-3, i, 0 );
         }
-*/
+
         // -1*   and  *-1
 
         if (EPSILON > Math.abs( arr[ 0 ] + 1 )  &&  arr[ 1 ] === '*')
