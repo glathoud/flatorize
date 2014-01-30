@@ -465,9 +465,9 @@
 
         for (var i = 2; i--;)
         {
-            
-            arr = expr_simplify_multiplications( arr ); 
-            if (!(arr instanceof Array  &&  1 < arr.length))  break;
+            // xxx temporarily deactivated: bug at least on dft16 use case
+            // arr = expr_simplify_multiplications( arr ); 
+            // if (!(arr instanceof Array  &&  1 < arr.length))  break;
 
             arr = expr_simplify_additions( arr ); 
             if (!(arr instanceof Array  &&  1 < arr.length))  break;
@@ -503,7 +503,8 @@
             if (!(arr instanceof Array  &&  1 < arr.length))  break;
         }
         
-        while (true)
+        // xxx temporarily deactivated: bug at least on dft16 use case
+        while ('xxx',true,false)
         {
             var newarr = expr_try_to_simplify_product_associativity( arr );
             if (!newarr)
