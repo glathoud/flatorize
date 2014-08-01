@@ -237,7 +237,7 @@ original <a href='http://en.wikipedia.org/wiki/Cooley%E2%80%93Tukey_FFT_algorith
 <pre class="prettyprint lang-js"><code>dftreal1024flat = flatorize('arr', dft_exprgenF( 10, { real: true } ));</code></pre>
 
 <p>Since the recursion depth \(log_2{1024}=10\) starts to be quite significant, one can wonder how long the call to `flatorize` itself will take.</p>
-<p><button id="tryit_flatorize_dft1024" onclick="tryit_flatorize_dft( this, 1024 )">Try <code>flatorize</code>!</button>&nbsp;(This one can last a long time.)</p><p id="tryit_flatorize_dft1024_output" class="generated-code-output"></p>
+<p><button id="tryit_flatorize_dft1024" onclick="console.profile('xxxdft1024gen');tryit_flatorize_dft( this, 1024 );console.profileEnd('xxxdft1024gen');">Try <code>flatorize</code>!</button>&nbsp;(This one can last a few seconds.)</p><p id="tryit_flatorize_dft1024_output" class="generated-code-output"></p>
 
 <p>Now, let us measure how fast the flatorized DFT1024 implementation runs, as compared
 with the original Cooley-Tukey:</p>

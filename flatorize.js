@@ -82,10 +82,8 @@
         
         // Normalize a bit the order to increase the chance to match
         // an existing expression.
-
-            
-
-        ret = normalize_a_bit_the_order( ret );
+        
+        ret = ret instanceof Array  ?  normalize_a_bit_the_order( ret )  :  [ ret ];
 
         if (ret.length === 1)
         {
@@ -263,7 +261,7 @@
 
                 var e = exprgen.apply(null,vararr);
                 
-                e = expr_flatten_minus( e, { recursive : true } );
+                e = expr_flatten_minus( e );
                 
                 // Input: gather statistics: how many time is each expression used?
                 //
@@ -518,41 +516,44 @@
         return arr;
     }
 
-    function normalize_a_bit_the_order( arr )
+    function normalize_a_bit_the_order( /*array*/arr )
     {
-        arr = [].concat( arr );
+        arr.slice.call.a;  // must be an array
 
+        var copied_on_write = false;        
         for (var i = arr.length - 2; i >= 0; i--)
         {
-            var a = arr[ i ]
-            ,   b = arr[ i+1 ]
-            ,   c = arr[ i+2 ]
-
-            , to_a = typeof a
-            , to_c = typeof c
-            ;
+            var b = arr[ i+1 ];
             if (b === '*')
             {
-                var anum = 'number' === to_a
-                ,   cnum = 'number' === to_c
+                var a = arr[ i ]
+                ,   c = arr[ i+2 ]
+
+                , to_a = typeof a
+                , to_c = typeof c
+                
+                , anum = 'number' === to_a
+                , cnum = 'number' === to_c
                 ;
                 if (!anum  &&  cnum)
                 {
                     // Swap multiplicands, number comes first
+                    copied_on_write  ||  (copied_on_write = true, arr = arr.slice());  // shallow copy
                     arr[ i+2 ] = a;
                     arr[ i ]   = c;
                 }
                 else if (!anum  &&  !cnum  &&  a.__isExpr__  &&  b.__isExpr__  &&  a.__exprIdnum__ > b.__exprIdnum__)
                 {
                     // Swap multiplicands, expression with smallest id comes first
+                    copied_on_write  ||  (copied_on_write = true, arr = arr.slice());  // shallow copy
                     arr[ i+2 ] = a;
                     arr[ i ]   = c;
                 }               
                 else if (anum  &&  cnum)
                 {
+                    copied_on_write  ||  (copied_on_write = true, arr = arr.slice());  // shallow copy
                     arr.splice( i, 3, a * c );
-                }
-                
+                }               
             }
         }
 
@@ -597,14 +598,21 @@
         if (arr.length < 4)
             return arr;
         
-        arr = [].concat( arr );
+        var ret = null;
         for (var i = arr.length - 3; i >= 0; i--)
         {
-            if (arr[i+1] === '*')
-                arr.splice( i, 3, expr( arr[i], arr[i+1], arr[i+2] ) );
+            var arr_ip1 = arr[ i+1 ];
+            if (arr_ip1 === '*')
+            {
+                (
+                    ret  ||  (ret = arr.slice())  // shallow copy
+                )
+                    .splice( i, 3, expr( arr[ i ], arr_ip1, arr[ i+2 ] ) )
+                ;
+            }
         }
         
-        return arr;
+        return ret  ||  arr;
     }
 
 
@@ -953,31 +961,30 @@
 
     function expr_simplify_multiplications( arr )
     {
-        if (arr.length < 3)
+        if (arr.length < 3  ||  0 > arr.indexOf( '*' ))
             return arr;
 
-        arr = [].concat( arr );
+        arr = arr.slice(); // copy
 
         // 1*   and  *1
 
         for (var i = arr.length; i--;)
         {
-            if ('number' !== typeof arr[ i ])
-                continue;
-            
-            while (EPSILON > Math.abs( arr[ i ] - 1 )  &&  arr[ i+1 ] === '*')
-                arr.splice( i, 2 );            
+            var arr_i = arr[ i ];
+            if ('number' === typeof arr_i  &&
+                arr[ i+1 ] === '*'  &&
+                EPSILON > Math.abs( arr_i - 1 )
+               )
+                arr.splice( i, 2 );
         }
 
         for (var i = arr.length; i--;)
         {
-            if ('number' !== typeof arr[ i + 1 ])
-                continue;
-            
-            while (EPSILON > Math.abs( arr[ i + 1 ] - 1 )  &&  arr[ i ] === '*')
+            var arr_ip1 = arr[ i + 1 ];
+            if ('number' === typeof arr_ip1  &&  arr[ i ] === '*'  &&  EPSILON > Math.abs( arr_ip1 - 1 ))
                 arr.splice( i, 2 );            
         }
-
+        
         // 0*   and  *0
 
         for (var i = 0; i < arr.length - 2; i++)
@@ -993,20 +1000,25 @@
 
         // -1*   and  *-1
 
-        if (EPSILON > Math.abs( arr[ 0 ] + 1 )  &&  arr[ 1 ] === '*')
+        var arr0;
+        if (arr[ 1 ] === '*'  &&  ((arr0 = arr[ 0 ]), ('number' === typeof arr0  &&  EPSILON > Math.abs( arr0 + 1 ))))
             arr.splice( 0, 2, '-' );
 
-        var n;
-        while (n = arr.length , (EPSILON > Math.abs( arr[ n-1 ] + 1)  &&  arr[ n - 2 ] === '*'))
+        var n, arr_nm1;
+        while (n = arr.length , (arr[ n - 2 ] === '*'  &&  
+               ((arr_nm1 = arr[ n - 1 ]), 'number' === typeof arr_nm1  &&  EPSILON > Math.abs( arr_nm1 + 1)))
+              )
         {
-            var p = arr[ n - 4 ] === '+'
-            ,   m = arr[ n - 4 ] === '-'
+            var arr_nm3 = arr[ n - 3 ]
+            ,   arr_nm4 = arr[ n - 4 ]
+            ,         p = arr_nm4 === '+'
+            ,         m = arr_nm4 === '-'
             ;
             if (p  ||  m)
-                arr.splice( n-4, 3, p ? '-' : '+', arr[ n - 3 ] );
+                arr.splice( n-4, 3, p ? '-' : '+', arr_nm3 );
             
             else
-                arr.splice( n-2, 2, 'number' === typeof arr[n-3]  ?  -arr[n-3]  :  expr( '-', arr[ n-3 ] ) );
+                arr.splice( n-2, 2, 'number' === typeof arr_nm3  ?  -arr_nm3  :  expr( '-', arr_nm3 ) );
         }
         
         return arr;
@@ -1014,72 +1026,101 @@
 
     function expr_simplify_additions( arr ) 
     {
-        while (arr[ 0 ] === 0  &&  arr[ 1 ] === '+')
-            arr = arr.slice( 2 );
+        var ret = null;
 
-        var n;
-        while (n = arr.length , (arr[ n-1 ] === 0  &&  arr[ n - 2 ] === '+'))
-            arr = arr.slice( 0, n - 2 );
+        // ... + 0  =>  ...
 
-        return arr;
+        for (var i = arr.length; 
+             i--  &&  arr[ i-- ] === 0  &&  arr[ i ] === '+';)
+        {
+            ret  ||  (ret = arr.slice());  // shallow copy
+            ret.pop();
+            ret.pop();
+        }
+        
+        // 0 + ... => ...
+
+        if (arr[ 0 ] === 0  &&  arr[ 1 ] === '+')
+            return (ret  ||  arr).slice( 2 );
+
+        return ret  ||  arr;
+
     }
     
     function expr_simplify_substractions( arr )
     {
-        if (arr[ 0 ] === 0  &&  arr[ 1 ] === '-')
-            arr = arr.slice( 1 );
+        var ret = null;
 
-        var n;
-        while (n = arr.length , (arr[ n-1 ] === 0  &&  arr[ n - 2 ] === '-'))
-            arr = arr.slice( 0, n - 2 );
+        // ... - 0  =>  ...
+
+        for (var i = arr.length; 
+             i--  &&  arr[ i-- ] === 0  &&  arr[ i ] === '-';)
+        {
+            ret  ||  (ret = arr.slice());  // shallow copy
+            ret.pop();
+            ret.pop();
+        }
         
-        return arr;
+        // 0 - ... => - ...
+
+        if (arr[ 0 ] === 0  &&  arr[ 1 ] === '-')
+            return (ret  ||  arr).slice( 1 );
+
+        
+        return ret  ||  arr;
     }
 
     function expr_simplify_double_negations( arr )
     {
-        arr = [].concat( arr );
+        var arr1;
+        if (2 === arr.length  &&  arr[0] === '-'  &&  
+            (arr1 = arr[1]) instanceof Array  &&  arr1.length === 2  &&  arr1[0] === '-'
+           )
+            return arr1[1];       
 
-        if (2 === arr.length  &&  arr[0] === '-'  &&  arr[1] instanceof Array  &&  arr[1].length === 2  &&  arr[1][0] === '-')
-            return arr[1][1];       
-
+        arr = arr.slice();  // shallow copy
         for (var n_1 = arr.length - 1
              , i = 0; i < n_1; i++)
         {
             if (arr[i] === '-')
             {
-                var next = arr[ i+1 ];
+                var next = arr[ i+1 ]
+                ,   next0
+                ;
                 if ('number' === typeof next  &&  next < 0)
                 {
-                    arr[i] = '+';
+                    arr[i]   = '+';
                     arr[i+1] = -next;
                 }
-                else if (next instanceof Array  &&  next.length === 2  &&  'number' === typeof next[0]  &&  next[0] < 0)
+                else if (next instanceof Array  &&  next.length === 2  &&  
+                         'number' === typeof (next0 = next[0])  &&  next0 < 0)
                 {
-                    arr[i] = '+';
-                    arr[i+1] = expr( -next[0], next[1] );
+                    arr[i]   = '+';
+                    arr[i+1] = expr( -next0, next[1] );
                 }
-                
+                i++;
             }
-            
-        }
-        
+        }        
 
         return arr;
     }
 
     function expr_simplify_plus_minus( arr )
     {
-        arr = [].concat( arr );
+        arr = arr.slice();  // shallow copy
 
-        if (arr[0]  instanceof Array  &&  arr[0].length === 2  &&   arr[0][0] === '-'  &&  (arr[1] === '+'  ||  arr[1] === '-'))
-            arr = arr[0].concat( arr.slice( 1 ) );
+        var arr0 = arr[ 0 ], arr1;
+        if (arr0  instanceof Array  &&  arr0.length === 2  &&   arr0[0] === '-'  &&  
+            ((arr1 = arr[1]) === '+'  ||  arr1 === '-')
+           )
+            arr = arr0.concat( arr.slice( 1 ) );
 
         for (var n_1 = arr.length - 1
              , i = 0; i < n_1; i++)
         {
-            var p = arr[ i ] === '+'
-            ,   m = arr[ i ] === '-'
+            var arr_i = arr[ i ]
+            ,       p = arr_i === '+'
+            ,       m = arr_i === '-'
             ;
             if (p || m)
             { 
@@ -1102,13 +1143,21 @@
 
     function expr_move_times_minus( arr )
     {
-        arr = [].concat( arr );
+        var copied_on_write = false;
         for (var i = arr.length; i--;)
         {
-            if (i > 1  &&  arr[i-1] === '*'  &&  arr[i] instanceof Array  &&  2 === arr[i].length  &&  arr[i][0] === '-')
+            var arr_im1, arr_i;
+            if (i > 1  &&  (arr_im1 = arr[i-1]) === '*'  &&  
+                (arr_i = arr[i]) instanceof Array  &&  2 === arr_i.length  &&  arr_i[0] === '-'
+               )
             {
+                if (!copied_on_write)
+                {
+                    arr = arr.slice();  // shallow copy
+                    copied_on_write = true;
+                }
                 arr[i-2] = expr( '-', arr[i-2] );
-                arr[i]   = arr[i][1];
+                arr[i]   = arr_i[1];
             }
         }
         return arr;
@@ -1129,41 +1178,22 @@
         return arr;
     }
 
-    function expr_flatten_minus( arr, opt )
+    function expr_flatten_minus( arr )
     // -(a+b-c) ==> -a-b+c
     {
         if (!(arr instanceof Array))
             return arr;
         
-        var recursive = opt  &&  opt.recursive;
-        if (recursive)
-        {
-            var   ret = [].concat( arr )
-            , changed = false
-            ;
-            for (var n = ret.length, i = 0; i < n; i++)
-            {
-                var   ri = ret[ i ]
-                , new_ri = expr_flatten_minus( ret[ i ], opt )
-                ;
-                if (ri !== new_ri)
-                {
-                    changed = true;
-                    ret[ i ] = ri.__isExpr__  ?  expr.apply( null, new_ri )  :  new_ri;
-                }
-            }
-            if (changed)
-                arr = ret;
-        }
-        
-        
-        if (!(arr.length === 2  &&  arr[ 0 ] === '-'  &&  arr[ 1 ] instanceof Array  &&  arr[ 1 ].length > 1))
+        var arr0, arr1;
+        if (!(arr.length === 2  &&  (arr0 = arr[ 0 ]) === '-'  && (arr1 = arr[ 1 ]) instanceof Array  &&  arr1.length > 1))
             return arr;
         
-        var ret = [].concat( arr[ 1 ] );
-        for (var last, i = last = ret.length; i--;)
+        // Invert each sign within `arr1` assuming one sign every two items.
+
+        var ret = null;
+        for (var last, i = last = arr1.length; i--;)
         {
-            var ri = ret[ i ]
+            var ri = arr1[ i ]
             ,   p  = '+' === ri
             ,   m  = '-' === ri
             ,   pm = p  ||  m
@@ -1171,17 +1201,24 @@
             ,   ok = pm ^ !two
             ;
             if (!ok)
-                return arr;
+                return arr; // The assumption was wrong
             
             if (pm)
-                ret[ i ] = p  ?  '-'  :  '+';
+            {
+                (
+                    ret  ||  (ret = arr1.slice())  // shallow copy
+                )[ i ] = p  ?  '-'  :  '+';
+            }
         }
-        
+
+        ret  ||  (ret = arr1.slice());  // shallow copy
+
         var r0 = ret[ 0 ];
         
         if (r0 === '+')
             ret.splice( 0, 1 );
-        else if (r0 !== '-') 
+        
+        if (r0 !== '-') 
             ret.splice( 0, 0, '-' );
         
         return ret;
@@ -1234,57 +1271,66 @@
     // "Try": may return nulley if no modification found, else a new
     // array.
     {
-        var rx_pm = /(?:\+|\-)/
-            , epsilon = 1e-14
+        var  epsilon = 1e-14
+        , arr_length = arr.length
+        , arr0, arr1, arr2, arr3, arr4, arr5, arr6, arr7
         ;
 
-        if ((arr.length === 7  ||  rx_pm.test( arr[7] ))
-            &&
-            (arr[1] === '*'  &&  rx_pm.test( arr[3] )  &&  arr[5] === '*')
+        if ((arr_length === 7  ||  arr_length > 7  &&  ((arr7 = arr[7]) === '+'  ||  arr7 === '-'))  &&
+            (arr1 = arr[1]) === '*'  &&  
+            ((arr3 = arr[3]) === '+'  ||  arr3 === '-')  &&  
+            (arr5 = arr[5]) === '*'
            )
         {
+            // At this point `arr1`, `arr3` and `arr5` are guaranteed to have been set.
+
+            arr0 = arr[ 0 ];
+            arr2 = arr[ 2 ];
+            arr4 = arr[ 4 ];
+            arr6 = arr[ 6 ];
+
             var additive_rest = arr.slice( 7 )
             ,   middle
             ;
-            if (null != (middle = middle_if_almost_equal(arr[0], arr[4])))
-                return [ middle, '*', expr( arr[2], arr[3], arr[6] ) ].concat( additive_rest );
+            if (null != (middle = middle_if_almost_equal(arr0, arr4)))
+                return [ middle, '*', expr( arr2, arr3, arr6 ) ].concat( additive_rest );
 
-            if (null != (middle = middle_if_almost_equal(arr[2], arr[4])))
-                return [ middle, '*', expr( arr[0], arr[3], arr[6] ) ].concat( additive_rest );
+            if (null != (middle = middle_if_almost_equal(arr2, arr4)))
+                return [ middle, '*', expr( arr0, arr3, arr6 ) ].concat( additive_rest );
 
-            if (null != (middle = middle_if_almost_equal(arr[0], arr[6])))
-                return [ middle, '*', expr( arr[2], arr[3], arr[4] ) ].concat( additive_rest );
+            if (null != (middle = middle_if_almost_equal(arr0, arr6)))
+                return [ middle, '*', expr( arr2, arr3, arr4 ) ].concat( additive_rest );
 
-            if (null != (middle = middle_if_almost_equal(arr[2], arr[6])))
-                return [ middle, '*', expr( arr[0], arr[3], arr[4] ) ].concat( additive_rest );
+            if (null != (middle = middle_if_almost_equal(arr2, arr6)))
+                return [ middle, '*', expr( arr0, arr3, arr4 ) ].concat( additive_rest );
 
 
-            if (null != (middle = middle_if_almost_opposite(arr[0], arr[4])))
-                return [ middle, '*', expr( arr[2], arr[3] === '+'  ?  '-'  :  '+', arr[6] ) ].concat( additive_rest );
+            if (null != (middle = middle_if_almost_opposite(arr0, arr4)))
+                return [ middle, '*', expr( arr2, arr3 === '+'  ?  '-'  :  '+', arr6 ) ].concat( additive_rest );
 
-            if (null != (middle = middle_if_almost_opposite(arr[2], arr[4])))
-                return [ middle, '*', expr( arr[0], arr[3] === '+'  ?  '-'  :  '+', arr[6] ) ].concat( additive_rest );
+            if (null != (middle = middle_if_almost_opposite(arr2, arr4)))
+                return [ middle, '*', expr( arr0, arr3 === '+'  ?  '-'  :  '+', arr6 ) ].concat( additive_rest );
 
-            if (null != (middle = middle_if_almost_opposite(arr[0], arr[6])))
-                return [ middle, '*', expr( arr[2], arr[3] === '+'  ?  '-'  :  '+', arr[4] ) ].concat( additive_rest );
+            if (null != (middle = middle_if_almost_opposite(arr0, arr6)))
+                return [ middle, '*', expr( arr2, arr3 === '+'  ?  '-'  :  '+', arr4 ) ].concat( additive_rest );
 
-            if (null != (middle = middle_if_almost_opposite(arr[2], arr[6])))
-                return [ middle, '*', expr( arr[0], arr[3] === '+'  ?  '-'  :  '+', arr[4] ) ].concat( additive_rest );
+            if (null != (middle = middle_if_almost_opposite(arr2, arr6)))
+                return [ middle, '*', expr( arr0, arr3 === '+'  ?  '-'  :  '+', arr4 ) ].concat( additive_rest );
 
             if (additive_rest.length)
             {
                 var rest_simpl = expr_try_to_simplify_product_associativity( arr.slice( 4 ));
                 if (null != rest_simpl)
-                    return arr.slice( 0, 4 ).concat( expr.apply( null, rest_simpl ) );
+                    return [ arr0, arr1, arr2, arr3 ].concat( expr.apply( null, rest_simpl ) );
             }
             
             
         }
 
-        if (arr[0] instanceof Array  &&  rx_pm.test( arr[1] ))
+        if ((arr0 = arr[0]) instanceof Array  &&  ((arr1 = arr[1]) === '+'  ||  arr1 === '-'))
         {
-            return expr_try_to_simplify_product_associativity( arr[0].concat( 
-                arr[2] instanceof Array  ?  arr[2].concat( arr.slice( 3 ))  :  arr.slice(1)
+            return expr_try_to_simplify_product_associativity( arr0.concat( 
+                (arr2 = arr[2]) instanceof Array  ?  arr2.concat( arr.slice( 3 ))  :  arr.slice(1)
             ));
         }
         
@@ -1375,7 +1421,7 @@
             if (x === '+'  ||  x === '-')
                 continue;
 
-            var arr2 = x.__isExpr__  ?  [].concat( x )  // copy
+            var arr2 = x.__isExpr__  ?  x.slice()  // copy
                 : 'number' === typeof x  ?  [ x ]
                 : null
             ;
@@ -1558,10 +1604,10 @@
         if (!(code instanceof Array))
             return;
 
-        var rest = [].concat( { usage : null, x : code } );
+        var rest = [ { usage : null, x : code } ];
         while (rest.length)
         {
-            var   o = rest.shift()
+            var   o = rest.pop()
             , usage = o.usage
             ,     x = o.x
             ;
@@ -1581,17 +1627,13 @@
             if (x instanceof Array)
             {
                 // Have not recursed yet, do it now.
-                for (var n = x.length, arr = new Array( n )
-                     , i = n; i--;
-                    )
+                for (var n = x.length, i = n; i--; )
                 {
-                    arr[i] = { 
+                    rest.push( { 
                         usage : x
                         , x   : x[ i ] 
-                    };
+                    } );
                 }
-                
-                rest = arr.concat( rest );
             }
         }
     }
