@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html>
+    <meta charset="utf-8">
+  <head>
+    <title>flatorize: test whether asm.js worth it</title>
+<style type="text/css">.happy, .sad { font-weight: bold; } .happy {color:green;} .sad {color:red;}</style>
+  </head>
+  <body>
+    <h1>flatorize: test whether asm.js worth it</h1>
+
+    <p>Code pieces taken from flatorize main page on the 26.08.2014</p>
+
+    <h2>(1) Accepting any array as input</h3>
+
+    <script type="text/javascript">
+
+function matmul342_test( matmul342_f, opt )
+{
+    mat_a = [ 1,  2,  3, 4, 
+              5,  6,  7, 8,
+              9, 10, 11, 12
+            ];
+
+    mat_b = [ 13, 14,
+              15, 16,
+              17, 18,
+              19, 20
+            ];
+
+    var start = Date.now();
+    for (var i = opt  &&  opt.n  ||  1; i--;)
+    {
+        mat_c = matmul342_f( mat_a, mat_b );
+    }
+    var duration = Date.now() - start;
+
+    if (opt &&  opt.retDuration)
+    {
+        return duration;
+    }
+    else
+    {
+    var ret = mat_c  &&  6 === mat_c.length  && 
+        Array.apply([],mat_c).join('##')==='170##180##426##452##682##724';
+
+    if (opt  &&  opt.outhtml)
+    {
+        return ret ? '\x3Cspan class="happy"\x3EYES\x3C/span\x3E' : '\x3Cspan class="sad"\x3ENO\x3C/span\x3E';
+    }
+    else
+    {
+        return ret;
+    }
+    }
+}
+
+function matmul342_flatorize(a,b
+                             /**/) {
+    /* function anonymous(a,b
+    **) {
+    return [ FZ.expr( FZ.part( a, 0 ), "*", FZ.part( b, 0), "+", FZ.part( a, 1 ), "*", FZ.part( b, 2), "+", FZ.part( a, 2 ), "*", FZ.part( b, 4), "+", FZ.part( a, 3 ), "*", FZ.part( b, 6) ),FZ.expr( FZ.part( a, 0 ), "*", FZ.part( b, 1), "+", FZ.part( a, 1 ), "*", FZ.part( b, 3), "+", FZ.part( a, 2 ), "*", FZ.part( b, 5), "+", FZ.part( a, 3 ), "*", FZ.part( b, 7) ),FZ.expr( FZ.part( a, 4 ), "*", FZ.part( b, 0), "+", FZ.part( a, 5 ), "*", FZ.part( b, 2), "+", FZ.part( a, 6 ), "*", FZ.part( b, 4), "+", FZ.part( a, 7 ), "*", FZ.part( b, 6) ),FZ.expr( FZ.part( a, 4 ), "*", FZ.part( b, 1), "+", FZ.part( a, 5 ), "*", FZ.part( b, 3), "+", FZ.part( a, 6 ), "*", FZ.part( b, 5), "+", FZ.part( a, 7 ), "*", FZ.part( b, 7) ),FZ.expr( FZ.part( a, 8 ), "*", FZ.part( b, 0), "+", FZ.part( a, 9 ), "*", FZ.part( b, 2), "+", FZ.part( a, 10 ), "*", FZ.part( b, 4), "+", FZ.part( a, 11 ), "*", FZ.part( b, 6) ),FZ.expr( FZ.part( a, 8 ), "*", FZ.part( b, 1), "+", FZ.part( a, 9 ), "*", FZ.part( b, 3), "+", FZ.part( a, 10 ), "*", FZ.part( b, 5), "+", FZ.part( a, 11 ), "*", FZ.part( b, 7) ) ];
+    } */
+    var
+    _0 = a[0]
+    , _1 = b[0]
+    , _2 = a[1]
+    , _3 = b[2]
+    , _4 = a[2]
+    , _5 = b[4]
+    , _6 = a[3]
+    , _7 = b[6]
+    , _8 = b[1]
+    , _9 = b[3]
+    , _a = b[5]
+    , _b = b[7]
+    , _c = a[4]
+    , _d = a[5]
+    , _e = a[6]
+    , _f = a[7]
+    , _g = a[8]
+    , _h = a[9]
+    , _i = a[10]
+    , _j = a[11]
+    ;
+    return [ (_6 * _7) + (_4 * _5) + (_2 * _3) + (_0 * _1), (_6 * _b) + (_4 * _a) + (_2 * _9) + (_0 * _8), (_f * _7) + (_e * _5) + (_d * _3) + (_c * _1), (_f * _b) + (_e * _a) + (_d * _9) + (_c * _8), (_j * _7) + (_i * _5) + (_h * _3) + (_g * _1), (_j * _b) + (_i * _a) + (_h * _9) + (_g * _8) ];
+
+}
+
+
+var matmul342_asmjs      = matmul342_asmjs_F();
+
+function matmul342_asmjs_F()
+{
+    var matmul342_asmjs_heap = new ArrayBuffer( 0x1000 )
+    var values  = new Float64Array( matmul342_asmjs_heap );
+    var input_a = new Float64Array( matmul342_asmjs_heap,      0, 12 * 8 );
+    var input_b = new Float64Array( matmul342_asmjs_heap, 12 * 8,  8 * 8 );
+
+    
+    var impl_O = matmul342_asmjs_O( window, null, matmul342_asmjs_heap );
+
+    return matmul342_asmjs;
+
+    function matmul342_asmjs( a, b )
+    {
+        // Prepare inputs
+        values[ 0]=a[ 0];
+        values[ 1]=a[ 1];
+        values[ 2]=a[ 2];
+        values[ 3]=a[ 3];
+        values[ 4]=a[ 4];
+        values[ 5]=a[ 5];
+        values[ 6]=a[ 6];
+        values[ 7]=a[ 7];
+        values[ 8]=a[ 8];
+        values[ 9]=a[ 9];
+        values[10]=a[10];
+        values[11]=a[11];
+
+        values[12]=b[ 0];
+        values[13]=b[ 1];
+        values[14]=b[ 2];
+        values[15]=b[ 3];
+        values[16]=b[ 4];
+        values[17]=b[ 5];
+        values[18]=b[ 6];
+        values[19]=b[ 7];
+        
+        // Compute
+
+        impl_O.matmul342_asmjs_impl();
+
+        // Extract and return output
+        return values.subarray(20,26);
+    }
+}
+
+
+function matmul342_asmjs_O( stdlib, foreign, buffer )
+{
+    "use asm";
+
+    var values = new stdlib.Float64Array(buffer);
+
+    function matmul342_asmjs_impl()
+    {
+        // inputs:
+        // matrix `a`: values[0..11]
+        // matrix `b`: values[12..19]
+        //
+        // output:
+        // matrix `c=a*b`: values[20..25]
+
+        var _0 = 0.0
+        , _1 = 0.0
+        , _2 = 0.0
+        , _3 = 0.0
+        , _4 = 0.0
+        , _5 = 0.0
+        , _6 = 0.0
+        , _7 = 0.0
+        , _8 = 0.0
+        , _9 = 0.0
+        , _a = 0.0
+        , _b = 0.0
+        , _c = 0.0
+        , _d = 0.0
+        , _e = 0.0
+        , _f = 0.0
+        , _g = 0.0
+        , _h = 0.0
+        , _i = 0.0
+        , _j = 0.0       
+        ;
+
+        _0 = +values[0>>3]  // a[0]
+        _1 = +values[96>>3] // b[0]   (* 12 8)
+        _2 = +values[8>>3]  // a[1]
+        _3 = +values[112>>3] // b[2]    (* 14 8)
+        _4 = +values[16>>3]  // a[2]
+        _5 = +values[128>>3] // b[4]    (* 16 8)
+        _6 = +values[24>>3]  // a[3]
+        _7 = +values[144>>3] // b[6]    ( * 18 8)
+        _8 = +values[104>>3] // b[1]   (* 13 8)
+        _9 = +values[120>>3] // b[3]    (* 15 8)
+        _a = +values[136>>3] // b[5]   (* 17 8)
+        _b = +values[152>>3] // b[7]   (* 19 8)
+        _c = +values[32>>3]  // a[4]
+        _d = +values[40>>3]  // a[5]
+        _e = +values[48>>3]  // a[6]
+        _f = +values[56>>3]  // a[7]
+        _g = +values[64>>3]  // a[8]
+        _h = +values[72>>3]  // a[9]
+        _i = +values[80>>3] // a[10]
+        _j = +values[88>>3] // a[11]
+        
+        values[160>>3] = +(+(_6 * _7) + +(_4 * _5) + +(_2 * _3) + +(_0 * _1));
+        values[168>>3] = +(+(_6 * _b) + +(_4 * _a) + +(_2 * _9) + +(_0 * _8));
+        values[176>>3] = +(+(_f * _7) + +(_e * _5) + +(_d * _3) + +(_c * _1));
+        values[184>>3] = +(+(_f * _b) + +(_e * _a) + +(_d * _9) + +(_c * _8));
+        values[192>>3] = +(+(_j * _7) + +(_i * _5) + +(_h * _3) + +(_g * _1));
+        values[200>>3] = +(+(_j * _b) + +(_i * _a) + +(_h * _9) + +(_g * _8));
+    }
+
+    return { matmul342_asmjs_impl : matmul342_asmjs_impl };
+}
+
+</script>
+
+    <p>Code produced by flatorize:</p>
+    
+    <pre>
+<code>
+  <script type="text/javascript">document.write(matmul342_flatorize+'')</script>
+  </code>
+
+      </pre>
+ 
+    <p>Make sure <code>matmul342_flatorize</code> works: <script type="text/javascript">document.write(matmul342_test( matmul342_flatorize,{outhtml:true} ));</script></p>
+
+   <p>Make sure <code>matmul342_asmjs</code> works: <script type="text/javascript">document.write(matmul342_test( matmul342_asmjs,{outhtml:true} ));</script></p>
+
+   <p>Speed test: <button onclick="matmul342_speedtest()">run!</button></p>
+
+   <pre><code id="matmul342_speedtest_output"></code></pre>
+
+   <script type="text/javascript">
+function matmul342_speedtest()
+{
+    var N = 1e6
+    , outNode = document.getElementById("matmul342_speedtest_output")
+    , matmul342_flatorize_duration = matmul342_test( matmul342_flatorize, { n : N, retDuration : true } )
+    ;
+    outNode.textContent += speedtest_output_line( "matmul342_flatorize", N, matmul342_flatorize_duration );
+    //
+    var matmul342_asmjs_duration = matmul342_test( matmul342_asmjs, { n : N, retDuration : true } );
+    outNode.textContent += speedtest_output_line( "matmul342_asmjs", N, matmul342_asmjs_duration );
+}
+function speedtest_output_line( name, n, duration )
+{
+    return "\n" + name + " speed: " + (n / duration).toFixed(1) + " iterations/sec    (duration " + duration + "ms)";
+}
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h2>(2) Accepting only Float64Array as input</h3>
+
+    <script type="text/javascript">
+
+function t_matmul342_test( t_matmul342_f, opt )
+{
+    var mat_a = new Float64Array( [ 1,  2,  3, 4, 
+              5,  6,  7, 8,
+              9, 10, 11, 12
+                              ]);
+
+    var mat_b = new Float64Array( [ 13, 14,
+              15, 16,
+              17, 18,
+              19, 20
+                              ]);
+
+    var mat_c = new Float64Array( 6 );
+
+    var start = Date.now();
+    for (var i = opt  &&  opt.n  ||  1; i--;)
+    {
+        t_matmul342_f( mat_a, mat_b, mat_c );
+    }
+    var duration = Date.now() - start;
+
+    if (opt &&  opt.retDuration)
+    {
+        return duration;
+    }
+    else
+    {
+    var ret = mat_c  &&  6 === mat_c.length  && 
+        Array.apply([],mat_c).join('##')==='170##180##426##452##682##724';
+
+    if (opt  &&  opt.outhtml)
+    {
+        return ret ? '\x3Cspan class="happy"\x3EYES\x3C/span\x3E' : '\x3Cspan class="sad"\x3ENO\x3C/span\x3E';
+    }
+    else
+    {
+        return ret;
+    }
+    }
+}
+
+function t_matmul342_flatorize(a,b,c
+                             /**/) {
+    /* function anonymous(a,b
+    **) {
+    return [ FZ.expr( FZ.part( a, 0 ), "*", FZ.part( b, 0), "+", FZ.part( a, 1 ), "*", FZ.part( b, 2), "+", FZ.part( a, 2 ), "*", FZ.part( b, 4), "+", FZ.part( a, 3 ), "*", FZ.part( b, 6) ),FZ.expr( FZ.part( a, 0 ), "*", FZ.part( b, 1), "+", FZ.part( a, 1 ), "*", FZ.part( b, 3), "+", FZ.part( a, 2 ), "*", FZ.part( b, 5), "+", FZ.part( a, 3 ), "*", FZ.part( b, 7) ),FZ.expr( FZ.part( a, 4 ), "*", FZ.part( b, 0), "+", FZ.part( a, 5 ), "*", FZ.part( b, 2), "+", FZ.part( a, 6 ), "*", FZ.part( b, 4), "+", FZ.part( a, 7 ), "*", FZ.part( b, 6) ),FZ.expr( FZ.part( a, 4 ), "*", FZ.part( b, 1), "+", FZ.part( a, 5 ), "*", FZ.part( b, 3), "+", FZ.part( a, 6 ), "*", FZ.part( b, 5), "+", FZ.part( a, 7 ), "*", FZ.part( b, 7) ),FZ.expr( FZ.part( a, 8 ), "*", FZ.part( b, 0), "+", FZ.part( a, 9 ), "*", FZ.part( b, 2), "+", FZ.part( a, 10 ), "*", FZ.part( b, 4), "+", FZ.part( a, 11 ), "*", FZ.part( b, 6) ),FZ.expr( FZ.part( a, 8 ), "*", FZ.part( b, 1), "+", FZ.part( a, 9 ), "*", FZ.part( b, 3), "+", FZ.part( a, 10 ), "*", FZ.part( b, 5), "+", FZ.part( a, 11 ), "*", FZ.part( b, 7) ) ];
+    } */
+    var
+    _0 = a[0]
+    , _1 = b[0]
+    , _2 = a[1]
+    , _3 = b[2]
+    , _4 = a[2]
+    , _5 = b[4]
+    , _6 = a[3]
+    , _7 = b[6]
+    , _8 = b[1]
+    , _9 = b[3]
+    , _a = b[5]
+    , _b = b[7]
+    , _c = a[4]
+    , _d = a[5]
+    , _e = a[6]
+    , _f = a[7]
+    , _g = a[8]
+    , _h = a[9]
+    , _i = a[10]
+    , _j = a[11]
+    ;
+    c[0] = (_6 * _7) + (_4 * _5) + (_2 * _3) + (_0 * _1);
+    c[1] = (_6 * _b) + (_4 * _a) + (_2 * _9) + (_0 * _8);
+    c[2] = (_f * _7) + (_e * _5) + (_d * _3) + (_c * _1);
+    c[3] = (_f * _b) + (_e * _a) + (_d * _9) + (_c * _8);
+    c[4] = (_j * _7) + (_i * _5) + (_h * _3) + (_g * _1);
+    c[5] = (_j * _b) + (_i * _a) + (_h * _9) + (_g * _8);
+}
+
+
+var t_matmul342_asmjs      = t_matmul342_asmjs_F();
+
+function t_matmul342_asmjs_F()
+{
+    var t_matmul342_asmjs_heap = new ArrayBuffer( 0x1000 )
+    ,     SIZE = 8
+    ,  input_a = new Float64Array( t_matmul342_asmjs_heap,  0 * SIZE, 12 )
+    ,  input_b = new Float64Array( t_matmul342_asmjs_heap, 12 * SIZE,  8 )
+    , output_c = new Float64Array( t_matmul342_asmjs_heap, 20 * SIZE,  6 )
+    ;
+    
+    var impl_O = t_matmul342_asmjs_O( window, null, t_matmul342_asmjs_heap );
+
+    return t_matmul342_asmjs;
+
+    function t_matmul342_asmjs( a, b, c )
+    {
+        // Prepare inputs
+
+        input_a.set( a );
+        input_b.set( b );
+        
+        // Compute
+
+        impl_O.t_matmul342_asmjs_impl();
+
+        // Extract and return output
+        c.set( output_c );
+    }
+}
+
+// Standalone asm.js implementation.  As of 2014-08-27, called from
+// the non-asm t_matmul342_test, this does NOT run fast. Explanation:
+// 
+// http://stackoverflow.com/questions/17951449/firefox-does-not-seem-to-be-faster-using-the-asm-js-profile-yet-chrome-is
+// 
+// One performance fault that we already know trips up people trying
+// to benchmark asm.js is that calling from non-asm.js into asm.js and
+// vice versa is much slower than normal calls due to general-purpose
+// enter/exit routines. We plan to fix this in the next few months
+// but, in the meantime, for benchmarking purposes, try to keep the
+// whole computation happening inside a single asm.js module, not
+// calling in and out.
+
+function t_matmul342_asmjs_O( stdlib, foreign, buffer ) {
+    "use asm";
+
+    var float64 = new stdlib.Float64Array(buffer);
+
+    function t_matmul342_asmjs_impl()
+    {
+        // inputs:
+        // matrix `a`: float64[0..11]
+        // matrix `b`: float64[12..19]
+        //
+        // output:
+        // matrix `c=a*b`: float64[20..25]
+
+    var _0 = 0.0
+        , _1 = 0.0
+        , _2 = 0.0
+        , _3 = 0.0
+        , _4 = 0.0
+        , _5 = 0.0
+        , _6 = 0.0
+        , _7 = 0.0
+        , _8 = 0.0
+        , _9 = 0.0
+        , _a = 0.0
+        , _b = 0.0
+        , _c = 0.0
+        , _d = 0.0
+        , _e = 0.0
+        , _f = 0.0
+        , _g = 0.0
+        , _h = 0.0
+        , _i = 0.0
+        , _j = 0.0       
+        ;
+
+        _0 = +float64[0>>3]  // a[0]
+        _1 = +float64[96>>3] // b[0]   (* 12 8)
+        _2 = +float64[8>>3]  // a[1]
+        _3 = +float64[112>>3] // b[2]    (* 14 8)
+        _4 = +float64[16>>3]  // a[2]
+        _5 = +float64[128>>3] // b[4]    (* 16 8)
+        _6 = +float64[24>>3]  // a[3]
+        _7 = +float64[144>>3] // b[6]    ( * 18 8)
+        _8 = +float64[104>>3] // b[1]   (* 13 8)
+        _9 = +float64[120>>3] // b[3]    (* 15 8)
+        _a = +float64[136>>3] // b[5]   (* 17 8)
+        _b = +float64[152>>3] // b[7]   (* 19 8)
+        _c = +float64[32>>3]  // a[4]
+        _d = +float64[40>>3]  // a[5]
+        _e = +float64[48>>3]  // a[6]
+        _f = +float64[56>>3]  // a[7]
+        _g = +float64[64>>3]  // a[8]
+        _h = +float64[72>>3]  // a[9]
+        _i = +float64[80>>3] // a[10]
+        _j = +float64[88>>3] // a[11]
+        
+        float64[160>>3] = +(+(_6 * _7) + +(_4 * _5) + +(_2 * _3) + +(_0 * _1));
+        float64[168>>3] = +(+(_6 * _b) + +(_4 * _a) + +(_2 * _9) + +(_0 * _8));
+        float64[176>>3] = +(+(_f * _7) + +(_e * _5) + +(_d * _3) + +(_c * _1));
+        float64[184>>3] = +(+(_f * _b) + +(_e * _a) + +(_d * _9) + +(_c * _8));
+        float64[192>>3] = +(+(_j * _7) + +(_i * _5) + +(_h * _3) + +(_g * _1));
+        float64[200>>3] = +(+(_j * _b) + +(_i * _a) + +(_h * _9) + +(_g * _8));
+    }
+
+    return { t_matmul342_asmjs_impl : t_matmul342_asmjs_impl };
+}
+
+
+
+// --- So based on the above we try now to implement the tester in
+// --- asm.js as well.
+
+var t_matmul342_asmjs_with_test_heap = new ArrayBuffer(0x1000)
+    ,     SIZE = 8
+    ,  input_a = new Float64Array( t_matmul342_asmjs_with_test_heap,  0 * SIZE, 12 )
+    ,  input_b = new Float64Array( t_matmul342_asmjs_with_test_heap, 12 * SIZE,  8 )
+;
+    var mat_a = new Float64Array( [ 1,  2,  3, 4, 
+                                    5,  6,  7, 8,
+                                    9, 10, 11, 12
+                                  ]);
+    
+    var mat_b = new Float64Array( [ 13, 14,
+                                    15, 16,
+                                    17, 18,
+                                    19, 20
+                                  ]);
+input_a.set( mat_a );
+input_b.set( mat_b );
+
+var t_matmul342_asmjs_with_test_O = t_matmul342_asmjs_with_test_Ogen( window, {}, t_matmul342_asmjs_with_test_heap);
+
+function t_matmul342_asmjs_with_test_Ogen( stdlib, foreign, buffer ) {
+    "use asm";
+    
+   var float64 = new stdlib.Float64Array(buffer);
+    
+
+    function t_matmul342_asmjs_impl()
+    {
+        // inputs:
+        // matrix `a`: float64[0..11]
+        // matrix `b`: float64[12..19]
+        //
+        // output:
+        // matrix `c=a*b`: float64[20..25]
+
+   var _0 = 0.0
+        , _1 = 0.0
+        , _2 = 0.0
+        , _3 = 0.0
+        , _4 = 0.0
+        , _5 = 0.0
+        , _6 = 0.0
+        , _7 = 0.0
+        , _8 = 0.0
+        , _9 = 0.0
+        , _a = 0.0
+        , _b = 0.0
+        , _c = 0.0
+        , _d = 0.0
+        , _e = 0.0
+        , _f = 0.0
+        , _g = 0.0
+        , _h = 0.0
+        , _i = 0.0
+        , _j = 0.0       
+        ;
+
+        _0 = +float64[0>>3]  // a[0]
+        _1 = +float64[96>>3] // b[0]   (* 12 8)
+        _2 = +float64[8>>3]  // a[1]
+        _3 = +float64[112>>3] // b[2]    (* 14 8)
+        _4 = +float64[16>>3]  // a[2]
+        _5 = +float64[128>>3] // b[4]    (* 16 8)
+        _6 = +float64[24>>3]  // a[3]
+        _7 = +float64[144>>3] // b[6]    ( * 18 8)
+        _8 = +float64[104>>3] // b[1]   (* 13 8)
+        _9 = +float64[120>>3] // b[3]    (* 15 8)
+        _a = +float64[136>>3] // b[5]   (* 17 8)
+        _b = +float64[152>>3] // b[7]   (* 19 8)
+        _c = +float64[32>>3]  // a[4]
+        _d = +float64[40>>3]  // a[5]
+        _e = +float64[48>>3]  // a[6]
+        _f = +float64[56>>3]  // a[7]
+        _g = +float64[64>>3]  // a[8]
+        _h = +float64[72>>3]  // a[9]
+        _i = +float64[80>>3] // a[10]
+        _j = +float64[88>>3] // a[11]
+        
+        float64[160>>3] = +(+(_6 * _7) + +(_4 * _5) + +(_2 * _3) + +(_0 * _1));
+        float64[168>>3] = +(+(_6 * _b) + +(_4 * _a) + +(_2 * _9) + +(_0 * _8));
+        float64[176>>3] = +(+(_f * _7) + +(_e * _5) + +(_d * _3) + +(_c * _1));
+        float64[184>>3] = +(+(_f * _b) + +(_e * _a) + +(_d * _9) + +(_c * _8));
+        float64[192>>3] = +(+(_j * _7) + +(_i * _5) + +(_h * _3) + +(_g * _1));
+        float64[200>>3] = +(+(_j * _b) + +(_i * _a) + +(_h * _9) + +(_g * _8));
+    }
+
+    function t_matmul342_asmjs_test( n ) 
+    {
+        n = n|0;
+        var i = 0;
+        for (i = n; 
+             i = (i-1)|0; 
+             )
+        {
+            t_matmul342_asmjs_impl();
+        }
+    }
+
+    return { t_matmul342_asmjs_impl : t_matmul342_asmjs_impl
+             , t_matmul342_asmjs_test : t_matmul342_asmjs_test
+           };
+
+
+}
+    
+
+</script>
+
+    <p>Code produced by flatorize:</p>
+    
+    <pre>
+<code>
+  <script type="text/javascript">document.write(t_matmul342_flatorize+'')</script>
+  </code>
+
+      </pre>
+ 
+    <p>Make sure <code>t_matmul342_flatorize</code> works: <script type="text/javascript">document.write(t_matmul342_test( t_matmul342_flatorize,{outhtml:true} ));</script></p>
+
+   <p>Make sure <code>t_matmul342_asmjs</code> works: <script type="text/javascript">document.write(t_matmul342_test( t_matmul342_asmjs,{outhtml:true} ));</script></p>
+
+   <p>Speed test: <button onclick="t_matmul342_speedtest()">run!</button></p>
+
+   <pre><code id="t_matmul342_speedtest_output"></code></pre>
+
+   <script type="text/javascript">
+function t_matmul342_speedtest()
+{
+    var N = 1e6
+    , outNode = document.getElementById("t_matmul342_speedtest_output")
+    , t_matmul342_flatorize_duration = t_matmul342_test( t_matmul342_flatorize, { n : N, retDuration : true } )
+    ;
+    outNode.textContent += speedtest_output_line( "t_matmul342_flatorize", N, t_matmul342_flatorize_duration );
+    //
+    var t_matmul342_asmjs_duration = t_matmul342_test( t_matmul342_asmjs, { n : N, retDuration : true } );
+    outNode.textContent += speedtest_output_line( "t_matmul342_asmjs", N, t_matmul342_asmjs_duration );
+    //
+    var start = Date.now();
+    t_matmul342_asmjs_with_test_O.t_matmul342_asmjs_test( N );
+    var t_matmul342_asmjs_with_test_duration = Date.now() - start;
+    outNode.textContent += speedtest_output_line( "t_matmul342_asmjs_with_test", N, t_matmul342_asmjs_with_test_duration );
+}
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h2>(3) Testing <code>t_matmul342_flatorize</code> on normal arrays</h2>
+    
+    <script type="text/javascript">
+
+function n_matmul342_test( n_matmul342_f, opt )
+{
+    var n_mat_a = [ 1,  2,  3, 4, 
+              5,  6,  7, 8,
+              9, 10, 11, 12
+            ];
+
+    var n_mat_b = [ 13, 14,
+              15, 16,
+              17, 18,
+              19, 20
+            ];
+
+    var n_mat_c = new Array( 6 );
+
+    var start = Date.now();
+    for (var i = opt  &&  opt.n  ||  1; i--;)
+    {
+        n_matmul342_f( n_mat_a, n_mat_b, n_mat_c );
+    }
+    var duration = Date.now() - start;
+
+    if (opt &&  opt.retDuration)
+    {
+        return duration;
+    }
+    else
+    {
+    var ret = n_mat_c  &&  6 === n_mat_c.length  && 
+        Array.apply([],n_mat_c).join('##')==='170##180##426##452##682##724';
+
+    if (opt  &&  opt.outhtml)
+    {
+        return ret ? '\x3Cspan class="happy"\x3EYES\x3C/span\x3E' : '\x3Cspan class="sad"\x3ENO\x3C/span\x3E';
+    }
+    else
+    {
+        return ret;
+    }
+    }
+}
+</script>
+
+
+
+    <p>Make sure <code>t_matmul342_flatorize</code> works with normal arrays: <script type="text/javascript">document.write(n_matmul342_test( t_matmul342_flatorize,{outhtml:true} ));</script></p>
+
+   <p>Speed test: <button onclick="n_matmul342_speedtest()">run!</button></p>
+
+   <pre><code id="n_matmul342_speedtest_output"></code></pre>
+
+   <script type="text/javascript">
+function n_matmul342_speedtest()
+{
+    var N = 1e6
+    , outNode = document.getElementById("n_matmul342_speedtest_output")
+    , t_matmul342_flatorize_duration = n_matmul342_test( t_matmul342_flatorize, { n : N, retDuration : true } )
+    ;
+    outNode.textContent += speedtest_output_line( "t_matmul342_flatorize", N, t_matmul342_flatorize_duration );
+}
+</script>
+
+
+    <address>
+      <a href="mailto:guillaume.lathoud@alpstein.com"></a>
+    </address>
+  </body>
+</html>
