@@ -236,9 +236,9 @@ function matmul342_speedtest()
     var matmul342_asmjs_duration = matmul342_test( matmul342_asmjs, { n : N, retDuration : true } );
     outNode.textContent += speedtest_output_line( "matmul342_asmjs", N, matmul342_asmjs_duration );
 }
-function speedtest_output_line( name, n, duration )
+function speedtest_output_line( name, n, duration_ms )
 {
-    return "\n" + name + " speed: " + (n / duration).toFixed(1) + " iterations/sec    (duration " + duration + "ms)";
+    return "\n" + name + " speed: " + (1000 * n / duration_ms).toPrecision(4) + " iterations/sec    (duration " + duration_ms + "ms)";
 }
 
 </script>
