@@ -35,6 +35,8 @@
     flatorize.now  = flatorize_now;  // Convenience wrapper around `flatorize`.
     flatorize.expr = expr;    // To build and expression.
     flatorize.part = part;    // To extract a property of an array or object.
+    
+    flatorize.tryToGetArrayBasicTypeDescription = tryToGetArrayBasicTypeDescription;  // Mainly used by ./flatorize_asmjs.js
 
     // ---------- Public API implementation ----------
 
@@ -128,19 +130,26 @@
         ret.__isExpr__ = true;  // not safe against overwrite, but faster than a function
         ret.__toStr__  = function ( /*?object?*/opt, /*?object?*/topopt ) 
         { 
-            var part = this.part;
+            var part = this.part
+            ,   isTop = opt  &&  opt.isTop
+            ;
             if (part)
             {
                 var   x = part.x
                 , where = part.where
-                ,   ret = code2str( x, opt, topopt ) + 
+                ,   ret = (
+                    !isTop  &&  'string' === typeof x
+                        ? x // optimization for a special case
+                        : code2str( x, opt, topopt )  // general case
+                )
+                    + 
                     (
                         'number' === typeof where 
                             ? '[' + where + ']'
                             : /^[a-zA-Z_][a-zA-Z_0-9]*$/.test( where )
                             ? '.' + where
                             : '["' + part.where.replace( /"/g, '\\"' ) + '"]'
-                    )                        
+                    )
                 ;
             }
             else
@@ -150,7 +159,11 @@
                 ;
                 for (var i = 0; i < n; i++)
                 {
-                    var one = code2str( this[ i ], opt );
+                    var xi = this[ i ]
+                    ,  one = !isTop  &&  'string' === typeof xi
+                        ? xi  // optimization for a special case
+                        : code2str( xi, opt )  // general case
+                    ;
                     ret[ i ] = -1 < one.indexOf( ' ' )  &&  one[0] !== '('  &&  one[ one.length - 1 ] !== ')'
                         ?  '(' + one + ')'  
                         :  one
@@ -337,6 +350,32 @@
         {
             return this.getDirect().apply( null, arguments );
         }
+    }
+
+    function tryToGetArrayBasicTypeDescription( t )
+    {
+        if (t instanceof Array  &&  t.sametype)
+        {
+            var t0 = t[ 0 ]
+            ,   n  = t.length
+            ;
+            
+            if ('string' === typeof t0)
+                return { n : n, type : t0 }; // Success
+            
+            var sub = tryToGetArrayBasicTypeDescription( t[ 0 ] );
+            if (sub)
+            {
+                // Success
+                return { 
+                    n      : sub.n * n
+                    , type : sub.type 
+                };
+            }
+        }
+        
+        // Failure
+        return null;
     }
 
     // -------------------- Private implementation --------------------

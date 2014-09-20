@@ -1,0 +1,112 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8" /> 
+<title>Flatorize: Generate fast asm.js code</title>
+<link rel="stylesheet" type="text/css" href="prettify/prettify.css">
+<link rel="stylesheet" type="text/css" href="flatorize.css">
+<script type="text/javascript" src="log.js"></script>
+<script type="text/javascript" src="flatorize.js"></script>
+<script type="text/javascript" src="examples.js"></script>
+<script type="text/javascript">generate_small_functions();</script>
+<script type="text/javascript" src="flatorize_asmjs.js"></script>
+<script type="text/javascript" src="modifsplitradix.js"></script>
+</head>
+<body>
+
+<a href="https://github.com/glathoud/flatorize" class="print-hidden">
+  <img style="position: fixed; top: 0; right: 0; border: 0; margin: 0; padding: 0;"
+       src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"
+       alt="Fork me on GitHub">
+</a>
+
+<p><a href="index.html">Back to the main article</a></p>
+
+<h2><code>flatorize_asmjs</code>: Generate fast <code>asm.js</code> code</h2>
+
+<p style="text-align:right">by <a href="http://glat.info">Guillaume Lathoud</a><span class="print">&nbsp;[1]</span>, September 2014</p>
+
+<p>This page presents a plugin method <code>flatorize.getAsmjs()</code> (GitHub <a href="https://github.com/glathoud/flatorize/blob/master/flatorize_asmjs.js">source</a>) that goes on top of <code>flatorize</code> (see the <a href="index.html">main article</a>, GitHub <a href="https://github.com/glathoud/flatorize/blob/master/flatorize.js">source</a>).</p>
+
+<p>Several examples describe how to use <code>flatorize.getAsmjs()</code> to generate <code>asm.js</code> implementations that should run very fast in both Firefox and Chrome. Inputs and output are limited to numbers and arrays of numbers. All arrays must have the same types because a single array is used for both inputs and output, so as to spare array creation costs.</p>
+<ul class="small">
+  <li><a href="#c-f2">complex numbers (how-to example)</a></li>
+  <li><a href="#c-matmul">matrix multiplication (speedup example)</a><br></li>
+  <li><a href="#c-dft">Discrete Fourier Transform (speedup example)</a><br></li>
+</li>
+</ul>
+  
+
+<h3 class="anchorable" id="c-f2"><code>f2:</code> complex numbers (how-to example)<a href="#c-f2" class="anchor">#</a></h3>
+
+<p>Expression definition  (details in the <a href="index.html#example">main article</a>):</p>
+<pre class="prettyprint lang-js"><code>// f:
+<script type="text/javascript">document.write(f2.exprgen+"");</script></code></pre>
+
+<p>A call to <code>flatorize()</code>:</p>
+<pre class="prettyprint lang-js"><code>// note the type declarations, ignored by JavaScript but used later for C
+f2 = flatorize('a:[2 float],b:[2 float],c:[2 float]->d:[2 float]',f);
+</code></pre>
+
+<p>...generates flatorized JavaScript code:</p>
+<pre class="prettyprint lang-js"><code>// f2.getDirect():
+<script type="text/javascript">document.write(f2.getDirect()+"");</script></code></pre>
+
+<p>Then, a call to <code>flatorize.getAsmjs()</code>:</p>
+<script type="text/javascript" id="script-gen-f2_asmjs">var f2_asmjsGen = flatorize.getAsmjsGen( { switcher: f2, name: "f2" } );</script>
+<pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(document.getElementById("script-gen-f2_asmjs").textContent);</script></code></pre>
+
+<p>...returns an <code>asm.js</code> generator, which can be used as follows:</p>
+<pre class="prettyprint lang-js"><code>// f2_asmjs:
+<script type="text/javascript" src="asmjs_complex_numbers_check.js"></script>
+<script type="text/javascript">asmjs_complex_numbers_check();</script>
+<script type="text/javascript">document.write(asmjs_complex_numbers_check);</script></code></pre>
+<p class="small">(This check, as a few others below, ran as you loaded the page.)</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" src="prettify/prettify.js"></script>
+<script type="text/javascript">setTimeout( prettyPrint );</script>
+<script type="text/javascript">
+/* xxx
+[ 
+    'tryit_speed_matmul342', 'tryit_flatorize_dft16', 'tryit_speed_dft16', 'tryit_flatorize_dft1024', 'tryit_speed_dft1024', 'tryit_all'
+].forEach(
+    function (id) { document.getElementById(id).removeAttribute('disabled'); }
+);
+*/
+window.ontouchstart = function () { Array.prototype.forEach.call( document.getElementsByClassName( "anchor" ), function (node) { node.className = node.className.replace( /\banchor\b/g, '' ); } ); };
+</script>
+<script type="text/javascript" src="../MathJax/MathJax.js?config=default"></script>
+<script type="text/javascript">
+setTimeout( function () {
+var _gaq = _gaq || [];  _gaq.push(['_setAccount', 'UA-5516483-1']);  _gaq.push(['_trackPageview']);  (function() {    var ga = document.createElement('script');    ga.src = ('https:' == document.location.protocol ? 'https://ssl' :         'http://www') + '.google-analytics.com/ga.js';    ga.setAttribute('async', 'true');    document.documentElement.firstChild.appendChild(ga);  })();
+}, 0 );
+</script>
+
+</body>
+</html>
