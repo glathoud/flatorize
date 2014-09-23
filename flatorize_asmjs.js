@@ -31,18 +31,6 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
 (function () {
 
-    // First variant: optimize through post-processing (reordering)
-
-    var INSERT_EARLY = true;
-    var ALIGNED_DATA = true;
-    var HEURISTIC_1  = true;
-    var CONSTANT_VAR = false;  // Actually not very interesting for the performance, sometimes hurts even a bit
-
-    // Second variant: optimize by construction
-    // When `true`, takes precedence over the previous heuristics
-
-    var HEURISTIC_2 = true;
-
     // ---------- Public API
 
     flatorize.getAsmjsGen      = flatorize_getAsmjsGen;
@@ -100,14 +88,14 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         console.log( 'xxx flatorize_asmjsGen js_direct:' );
         console.dir( js_direct );
 
-        checkType( typed_in_var, typed_out_vartype );
+        var common_array_btd = checkType( typed_in_var, typed_out_vartype );
 
         var idnum2type  = propagateType( js_direct );
         
         console.log( 'xxx flatorize_asmjsGen idnum2type:' );
         console.dir( idnum2type );
         
-        return generateAsmjsGen( js_direct, idnum2type, topFunName );
+        return generateAsmjsGen( js_direct, idnum2type, topFunName, common_array_btd );
     }
 
     function flatorize_getAsmjsImplCode( /*object*/cfg )
@@ -136,6 +124,8 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
     {
         var array_basictype_set = {}
         ,   array_basictype_n   = 0
+
+        ,   ret
         ;
 
         for (var k in typed_in_var)  {  if(!(k in _emptyObj)) {  // More flexible than hasOwnProperty
@@ -143,6 +133,8 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         }}
 
         check_one_type( typed_out_vartype );
+
+        return ret;
 
         function check_one_type( t )
         {
@@ -163,6 +155,8 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
                 array_basictype_set[ bt.type ] = 1;
                 array_basictype_n++;
+
+                ret = bt;
             }
             else
             {
@@ -262,10 +256,26 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         return idnum2type;
     }
 
-    var _JS_CODE = '__code2str_cache_cfgSTAT';
 
-    function generateCodeC( /*object*/info, /*object*/idnum2type, /*?string?*/topFunName )
-    // Returns an array of strings (code lines)
+
+    function generateAsmjsGen( /*object*/info, /*object*/idnum2type, /*string*/topFunName, /*?object?*/common_array_btd )
+    // Returns a `gen` function that can be called to compile the
+    // asm.js code, e.g.
+    // 
+    // {{{
+    // var o = gen( window, {}, heap );  // compile the asm.js code
+    // 
+    // // Use it:
+    // var result = o[ topFunName ]( some, input, parameters );
+    // }}}
+    //
+    // `o[ topFunName ]` may also modify the heap in-place,
+    // in which case you have to write inputs and read outputs
+    // through the heap.
+    //
+    // For more examples of use see ./asmjs.html
+    // 
+    // glathoud@yahoo.fr
     {
         // Some of the `info` fields are only required at the top
         // level (`topFunName` given, i.e. `isTop === true`).
@@ -290,73 +300,115 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         ,   body   = []
         ,   after  = []
 
+        ,   cat = common_array_btd  &&  common_array_btd.type
+        ,   cat_js = cat === 'int'  ?  'Int32'
+            :  cat === 'float'  ?  'Float32'
+            :  cat === 'double'  ?  'Float64'
+            : (null).unsupported
+        
+        ,   cat_varname = cat_js.toLowerCase()
+
+        ,   simple_in_vararr = untyped_vararr.filter( function (name) { return 'string' === typeof this[ name ]; }, typed_in_var )
+        ,   array_in_vararr  = untyped_vararr.filter( function (name) { return 'string' !== typeof this[ name ]; }, typed_in_var )
+
+        ,   count = 0
+        ,   array_name2info   = {}
+        ,   array_in_vararr_info = array_in_vararr.map( name_2_info_side, typed_in_var )
+
+        , bt_out = flatorize.tryToGetArrayBasicTypeDescription( typed_out_vartype )
         ;
+        
+        if (bt_out)
+        {
+            var tmp = {};
+            tmp[ typed_out_varname ] = typed_out_vartype;
+            name_2_info_side.call( tmp, typed_out_varname );
+        }
+
+        function name_2_info_side(name) 
+        {
+            var bt = flatorize.tryToGetArrayBasicTypeDescription( this[ name ] )
+            ,  ret = Object.create( bt )
+            ;
+            ret.name  = name;
+            ret.begin = count;
+            count += ret.n;
+            ret.end   = count;
+
+            array_name2info[ name ] = ret;
+            
+            return ret;
+
+        }
+
         
         if (isTop)
         {
-            before = [ 
-                funDeclCodeC( untyped_vararr, typed_in_var, topFunName, typed_out_varname, typed_out_vartype )
-                , '/* code generated by flatorize_asmjsGen.js */'
-                , '{'
-            ];
+            before = funDeclCodeAsmjs( simple_in_vararr, typed_in_var, topFunName ).concat(
+                [ 
+                    , '/* code generated by flatorize_asmjsGen.js */'
+                    , '{'
+                ]
+            );
+         
+            body = funBodyCodeAsmjs( typed_out_varname, typed_out_vartype, out_e, idnum2type, idnum2expr, duplicates, dupliidnum2varname )
             
-            if (HEURISTIC_2)
-                body = funBodyCodeC_optimByConstruction( typed_out_varname, typed_out_vartype, out_e, idnum2type, idnum2expr, duplicates, dupliidnum2varname, idnum2usage );
-            else
-                body = funBodyCodeC( typed_out_varname, typed_out_vartype, out_e, idnum2type, idnum2expr, duplicates, dupliidnum2varname )
+            after = [ 
+                , '}' 
+            ];
 
-            after = [ '}' ];
+            wrap = [ 'return { ' + topFunName + ' : ' + topFunName + ' };' ];
         }
         else
         {
             
         }
         
-        return before.concat( body ).concat( after );
+        // ---------- asm.js wrapper generator ----------
+
+        var gen = new Function(
+            'stdlib', 'foreign', 'heap',
+            [ 
+                cat_varname  ?  'var ' + cat_varname + ' = new stdlib.' + cat_js + 'Array( heap );'  :  '' 
+            ]
+                .concat( before )
+                .concat( body )
+                .concat( after )
+                .concat( wrap )
+                .join( '\n' )
+        );
+
+        gen.implCodeArr = before.concat( body ).concat( after );
+        gen.implCode    = gen.implCodeArr.join( '\n' );
+        
+        xxx 
+        return gen;
     }
 
 
-    function funDeclCodeC( untyped_vararr, typed_in_var, topFunName, typed_out_varname, typed_out_vartype )
+    function funDeclCodeAsmjs( simple_in_vararr, typed_in_var, topFunName )
+    // Returns an array of codeline strings.
     {
-        var is_out_type_simple = 'string' === typeof typed_out_vartype
-        ,   arr = [ ]
-        ;
-        arr.push( is_out_type_simple  ?  typed_out_vartype  :  'void' );
-        arr.push( topFunName, '(' );
+        return [
+            'function ' + topFunName + '( ' + simple_in_vararr.join( ', ' ) + ' )'
+        ].concat(
+            simple_in_vararr.map( function (name) {
 
-        var declArr = untyped_vararr.map( decl_in_var );
-        if (!is_out_type_simple)
-            declArr.push( '/*output:*/ ' + decl( typed_out_varname, typed_out_vartype, /*notconst:*/true ) );
-        
-        arr.push( declArr.join( ', ' ) );
+                var t = typed_in_var[ name ];
 
-        arr.push( ')' );
-        
-        return arr.join( ' ' );
+                if (t === 'float'  ||  t === 'double')
+                    return 'name = +' + name + ';';
 
-        function decl_in_var( varname )
-        {
-            var vartype = typed_in_var[ varname ];
-            return decl( varname, vartype );
-        }
+                if (t === 'int')
+                    return 'name = ' + name + '|0';
 
-        function decl( varname, vartype, /*?boolean?*/notconst )
-        {
-            var sArr = notconst  ?  []  :  [ 'const' ];
-            if ('string' === typeof vartype)
-                sArr.push( vartype, varname );
-            else if (typeIsArraySametype( vartype )  &&  'string' === typeof vartype[ 0 ])
-                sArr.push( vartype[ 0 ], '*', varname );
-            else if (typeIsArraySametype( vartype )  &&  typeIsArraySametype( vartype[ 0 ] )  &&    'string' === typeof vartype[ 0 ][ 0 ])
-                sArr.push( vartype[ 0 ][ 0 ], '**', varname );
-            else
-                throw new Error( 'funDeclCodeC: vartype not supported yet.' );
-
-            return sArr.join( ' ' );
-        }
+                (null).unsupported;
+            })
+        );
     }
 
-    function funBodyCodeC( typed_out_varname, typed_out_vartype, out_e, idnum2type, idnum2expr, duplicates, dupliidnum2varname )
+    function funBodyCodeAsmjs( typed_out_varname, typed_out_vartype, out_e, idnum2type, idnum2expr, duplicates, dupliidnum2varname )
+    // Returns an array of codeline strings.
     {
         var is_out_type_simple = 'string' === typeof typed_out_vartype
         ,   ret = [ ]
@@ -365,10 +417,32 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 	,   constantnameArr = []
         ;
         
-        // Intermediary calculations
+        xxx DOCH INSERT_EARLY and simple optimi (just not HEURISTIC_2)
 
-        if (!INSERT_EARLY)
-            ret.push( '/* intermediary calculations */' );
+        // ---- asm.js "type" declarations
+
+        ret.push( '/* Intermediary calculations: asm.js "type" declarations */' );
+
+        for (var n = duplicates.length, i = 0; i < n; i++)
+        {
+            var idnum  = duplicates[ i ]
+            ,   d_e    = idnum2expr[ idnum ]
+            ,   d_type = idnum2type[ idnum ]
+            ,   d_name = dupliidnum2varname[ idnum ]
+            ;
+            d_type.substring.call.a;  // Must be a simple type
+            ret.push( 
+                'var ' + d_name + ' = ' + (
+                    d_type === 'float'  ||  d_type === 'double'   ?  '0.0'
+                        : d_type === 'int'  ?  '0'
+                        : (null).unsupported
+                ) + ';'
+            );
+        }
+        
+        // ---- Intermediary calculations
+
+        ret.push( '/* Intermediary calculations: implementation */' );
 
         for (var n = duplicates.length, i = 0; i < n; i++)
         {
@@ -393,6 +467,8 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             );
         }
         
+        xxx
+
         // Return
 
         if (!INSERT_EARLY)

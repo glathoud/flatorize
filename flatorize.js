@@ -361,15 +361,17 @@
             ;
             
             if ('string' === typeof t0)
-                return { n : n, type : t0 }; // Success
+                return { n : n, type : t0, dim : 1, dim_n : [ n ] }; // Success
             
             var sub = tryToGetArrayBasicTypeDescription( t[ 0 ] );
             if (sub)
             {
                 // Success
                 return { 
-                    n      : sub.n * n
-                    , type : sub.type 
+                    n       : n * sub.n
+                    , type  : sub.type 
+                    , dim   : 1 + sub.dim
+                    , dim_n : [ n ].concat( sub.dim_n )
                 };
             }
         }

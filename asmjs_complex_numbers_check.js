@@ -12,11 +12,11 @@ function asmjs_complex_numbers_check()
 
     // --- Example of use
     // Input views
-    var a = new Float64Array( f2_buffer, 8*0, 2 )
-    ,   b = new Float64Array( f2_buffer, 8*2, 2 )
-    ,   c = new Float64Array( f2_buffer, 8*4, 2 )
+    var a = new Float32Array( f2_buffer, 8*0, 2 )
+    ,   b = new Float32Array( f2_buffer, 8*2, 2 )
+    ,   c = new Float32Array( f2_buffer, 8*4, 2 )
     // Output view
-    ,   d = new Float64Array( f2_buffer, 8*6, 2 )
+    ,   d = new Float32Array( f2_buffer, 8*6, 2 )
     ;
 
     // Write input values
