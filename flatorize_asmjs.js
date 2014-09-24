@@ -31,6 +31,11 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
 (function () {
 
+    // First variant: optimize through post-processing (reordering)
+
+    var INSERT_EARLY = true;
+    var HEURISTIC_1  = true;
+    
     // ---------- Public API
 
     flatorize.getAsmjsGen      = flatorize_getAsmjsGen;
@@ -179,7 +184,9 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         return typedecl instanceof Array  &&  typedecl.sametype;
     }
 
-    var _EXPR_IDNUM = '__exprIdnum__';
+    var _EXPR_IDNUM  = '__exprIdnum__'
+    ,   _EXPR_ISEXPR = '__isExpr__'
+    ;
     
     function propagateType( /*object e.g. `js_direct`*/info, /*?object?*/input_idnum2type )
     {
@@ -257,6 +264,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
     }
 
 
+    var _JS_CODE = '__code2str_cache_cfgSTAT';
 
     function generateAsmjsGen( /*object*/info, /*object*/idnum2type, /*string*/topFunName, /*?object?*/common_array_btd )
     // Returns a `gen` function that can be called to compile the
@@ -306,7 +314,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             :  cat === 'double'  ?  'Float64'
             : (null).unsupported
         
-        ,   cat_varname = cat_js.toLowerCase()
+        ,   cat_varname = cat_js.toLowerCase()  // xxx make sure not in duplicates, else change cat_varname's value a bit (impl: use flatorize.xxx())
 
         ,   simple_in_vararr = untyped_vararr.filter( function (name) { return 'string' === typeof this[ name ]; }, typed_in_var )
         ,   array_in_vararr  = untyped_vararr.filter( function (name) { return 'string' !== typeof this[ name ]; }, typed_in_var )
@@ -351,7 +359,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                 ]
             );
          
-            body = funBodyCodeAsmjs( typed_out_varname, typed_out_vartype, out_e, idnum2type, idnum2expr, duplicates, dupliidnum2varname )
+            body = funBodyCodeAsmjs( typed_out_varname, typed_out_vartype, out_e, idnum2type, idnum2expr, duplicates, dupliidnum2varname, array_name2info, cat_varname )
             
             after = [ 
                 , '}' 
@@ -407,7 +415,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         );
     }
 
-    function funBodyCodeAsmjs( typed_out_varname, typed_out_vartype, out_e, idnum2type, idnum2expr, duplicates, dupliidnum2varname )
+    function funBodyCodeAsmjs( typed_out_varname, typed_out_vartype, out_e, idnum2type, idnum2expr, duplicates, dupliidnum2varname, array_name2info, cat_varname )
     // Returns an array of codeline strings.
     {
         var is_out_type_simple = 'string' === typeof typed_out_vartype
@@ -417,7 +425,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 	,   constantnameArr = []
         ;
         
-        xxx DOCH INSERT_EARLY and simple optimi (just not HEURISTIC_2)
+        
 
         // ---- asm.js "type" declarations
 
@@ -442,7 +450,8 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         
         // ---- Intermediary calculations
 
-        ret.push( '/* Intermediary calculations: implementation */' );
+        if (!INSERT_EARLY)
+            ret.push( '/* Intermediary calculations: implementation */' );
 
         for (var n = duplicates.length, i = 0; i < n; i++)
         {
@@ -461,14 +470,12 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                         , e
                     );
                 })( 
-                    d_type + ' ' + d_name + ' = ' + expcode_cast_if_needed( d_type, d_e, d_name ) + ';'
+                    d_name + ' = ' + expcode_cast_if_needed( d_type, d_e, d_name ) + ';'
                     , d_e
                 )
             );
         }
         
-        xxx
-
         // Return
 
         if (!INSERT_EARLY)
@@ -478,14 +485,18 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         {
             // Use return
 
-            'xxx return'
+            null.xxx_return;
         }
         else
         {
             // Do not use return
             
-            var is_level_1, basictype;
-            
+            var is_level_1, basictype
+            , outvar_info  = array_name2info[ typed_out_varname ]
+            , outvar_begin = outvar_info.begin
+            ;
+            outvar_begin.toPrecision.call.a;
+
             if (
                 typeIsArraySametype( typed_out_vartype )  &&  
                     (
@@ -499,21 +510,15 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                 ;
                 basictype.substring.call.a;  // Must be a string
 
-                if (ALIGNED_DATA)
-                {
-                    var outptr = '__outptr__'; // xxx check against "duplicates" varnames to prevent collision.
-                    ret.unshift( basictype + '*' + outptr + ' = ' + typed_out_varname + '[0];' );
-                }
-                
-                
                 for (var i = 0; i < n; i++)
                 {
                     if (is_level_1)
                     {
                         var ei = out_e[ i ]
-                        // xxx , assign = ALIGNED_DATA  ?  
-                        , code = typed_out_varname + '[' + i + '] = ' + expcode_cast_if_needed( basictype, out_e[ i ] ) + ';'
+                        
+                        , code = cat_varname + '[' + (outvar_begin + i) + '] = ' + expcode_cast_if_needed( basictype, out_e[ i ] ) + ';'
                         ;
+                        
                         if (INSERT_EARLY)
                             insert_early( ret , ei ,  code );
                         else
@@ -521,13 +526,13 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                     }
                     else
                     {
+                        null.xxx_todo;
+
                         for (var j = 0; j < p; j++)
                         {
                             var eij = out_e[ i ][ j ]
 
-                            , assign = ALIGNED_DATA 
-                                ? outptr + '[' + ( p * i + j ) + ']'
-                                : typed_out_varname + '[' + i + ']' + '[' + j + ']'
+                            , assign = typed_out_varname + '[' + i + ']' + '[' + j + ']'
 
                             ,  code = assign + ' = ' + expcode_cast_if_needed( basictype, eij ) + ';' 
                             ,  codeObj = 
@@ -558,7 +563,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             }
             else
             {
-                throw new Error( 'funBodyCodeC: vartype not supported yet.' );
+                throw new Error( 'funBodyCodeAsmjs: vartype not supported yet.' );
             }
             
         }
@@ -670,14 +675,14 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             var etype  = idnum2type[ e[ _EXPR_IDNUM ] ]
             ,   jscode = e[ _JS_CODE ]
             ;
-            if (jscode === outname)
+            if (jscode === outname  ||  !outname)
             {
                 // e.g. intermediary value
                 
                 var toe = typeof e;
 
                 if ('number' === toe)
-                    return CONSTANT_VAR  ?  code_replace_numberstring_with_constant( outtype, '' + e )  :  '' + e;
+                    return '' + e;
                 
                 if ('string' === toe)
                     return e;
@@ -691,7 +696,6 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                     var opt    = { 
                         dupliidnum2varname: dupliidnum2varname
                         , duplicates : duplicates
-			, code_replace_numberstring_with_constant : CONSTANT_VAR && function (numberstring) { return code_replace_numberstring_with_constant( outtype, numberstring ); }
                     };
                     
                     var topopt = { 
@@ -699,11 +703,50 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                         , no_paren: true
                     };
                     
-                    jscode = e.__toStr__( opt, topopt );
+                    var modified_e = e.map( modify_input_access );
+
+                    jscode = e.__toStr__.call( modified_e, opt, topopt );
                 }
             }
 
-            return outtype === etype  ?  jscode  :  '(' + outtype + ')(' + jscode + ')';
+            return outtype === 'float'  ||  outtype === 'double'  ?  '+(' + jscode + ')'
+                :  outtype === 'int'  ? '(' + jscode + ')|0'
+                :  null.unsupported
+            ;
+
+            function modify_input_access( one )
+            {
+                var part = one.part;
+                
+                if (part)
+                {
+                    var   x = part.x
+                    , where = part.where
+
+                    , info = 'string' === typeof x  &&  array_name2info[ x ]
+                    ;
+                    if (info)
+                    {
+                        where.toPrecision.call.a;
+                        return cat_varname + '[' + (info.begin + where)+ ']';
+                    }
+                }
+
+                var tof_one = typeof one
+                , is_one_o  = 'object' === tof_one
+                , is_one_expr = is_one_o  &&  one[ _EXPR_ISEXPR ]
+
+                ,        idnum = is_one_expr  &&  one  &&  one[ _EXPR_IDNUM ]
+                , duplivarname = idnum  &&  dupliidnum2varname[ idnum ]
+                ;
+                if (duplivarname)
+                    return duplivarname;
+
+                if (is_one_expr)
+                    return one.__toStr__.call( one.map( modify_input_access ), opt, topopt );
+
+                return one;
+            }
         }
 
         function indent( s )
@@ -742,399 +785,8 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
 
 
-    
-    function funBodyCodeC_optimByConstruction( typed_out_varname, typed_out_vartype, out_e, idnum2type, idnum2expr, duplicates, dupliidnum2varname, idnum2usage )
-    {
-        var is_out_type_simple = 'string' === typeof typed_out_vartype
-        ,   ret = [ ]
-	,   type2numberstring2constantname = {}
-        ,   constantname2declcode = {}
-	,   constantnameArr = []
-        ,   error
-        ;
-
-        (idnum2usage  ||  null).hasOwnProperty.call.a;  // Cheap assert: must be a non-null object
-
-        if (is_out_type_simple)
-        {
-            // Use return
-
-            'xxx return'
-        }
-        else
-        {
-            // Do not use return
-            
-            var is_level_1, basictype;
-            
-            if (
-                typeIsArraySametype( typed_out_vartype )  &&  
-                    (
-                        (is_level_1 = 'string' === typeof (basictype = typed_out_vartype[ 0 ]))  ||  
-                            (typeIsArraySametype( typed_out_vartype[ 0 ] )  &&  'string' === typeof (basictype = typed_out_vartype[ 0 ][ 0 ]))
-                    )
-            )
-            {
-                basictype.substring.call.a;  // Must be a string
-
-                if (ALIGNED_DATA  &&  !is_level_1)
-                {
-                    var outptr = '__outptr__'; // xxx check against "duplicates" varnames to prevent collision.
-                    ret.unshift( basictype + '*' + outptr + ' = ' + typed_out_varname + '[0];' );
-                }
-
-                // --- (a)(b) Prepare all code lines, intermediary and output together.
-                
-                var idnum2codeline = {};
-                
-                // (a) Intermediary calculations
-
-                for (var n = duplicates.length, i = 0; i < n; i++)
-                {
-                    var idnum  = duplicates[ i ]
-                    ,   d_e    = idnum2expr[ idnum ]
-                    ,   d_type = idnum2type[ idnum ]
-                    ,   d_name = dupliidnum2varname[ idnum ]
-                    ,   d_e_idnum = d_e.__exprIdnum__
-                    ;
-                    d_type.substring.call.a;  // Must be a simple type
-                    d_e_idnum.toPrecision.call.a;  // Must be a number
-                    
-                    idnum2codeline[ d_e_idnum ] = d_type + ' ' + d_name + ' = ' + expcode_cast_if_needed( d_type, d_e, d_name ) + ';'
-                }
-                
-                // (b) Return values
-
-                for (var n = out_e.length, i = 0; i < n; i++)
-                {
-                    if (is_level_1)
-                    {
-                        var ei = out_e[ i ]
-                        , ei_idnum = ei.__exprIdnum__
-                        , code = typed_out_varname + '[' + i + '] = ' + expcode_cast_if_needed( basictype, out_e[ i ] ) + ';'
-                        ;
-                        ei_idnum.toPrecision.call.a;  // Must be a number
-                        idnum2codeline[ ei_idnum ] = code;
-                    }
-                    else
-                    {
-                        for (var p = typed_out_vartype[ 0 ].length, j = 0; j < p; j++)
-                        {
-                            var eij = out_e[ i ][ j ]
-                            
-                            , assign = ALIGNED_DATA 
-                                ? outptr + '[' + ( p * i + j ) + ']'
-                                : typed_out_varname + '[' + i + ']' + '[' + j + ']'
-
-                            ,  code = assign + ' = ' + expcode_cast_if_needed( basictype, eij ) + ';' 
-                            ;
-                            
-                            if (eij  &&  eij.__isExpr__)
-                            {
-                                var eij_idnum = eij.__exprIdnum__;
-                                eij_idnum.toPrecision.call.a;  // Must be a number
-                                idnum2codeline[ eij_idnum ] = code;
-                            }
-                            else
-                            {
-                                // e.g. return value is a number constant here.
-                                ret.push( code );
-                            }                            
-                        }
-                    }
-                }
-
-                // --- Heuristic 2: order the lines to attempt to reduce register spill.
-
-                var order = []
-                ,   coded = {}
-
-                ,   o       = get_restArrSet( idnum2expr, idnum2codeline )
-                ,   restArr = o.restArr
-                ,   restSet = o.restSet
-
-                ,             o = get_idnum2needArrObj( idnum2expr, idnum2codeline )
-                , idnum2needArr = o.idnum2needArr
-                , idnum2needObj = o.idnum2needObj
-                , idnum2useline = o.idnum2useline
-                , ran
-                ;
-                while (ran = restArr.length)
-                {
-                    // Evaluate some metrics for each remaining codeline
-
-                    var spillinfoArr = new Array( ran );
-                    for (var i = 0; i < ran; i++)
-                    {
-                        var idnum = restArr[ i ]
-                        ,      si = { idnum : idnum }
-
-                        , needArr    = idnum2needArr[ idnum ]
-                        , needArr_n  = needArr.length
-                        , needObj    = idnum2needObj[ idnum ]
-                        
-                        , has_need_in_future = false
-                        ;
-
-                        idnum.toPrecision.call.a;  // Must be a number
-
-                        for (var j = needArr.length; j--;)
-                        {
-                            var need_idnum = needArr[ j ];
-                            if (need_idnum in restSet)
-                            {
-                                has_need_in_future = true;
-                                break;
-                            }
-                        }
-                        
-                        var spillforce_past
-                        ,   spillforce_future
-                        ;
-                        if (has_need_in_future)
-                        {
-                            spillforce_past = spillforce_future = +Infinity;
-                        }
-                        else
-                        {
-                            // Metric: spillforce_past := mean square
-                            // over needs of:
-                            //
-                            // the number of codelines between now and 
-                            // past creation/usage of the need.
-                            
-                            var sumsq = 0
-                            ,   n_past_creation   = 0
-                            ,   n_past_common_use = 0
-                            ;
-                            for (var order_n = order.length
-                                 , j = order_n ; j-- ; )
-                            {
-                                var tmp_idnum = order[ j ];
-                                tmp_idnum.toPrecision.call.a;  // Must be a number
-                                
-                                if (tmp_idnum in needObj)
-                                {
-                                    n_past_creation++;
-                                    var between = order_n - j - 1;
-                                    sumsq += between * between;
-                                }
-                                else
-                                {
-                                    var tmp_needObj = idnum2needObj[ tmp_idnum ];
-                                    for (var k = needArr.length; k--;)
-                                    {
-                                        if (needArr[ k ] in tmp_needObj)
-                                        {
-                                            n_past_common_use++;
-                                            var between = order_n - j - 1;
-                                            sumsq += between * between;
-                                        }
-                                    }
-                                }
-                            }
-                            
-                            if (needArr.length !== n_past_creation)
-                                error.bug;
-
-                            var n_past_total = n_past_creation + n_past_common_use
-                            ,   z = n_past_total  &&  (sumsq / n_past_total)
-                            ;
-                            spillforce_past = needArr_n  ?  -1-1/(1+z)  :  0;
-                            
-                            // Metric: spillforce_future := mean
-                            // square over usages of: 
-                            //
-                            // the number of uncoded needs of the
-                            // usage.
-
-                            var sumsq   = 0
-                            ,   useline   = idnum2useline[ idnum ]  ||  []
-                            ,   useline_n = useline.length
-                            ;
-                            for (var j = useline_n; j--; )
-                            {
-                                var uj_idnum   = useline[ j ];
-                                if (uj_idnum === out_e.__exprIdnum__)
-                                    continue;
-                                
-                                var uj_needArr = idnum2needArr[ uj_idnum ]
-                                ,   uj_n_future = 0
-                                ;
-                                for (var k = uj_needArr.length; k--;)
-                                {
-                                    var uj_nak = uj_needArr[ k ];
-                                    if (uj_nak in restSet)
-                                        uj_n_future++;
-                                }
-                                sumsq += uj_n_future * uj_n_future;
-                            }
-
-                            var z = useline_n  &&  (sumsq / useline_n);
-                            spillforce_future = useline_n  ?  -1-1/(1+z)  :  0;
-                        }
-                        
-                        spillforce_past  .toPrecision.call.a;  // Cheap assert: must be a number
-                        spillforce_future.toPrecision.call.a;  // Cheap assert: must be a number
-                        
-                        si.spillforce_past   = spillforce_past;
-                        si.spillforce_future = spillforce_future;
-
-                        // For debugging
-                        si.e = idnum2expr[ idnum ];
-                        si.__code2str_cache_cfgSTAT = si.e.__code2str_cache_cfgSTAT;
-
-                        spillinfoArr[ i ] = si;
-                    }
-
-                    // Based on the metrics, chose the next best
-                    // codeline so as to prevent register spill.
-                    
-                    spillinfoArr.sort( spillinfoCompare );
-
-                    var chosen       = spillinfoArr.shift()
-                    ,   chosen_idnum = chosen.idnum
-                    ;
-                    order.push( chosen_idnum );
-
-                    coded[ chosen_idnum ] = 1;
-                    delete restSet[ chosen_idnum ];
-                    
-                    var removed = 0;
-                    for (var i = restArr.length; i--;)
-                    {
-                        if (restArr[ i ] === chosen_idnum)
-                        {
-                            restArr.splice( i, 1 );
-                            removed++;
-                        }
-                    }
-                    if (1 !== removed)
-                        error.bug;
-                    
-                    // Append the chosen codeline to the program.
-
-                    ret.push( idnum2codeline[ chosen_idnum ] );
-
-                } // end of: while (ran = restArr.length)
-            }
-            else
-            {
-                throw new Error( 'funBodyCodeC: vartype not supported yet.' );
-            }
-        }
-        
-
-	var constantdeclcode = [];
-	for (var n = constantnameArr.length
-	     , i = 0; i < n; i++
-	    )
-	    constantdeclcode.push( constantname2declcode[ constantnameArr[ i ] ] )
-	;
-	
-	
-	if (constantdeclcode.length)
-	    constantdeclcode.push('');  // Insert an empty line after constants declarations.
-
-        return constantdeclcode.concat( ret ).map( indent );
 
 
-        function spillinfoCompare( a, b )
-        {
-            var sfa_p = a.spillforce_past
-            ,   sfb_p = b.spillforce_past
-            ,   sfa_f = a.spillforce_future
-            ,   sfb_f = b.spillforce_future
-            ,   error
-            ;
-            // Cheap asserts: they must be numbers
-            sfa_p.toPrecision.call.a;
-            sfb_p.toPrecision.call.a;
-            sfa_f.toPrecision.call.a;
-            sfb_f.toPrecision.call.a;
-
-            var ret = /*sfa_p < sfb_p  ?  -1  :  sfa_p > sfb_p  ?  +1
-                :     sfa_f < sfb_f  ?  -1  :  sfa_f > sfb_f  ?  +1
-                :  */a.idnum < b.idnum  ?  -1  :  a.idnum > b.idnum  ?  +1    // Fallback order if equal match: idnum
-                :  error.bug
-            ;
-
-            return ret;
-        }
-        
-        function expcode_cast_if_needed( outtype, e, /*?string?*/outname )
-        {
-            var etype  = idnum2type[ e[ _EXPR_IDNUM ] ]
-            ,   jscode = e[ _JS_CODE ]
-            ;
-            if (jscode === outname)
-            {
-                // e.g. intermediary value
-                
-                var toe = typeof e;
-
-                if ('number' === toe)
-                    return CONSTANT_VAR  ?  code_replace_numberstring_with_constant( outtype, '' + e )  :  '' + e;
-                
-                if ('string' === toe)
-                    return e;
-                
-                else if (e.length === 1  &&  'string' === typeof e[ 0 ])
-                {
-                    jscode = e[ 0 ];
-                }
-                else
-                {
-                    var opt    = { 
-                        dupliidnum2varname: dupliidnum2varname
-                        , duplicates : duplicates
-			, code_replace_numberstring_with_constant : CONSTANT_VAR && function (numberstring) { return code_replace_numberstring_with_constant( outtype, numberstring ); }
-                    };
-                    
-                    var topopt = { 
-                        do_not_cache: true
-                        , no_paren: true
-                    };
-                    
-                    jscode = e.__toStr__( opt, topopt );
-                }
-            }
-
-            return outtype === etype  ?  jscode  :  '(' + outtype + ')(' + jscode + ')';
-        }
-
-        function indent( s )
-        {
-            return '  ' + s;
-        }
-
-	function code_replace_numberstring_with_constant( outtype, numberstring )
-	// Goal: share constants.
-	{
-	    (numberstring || null).substring.call.a;  // Must be a non-empty string
-
-	    var numberstring2constantname = outtype in type2numberstring2constantname 
-		? type2numberstring2constantname[ outtype ]
-		: (type2numberstring2constantname[ outtype ] = {})
-	    ;
-	    
-	    if (numberstring in numberstring2constantname)
-		return numberstring2constantname[ numberstring ];
-
-	    var constantname = outtype.toUpperCase() + '_' + 
-		numberstring.replace( /-/g, 'm' )
-		.replace( /\./g, '_' )
-		.replace( /\+/g, '+' )
-	    ;
-	    if (constantname in constantname2declcode)
-		throw new Error('bug');
-
-	    constantname2declcode[ constantname ] = 'const ' + outtype + ' ' + constantname + ' = ' + numberstring + ';';
-	    constantnameArr.push( constantname );
-	    return numberstring2constantname[ numberstring ] = constantname;
-	}
-
-    }  // end of function funBodyCodeC_optimByConstruction
     
     function arr2set( arr )
     {
