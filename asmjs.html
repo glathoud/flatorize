@@ -28,16 +28,22 @@
 
 <p>This page presents a plugin method <code>flatorize.getAsmjs()</code> (GitHub <a href="https://github.com/glathoud/flatorize/blob/master/flatorize_asmjs.js">source</a>) that goes on top of <code>flatorize</code> (see the <a href="index.html">main article</a>, GitHub <a href="https://github.com/glathoud/flatorize/blob/master/flatorize.js">source</a>).</p>
 
-<p>Several examples describe how to use <code>flatorize.getAsmjs()</code> to generate <code>asm.js</code> implementations that should run very fast in both Firefox and Chrome. Inputs and output are limited to numbers and arrays of numbers. All arrays must have the same types because a single array is used for both inputs and output, so as to spare array creation costs.</p>
+<p>Several examples describe how to use <code>flatorize.getAsmjs()</code> to generate <code>asm.js</code> implementations that should run very fast in at least Firefox and Chrome. Inputs and output are limited to numbers and arrays of numbers. All arrays must have the same type because a single array is used for both inputs and output, so as to spare array creation costs.</p>
 <ul class="small">
-  <li><a href="#c-f2">complex numbers (how-to example)</a></li>
-  <li><a href="#c-matmul">matrix multiplication (speedup example)</a><br></li>
-  <li><a href="#c-dft">Discrete Fourier Transform (speedup example)</a><br></li>
+  <li><a href="#f2">complex numbers (how-to example)</a></li>
+  <li><a href="#matmul">matrix multiplication (speedup example)</a><br></li>
+  <li><a href="#dft">Discrete Fourier Transform (speedup example)</a><br></li>
 </li>
 </ul>
   
 
-<h3 class="anchorable" id="c-f2"><code>f2:</code> complex numbers (how-to example)<a href="#c-f2" class="anchor">#</a></h3>
+
+
+
+
+
+
+<h3 class="anchorable" id="f2"><code>f2:</code> complex numbers (how-to example)<a href="#f2" class="anchor">#</a></h3>
 
 <p>Expression definition  (details in the <a href="index.html#example">main article</a>):</p>
 <pre class="prettyprint lang-js"><code>// f:
@@ -56,11 +62,17 @@ f2 = flatorize('a:[2 float],b:[2 float],c:[2 float]->d:[2 float]',f);
 <script type="text/javascript" id="script-gen-f2_asmjs">var f2_asmjsGen = flatorize.getAsmjsGen( { switcher: f2, name: "f2" } );</script>
 <pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(document.getElementById("script-gen-f2_asmjs").textContent);</script></code></pre>
 
-<p>...returns an <code>asm.js</code> generator, which can be used as follows:</p>
-<pre class="prettyprint lang-js"><code>// f2_asmjs:
-<script type="text/javascript" src="asmjs_complex_numbers_check.js"></script>
-<script type="text/javascript">asmjs_complex_numbers_check();</script>
+<p>...returns an <code>asm.js</code> generator:</p>
+
+<pre class="prettyprint lang-js"><code>// f2_asmjsGen:
+<script type="text/javascript">document.write(f2_asmjsGen+'')</script>
+</code></pre>
+
+
+<p>The generator can be used as follows to compile the <code>asm.js</code> code:</p>
+<pre class="prettyprint lang-js"><code><script type="text/javascript" src="asmjs_complex_numbers_check.js"></script>
 <script type="text/javascript">document.write(asmjs_complex_numbers_check);</script></code></pre>
+<script type="text/javascript">asmjs_complex_numbers_check();</script>
 <p class="small">(This check, as a few others below, ran as you loaded the page.)</p>
 
 
@@ -77,6 +89,37 @@ f2 = flatorize('a:[2 float],b:[2 float],c:[2 float]->d:[2 float]',f);
 
 
 
+
+
+
+
+<h3 class="anchorable" id="test-summary">Test summary<a href="#test-summary" class="anchor">#</a></h3>
+
+<p><span id="global-result"></span>.</p>
+
+<p>Detail:</p>
+<ul>
+<script type="text/javascript">
+var passed;
+var all_passed;
+(function ()
+{
+    var empty = {};
+    all_passed = passed  &&  Object.keys( passed ).map( function (k) { 
+        if (k in empty)
+            return true;
+  
+        var pk = passed[ k ];
+        document.write( '\x3Cli\x3E' + k + ' \x3Cspan class="' + (pk  ?  'happy'  :  'sad') + '"\x3E' + (pk  ?  'passed'  :  'failed')+ '.\x3C/span\x3E' +  '\x3C/li\x3E' );
+    
+        return pk;
+    }).every( function (x) { return x; }); 
+    
+    document.getElementById('global-result').innerHTML = all_passed  ?  'ALL TESTS \x3Cspan class="happy"\x3Epassed\x3C/span\x3E'  :  'Some test(s) \x3Cspan class="sad"\x3EFAILED\x3C/span\x3E';
+})();
+</script>
+</ul>
+</p>
 
 
 

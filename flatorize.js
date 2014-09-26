@@ -139,7 +139,7 @@
                 , where = part.where
                 ,   ret = (
                     !isTop  &&  'string' === typeof x
-                        ? x // optimization for a special case
+                        ? x // optimization for a special case    xxx safe w.r.t. opt?
                         : code2str( x, opt, topopt )  // general case
                 )
                     + 
@@ -161,7 +161,7 @@
                 {
                     var xi = this[ i ]
                     ,  one = !isTop  &&  'string' === typeof xi
-                        ? xi  // optimization for a special case
+                        ? xi  // optimization for a special case   xxx safe w.r.t. opt?
                         : code2str( xi, opt )  // general case
                     ;
                     ret[ i ] = -1 < one.indexOf( ' ' )  &&  one[0] !== '('  &&  one[ one.length - 1 ] !== ')'

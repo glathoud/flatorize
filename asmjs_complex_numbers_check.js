@@ -1,22 +1,27 @@
+/*global passed asmjs_complex_numbers_check f2_asmjsGen ArrayBuffer window Float32Array*/
+
 asmjs_complex_numbers_check();
 
+var passed;
 function asmjs_complex_numbers_check()
 {
     // "Complex numbers" example
 
     // --- Inputs and output
-    var f2_buffer = new ArrayBuffer( 1 << 24 );
+    var f2_buffer = new ArrayBuffer( f2_asmjsGen.buffer_bytes );
 
     // --- Compile the asm.js code
     var f2_asmjsO = f2_asmjsGen( window, {}, f2_buffer );
 
     // --- Example of use
     // Input views
-    var a = new Float32Array( f2_buffer, 8*0, 2 )
-    ,   b = new Float32Array( f2_buffer, 8*2, 2 )
-    ,   c = new Float32Array( f2_buffer, 8*4, 2 )
+    var n2i = f2_asmjsGen.array_name2info
+
+    ,   a = new Float32Array( f2_buffer, 4 * n2i.a.begin, n2i.a.n )
+    ,   b = new Float32Array( f2_buffer, 4 * n2i.b.begin, n2i.b.n )
+    ,   c = new Float32Array( f2_buffer, 4 * n2i.c.begin, n2i.c.n )
     // Output view
-    ,   d = new Float32Array( f2_buffer, 8*6, 2 )
+    ,   d = new Float32Array( f2_buffer, 4 * n2i.d.begin, n2i.d.n )
     ;
 
     // Write input values
@@ -34,6 +39,8 @@ function asmjs_complex_numbers_check()
     ]
     , error = Math.max.apply( Math, error_v.map( function (delta) { return Math.abs( delta ); } ) )
     ;
-    if (1e-10 < error)
+    if (1e-5 < error)
         throw new Error( 'asmjs_complex_numbers_check failed!' );
+
+    (passed  ||  (passed = {})).asmjs_complex_numbers_check = true;
 }
