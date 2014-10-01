@@ -23,7 +23,7 @@
 // -*- coding:utf-8 -*-
 
 /*global load time timeEnd log flatorize FZ
-  cadd csub cmul cplx creal cimag cpol f f2 f2direct mat_a mat_b mat_c matmul342 matmul_exprgenF cst16 sin16 sin16real  sin16cut cstreal16 sinreal16 sinreal16real sinreal16cut dftreal16flat dft16flat dft64flat dft128flat dft256flat dft512flat dft1024flat dftreal1024flat dft16_cooley_tukey rand16 randreal16 cutzero dft_exprgenF dft16_baseline dft_cooley_tukey_gen
+  cadd csub cmul cplx creal cimag cpol f f2 f2direct mat_a mat_b mat_c matmul342 matmulrows_zip matmul_exprgenF cst16 sin16 sin16real  sin16cut cstreal16 sinreal16 sinreal16real sinreal16cut dftreal16flat dft16flat dft64flat dft128flat dft256flat dft512flat dft1024flat dftreal1024flat dft16_cooley_tukey rand16 randreal16 cutzero dft_exprgenF dft16_baseline dft_cooley_tukey_gen
 
   generate_small_functions generate_big_functions generate_dftreal1024flat speed_tests
 */
@@ -218,6 +218,202 @@ function tryit_speed_matmul342( button )
     };
 }
 
+
+function tryit_speed_matmulrows_zip( button )
+{
+    if ('undefined' !== typeof document)
+    {
+        button != null  ||  (button = document.getElementById('tryit_speed_dft1024'));
+        
+        if (button)
+            button.setAttribute( 'disabled', 'disabled' );
+    }
+
+    var rows_a = [ [ 1,  2,  3, 4] , 
+                  [ 5,  6,  7, 8] ,
+                  [ 9, 10, 11, 12]
+                ];
+    
+    var rows_b = [ [ 13, 14 ],
+                  [ 15, 16 ],
+                  [ 17, 18 ],
+                  [ 19, 20 ]
+                ];
+    
+    var rows_c_expected = [[ 170, 180 ], 
+                          [ 426, 452 ],
+                          [ 682, 724 ] ];
+
+    // Make sure both implementations work
+
+    var rows_c = matmulrows_loops( rows_a, rows_b );
+    check_rows( rows_c, rows_c_expected );
+
+    var rows_c = matmulrows_zip( rows_a, rows_b );
+    check_rows( rows_c, rows_c_expected );
+    
+    // Measure their respective speeds
+
+    var N = 3e5;
+
+    time('speed_matmulrows_loops');
+    for (var i = N; i--;)
+        var rows_c = matmulrows_loops( rows_a, rows_b );
+    timeEnd('speed_matmulrows_loops');
+    
+    time('speed_matmulrows_zip');
+    for (var i = N; i--;)
+        var rows_c = matmulrows_zip( rows_a, rows_b );
+    timeEnd('speed_matmulrows_zip');
+
+    if ('undefined' !== typeof document)
+    {
+        var outnode = document.getElementById( 'tryit_speed_matmulrows_zip_output' );
+        
+        if (!tryit_speed_matmulrows_zip.firsttimedone)
+        {
+            outnode.innerHTML = '';
+            tryit_speed_matmulrows_zip.firsttimedone = true;
+        }
+    }
+    
+    var t_orig = time['speed_matmulrows_loops'] / 1000
+    ,   t_flat = time['speed_matmulrows_zip'] / 1000
+    ,  sp_orig = N / t_orig
+    ,  sp_flat = N / t_flat
+    , speedup_percent = get_speedup_percent( sp_orig, sp_flat )
+    ,  line_a  = '   Classic matrix rows multip.: ' + sp_orig.toPrecision( 3 ) + ' matmulrows_loops(a,b) calls per second\n'
+    ,  line_b  = '   ZIP     matrix rows multip.: ' + sp_flat.toPrecision( 3 ) + ' matmulrows_zip(a,b) calls per second\n'
+    ,  line_c  = '-> relative speedup: ' + get_speedup_percent_str( speedup_percent ) + '\n\n'
+    ;
+    
+    if (outnode)
+        outnode.innerHTML += line_a + line_b + line_c;
+
+    log( line_a + line_b + line_c );
+
+    if (button)
+        button.removeAttribute( 'disabled' );
+
+    return {
+        t_orig : t_orig
+        , t_flat : t_flat
+        , sp_orig : sp_orig
+        , sp_flat : sp_flat
+        , speedup_percent : speedup_percent
+    };
+}
+
+
+
+
+
+function tryit_speed_matmulrows_zip_342( button )
+{
+    if ('undefined' !== typeof document)
+    {
+        button != null  ||  (button = document.getElementById('tryit_speed_dft1024'));
+        
+        if (button)
+            button.setAttribute( 'disabled', 'disabled' );
+    }
+
+    var rows_a = [ [ 1,  2,  3, 4] , 
+                  [ 5,  6,  7, 8] ,
+                  [ 9, 10, 11, 12]
+                ];
+    
+    var rows_b = [ [ 13, 14 ],
+                  [ 15, 16 ],
+                  [ 17, 18 ],
+                  [ 19, 20 ]
+                ];
+    
+    var rows_c_expected = [[ 170, 180 ], 
+                          [ 426, 452 ],
+                          [ 682, 724 ] ];
+
+    // Make sure both implementations work
+
+    var rows_c = matmulrows_loops( rows_a, rows_b );
+    check_rows( rows_c, rows_c_expected );
+
+    var rows_c = matmulrows_zip( rows_a, rows_b );
+    check_rows( rows_c, rows_c_expected );
+    
+    var rows_c = matmulrows_zip_342( rows_a, rows_b );
+    check_rows( rows_c, rows_c_expected );
+    
+    // Measure their respective speeds
+
+    var N = 3e5;
+
+    time('speed_matmulrows_loops');
+    for (var i = N; i--;)
+        var rows_c = matmulrows_loops( rows_a, rows_b );
+    timeEnd('speed_matmulrows_loops');
+    
+    time('speed_matmulrows_zip');
+    for (var i = N; i--;)
+        var rows_c = matmulrows_zip( rows_a, rows_b );
+    timeEnd('speed_matmulrows_zip');
+
+    time('speed_matmulrows_zip_342');
+    for (var i = N; i--;)
+        var rows_c = matmulrows_zip_342( rows_a, rows_b );
+    timeEnd('speed_matmulrows_zip_342');
+
+    if ('undefined' !== typeof document)
+    {
+        var outnode = document.getElementById( 'tryit_speed_matmulrows_zip_342_output' );
+        
+        if (!tryit_speed_matmulrows_zip_342.firsttimedone)
+        {
+            outnode.innerHTML = '';
+            tryit_speed_matmulrows_zip_342.firsttimedone = true;
+        }
+    }
+    
+    var t_orig = time['speed_matmulrows_loops'] / 1000
+    ,   t_zip  = time['speed_matmulrows_zip'] / 1000
+    ,   t_flat = time['speed_matmulrows_zip_342'] / 1000
+    ,  sp_orig = N / t_orig
+    ,  sp_zip  = N / t_zip
+    ,  sp_flat = N / t_flat
+    , speedup_percent_zip = get_speedup_percent( sp_orig, sp_zip )
+    , speedup_percent_flat = get_speedup_percent( sp_orig, sp_flat )
+    ,  line_a  = '   Classic matrix rows multip.: ' + sp_orig.toPrecision( 3 ) + ' matmulrows_loops(a,b) calls per second\n\n'
+    ,  line_b  = '   ZIP     matrix rows multip.: ' + sp_zip .toPrecision( 3 ) + ' matmulrows_zip(a,b) calls per second\n'
+    ,  line_b2  = '-> relative speedup compared to "Classic": ' + get_speedup_percent_str( speedup_percent_zip ) + '\n\n'
+    ,  line_c  = '   ZIPFLAT matrix rows multip.: ' + sp_flat.toPrecision( 3 ) + ' matmulrows_zip_342(a,b) calls per second\n'
+    ,  line_c2  = '-> relative speedup compared to "Classic": ' + get_speedup_percent_str( speedup_percent_flat ) + '\n\n\n'
+    
+    , text = line_a + line_b + line_b2 + line_c + line_c2
+    ;
+    
+    if (outnode)
+        outnode.innerHTML += text;
+
+    log( text );
+
+    if (button)
+        button.removeAttribute( 'disabled' );
+
+    return {
+        t_orig : t_orig
+        , t_zip : t_zip
+        , t_flat : t_flat
+        , sp_orig : sp_orig
+        , sp_zip : sp_zip
+        , sp_flat : sp_flat
+        , speedup_percent_zip : speedup_percent_zip
+        , speedup_percent_flat : speedup_percent_flat
+    };
+}
+
+
+
+
 function get_speedup_percent( sp_orig, sp_flat )
 {
     return 100 * (sp_flat/sp_orig - 1);
@@ -267,6 +463,19 @@ function check_array( a, b )
     
     if (!ok)
         alert( 'check_array: something went wrong.' );
+}
+
+function check_rows( a, b )
+{
+    var ok = a.length === b.length;
+    if (ok)
+    {
+        for (var i = 0, n = a.length; i < n; i++)
+            check_array( a[ i ], b [ i ] );
+    }
+    
+    if (!ok)
+        alert( 'check_rows: something went wrong.' );
 }
 
 function tryit_speed_dft( button, dftsize )
@@ -446,6 +655,7 @@ function tryit_all( button, opt )
 
     var arr_onepass = [
         { name: 'matmul342', speedtestfun: tryit_speed_matmul342 }
+        , { name: 'matmulrows_zip', speedtestfun: tryit_speed_matmulrows_zip }
         , { name: 'dft16', speedtestfun: function () { return tryit_speed_dft( null, 16 ); } }
         , { name: 'dft32', speedtestfun: function () { return tryit_speed_dft( null, 32 ); } }
         , { name: 'dft64', speedtestfun: function () { return tryit_speed_dft( null, 64 ); } }

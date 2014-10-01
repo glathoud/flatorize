@@ -47,8 +47,12 @@
 
         // Else form an expression string, and wrap it into `expr()` to
         // make it optimizeable (see `gathering` further below).
-        var ret = expr( x + '[' + ( 'number' === typeof where  ?  where  :  '"' + where + '"' ) + ']' );
-
+        var ps = '[' + ( 'number' === typeof where  ?  where  :  '"' + where + '"' ) + ']' 
+        ,  ret = 'string' === typeof x
+            ?  expr( x + ps )
+            :  expr( x, ps )  // Permits finer optimization, because e.g. `a[0][2]` and `a[0][3]` share `a[0]`
+        ;
+        
         // Mark the expression as a "part" - not necessary for
         // JavaScript (the present file), but useful e.g. for typed
         // languages, to propagate types (e.g. ./flatorize_c.js).
