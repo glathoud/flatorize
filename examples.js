@@ -249,6 +249,8 @@ function tryit_speed_matmulrows_zip( button )
     var rows_c = matmulrows_loops( rows_a, rows_b );
     check_rows( rows_c, rows_c_expected );
 
+    var matmulrows_zip = expl_matmulrows_zip.matmulrows_zip;
+
     var rows_c = matmulrows_zip( rows_a, rows_b );
     check_rows( rows_c, rows_c_expected );
     
@@ -333,14 +335,18 @@ function tryit_speed_matmulrows_zip_342( button )
                           [ 426, 452 ],
                           [ 682, 724 ] ];
 
-    // Make sure both implementations work
+    // Make sure all implementations work
 
     var rows_c = matmulrows_loops( rows_a, rows_b );
     check_rows( rows_c, rows_c_expected );
 
+    var matmulrows_zip = expl_matmulrows_zip.matmulrows_zip;
+    
     var rows_c = matmulrows_zip( rows_a, rows_b );
     check_rows( rows_c, rows_c_expected );
     
+    var matmulrows_zip_342 = expl_matmulrows_zip_flatorize.matmulrows_zip_342;
+
     var rows_c = matmulrows_zip_342( rows_a, rows_b );
     check_rows( rows_c, rows_c_expected );
     

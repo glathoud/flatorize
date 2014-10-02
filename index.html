@@ -8,6 +8,10 @@
 <script type="text/javascript" src="log.js"></script>
 <script type="text/javascript" src="flatorize.js"></script>
 <script type="text/javascript" src="examples.js"></script>
+<script type="text/javascript" src="expl.js"></script>
+<script type="text/javascript" src="expl/matmulrows_loops.js"></script>
+<script type="text/javascript" src="expl/matmulrows_zip.js"></script>
+<script type="text/javascript" src="expl/matmulrows_zip_flatorize.js"></script>
 <script type="text/javascript">generate_small_functions();</script>
 </head>
 <body>
@@ -27,145 +31,54 @@
 
 <p style="text-align:right">by <a href="http://glat.info">Guillaume Lathoud</a><span class="print">&nbsp;[1]</span>, April 2013</p>
 
-<h3 class="anchorable" id="tldr">TL;DR <a href="#tldr" class="anchor">#</a></h3>
+<h3 class="anchorable" id="tldr">Summary <a href="#tldr" class="anchor">#</a></h3>
 
-<p><code>flatorize</code> generates fast JavaScript code for mathematical expressions.</p>
+<p>Think like this:</p>
+<pre>Matrix multiplication a * b: Each row of a with each column of b</pre>
+
+
+<p>Then write code like you think it, i.e. well encapsulated:</p>
+<pre class="prettyprint lang-python"># Python
+c = [[ sum(x*y for x,y in zip(ra,cb)) for cb in zip(*b) ] for ra in a ]
+</pre>
+
+<pre class="prettyprint lang-js">// JavaScript
+function matmulrows_zip( a, b )
+{
+    return a.map( function (ra) { 
+        return zip.apply( null, b ).map( function (cb) {
+            return sum( 
+                zip( ra, cb )
+                    .map( function (xy) { return xy[ 0 ] * xy[ 1 ]; } )
+            );
+        } );
+    } );
+}</pre>
+
+<p>The code is well encapsulated into many small functions. But the overhead of the many nested function calls slows down the execution.
+</p>
+
+<p>The proposed <code>flatorize</code> takes the above, and generates <strong>very fast</strong> JavaScript code:</p>
+
+<!--ul><li>factorizing: evaluate each piece of the expression only one time.</li>
+<li>flattening: eliminate all nested function calls.</li>
+</ul>
+
+<p>Example of generated code:</p-->
+<pre class="prettyprint lang-js" id="tldr-generated-js"></pre>
 
 <p>Speedups exceed +1000% in many cases, including matrix multiplication and the Discrete Fourier Transform (<a href="#push-all">full results</a>).</p>
 
 <p>A plugin permits to generate fast C code as well (<a href="c_code.html">examples</a>).</p></ul>
 
-<h3 class="anchorable" id="summary">Summary <a href="#summary" class="anchor">#</a></h3>
+<p>"flatorize" stands for "factorize and flatten".</p>
 
-<p>Writing or generating code for mathematical
-expressions, one can end up with things like:</p>
+<h3 class="anchorable" id="contents">Contents <a href="#contents" class="anchor">#</a></h3>
 
-<pre class="prettyprint lang-js"><code>function f(a,b,c) { return sub( sub(a,add(b,c)), add(b,c) ); }
-</code></pre>
+xxx
 
-<p><em>Writing</em> many small functions like <code>add</code>
-and <code>sub</code> permits to prevent bugs, and think
-in a clearer way, but <em>at runtime</em> it costs function overhead.</p>
-
-<p>Here I propose to speed up math computations by generating code where function overhead has been eliminated.
-
-The two core ideas are to <a href="#factorize">factorize</a> and to <a href="#flatten">flatten</a> the implementation of mathematical expressions, hence the name <code>flatorize</code>.</p>
-
-<p>A JavaScript <a href="#impl">implementation</a> is provided. <a href="#push-all">Test&nbsp;results</a> show huge speedups, including on recursive expressions (e.g.&nbsp;Cooley-Tukey expression of the Discrete Fourier Transform).</p>
-
-<p>Initial tests show huge speedups in <a href="https://github.com/glathoud/flatorize/blob/master/explore/scheme/dftreal16/dftreal16.results.txt#L66">Scheme</a> and <a href="https://github.com/glathoud/flatorize/blob/master/explore/C/cAll_matmul.results.txt#L40">C</a> as well.</p>
-
-<!--pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(f2.getDirect()+'')</script></code></pre>
-<p class="small">(This code, as a few others below, was produced and inserted as you loaded the page.)</p-->
-
-
-<h3 class="anchorable" id="factorize">Factorize <a href="#factorize" class="anchor">#</a></h3>
-
-<p>To spare CPU, one can modify  the above example by evaluating <code class="prettyprint lang-js">add(b,c)</code>
- only once:</p>
-<pre class="prettyprint lang-js"><code>function f(a,b,c) { 
-    var bc = add(b,c);
-    return sub( sub(a,bc), bc ); 
-}
-</code></pre>
-
-<h3 class="anchorable" id="flatten">Flatten <a href="#flatten" class="anchor">#</a></h3>
-
-<p>Small "building block" functions like <code class="prettyprint
-lang-js">add</code> or <code class="prettyprint
-lang-js">sub</code> are useful to <em>write</em> code, but <em>at runtime</em> the
-CPU spends more time in function overhead than just doing the simple operation(s) in them.<p>
-
-<p>In more complex cases like recursive expressions, the function overhead becomes even bigger.</p>
-
-<p>One can eliminate function overhead by inlining each small function, that&nbsp;is&nbsp;replacing each small function with its implementation:</p>
-<pre class="prettyprint lang-js"><code>function f(a,b,c) { 
-    var bc = b+c;
-    return (a - bc) - bc;
-}
-</code></pre>
-
-<p>The CPU performance should be pretty good at this point.</p>
-
-<p>One could try to further optimize,
-e.g. writing <code class="prettify lang-js">a-2*bc</code>, which
-amounts to mathematical expression simplification. This can be quite
-complicated, and it is not sure how much CPU speed can be gained this
-way -&nbsp;especially compared to function overhead elimination&nbsp;-
-so if we ever attempt simplification, we'll keep it very simple.
-</p>
-
-<h3 class="anchorable" id="impl">Implementation <a href="#impl" class="anchor">#</a></h3>
-
-<p>An implementation called <code>flatorize</code> is provided that generates fast code for mathematical expressions, using factorization and flattening.</p>
 
 <p><code>flatorize</code> source files: on <a href="https://github.com/glathoud/flatorize">github</a>, or here (<a href="flatorize.js">flatorize.js</a>, <a href="examples.js">examples.js</a>, <a href="log.js">log.js</a>).</p>
-
-<p>The rest of this article describes how to use <code>flatorize</code>, then gives
-several performance results &ndash; pushing things until they
-break.</p>
-
-
-
-<h3 class="anchorable" id="usage">Usage: <code>expr</code>, <code>part</code> and <code>flatorize</code> <a href="#usage" class="anchor">#</a></h3>
-
-<p>
-<code class="prettyprint lang-js">flatorize('a,b,c', function f(a,b,c) { ... })</code> returns a new function, obtained by:
-  <ol>
-    <li>calling <code class="prettyprint lang-js">f('a','b','c')</code>, which returns an expression,</li>
-    <li>factorizing and flattening the expression,</li> 
-    <li>generating the new code for the expression.</li>
-  </ol>
-</p>
-
-<p><code class="prettyprint lang-js">f(a,b,c)</code> can use 3&nbsp;ways to build and return an expression:</p>
-<ul>
-<li><code class="prettyprint lang-js">flatorize.expr(a,'+',b)</code> defines the code expression <code class="prettyprint lang-js">a+b</code>.</li>
-<li><code class="prettyprint lang-js">flatorize.part(arr,3)</code> or <code class="prettyprint lang-js">flatorize.part(obj,'prop')</code> describe the extraction of a property value from an object (array or not).</li>
-<li><code class="prettyprint lang-js">[ 'a', anExpr ]</code> is an array expression composed of 2 sub-expressions.</li>
-</ul>
-
-<h3 class="anchorable" id="example">Example: complex numbers <a href="#example" class="anchor">#</a></h3>
-
-<p>We now work with complex numbers, which we represent as arrays of two numbers <code class="prettyprint lang-js">[re,im]</code>. Consider the function <code>f</code> of complex numbers <code class="prettyprint lang-js">a,b,c</code>:</p>
-
-<pre class="prettyprint lang-js"><code>f = <script type="text/javascript">document.write(f+'')</script>;</code></pre>
-
-<p>To produce an optimized implementation <code>f2</code> of the function <code>f</code>,
-we use <a href="flatorize.js">flatorize</a> and write the following code:</p>
-
-<pre class="prettyprint lang-js"><code>FZ    = flatorize;
-cadd  = FZ('a,b',   function (a,b)   { 
-    return cplx( FZ.expr( creal(a), '+', creal(b) ),
-                 FZ.expr( cimag(a), '+', cimag(b) ) 
-               ); 
-});
-csub  = FZ('a,b',   function (a,b)   { 
-    return cplx( FZ.expr( creal(a), '-', creal(b) ),
-                 FZ.expr( cimag(a), '-', cimag(b) ) 
-               ); 
-});
-creal = FZ('a',     function (a)     { return FZ.part( a, 0 ); });
-cimag = FZ('a',     function (a)     { return FZ.part( a, 1 ); });
-cplx  = FZ('re,im', function (re,im) { return [ re, im ]; });
-
-f  = <script type="text/javascript">document.write(f+'');</script>
-f2 = FZ('a,b,c',f);
-</code></pre>
-
-<p>All functions returned by <code class="prettyprint lang-js">flatorize</code>
-can be used to build further expressions: in the above example, <code>creal</code> is used to express <code>cadd</code>, which itself is used to expressed <code>f</code>. Definition order does not matter.
-</p>
-
-<p>All functions returned by <code class="prettyprint lang-js">flatorize</code>
-can also be called with values, for computation. For example, calling <code class="prettyprint lang-js">f2(a,b,c)</code> executes
-the flat, factorized:</p>
-
-<pre class="prettyprint lang-js" id="example-generated"><code><script type="text/javascript">document.write(f2.getDirect()+'')</script></code></pre>
-<p class="small">(This code, as a few others below, was produced and inserted as you loaded the page.)</p>
-
-
-
 
 
 
@@ -178,38 +91,7 @@ the flat, factorized:</p>
 <h3 class="anchorable" id="matmulrows">Example: matrix multiplication (arrays of rows)<a href="#matmulrows" class="anchor">#</a></h3>
 
 <p>Consider matrices expressed as 2-dimensional arrays of rows. Here is an implementation of matrix multiplication using 3 nested loops:</p>
-<pre class="prettyprint lang-js"><code><script type="text/javascript">function matmulrows_loops( a, b )
-{
-  var nrow = a.length
-  ,   ncol = b[ 0 ].length
-  ,   ret  = new Array( nrow )
-  ,   nrow_b = b.length
-  ;
-  for (var ir = 0; ir < nrow; ir++)
-  {
-    var ra = a[ ir ]
-    ,   rr = ret[ ir ] = new Array( ncol )
-    ;
-    for (var ic = 0; ic < ncol; ic++)
-    {
-      var x = 0;
-      for (var irb = 0; irb < nrow_b; irb++)
-      {
-         x += ra[ irb ] * b[ irb ][ ic ];
-      }
-      rr[ ic ] = x;
-    }
-  }
-  return ret;
-}
-</script><script type="text/javascript">document.write(matmulrows_loops+'')</script>  
-
-// Does this work?
-
-<script type="text/javascript" id="matmulrows_loops_test_script">a = [ [1,2,3,4], [5,6,7,8], [9,10,11,12] ];
-b = [ [13,14], [15,16], [17,18], [19,20] ];
-c = matmulrows_loops( a, b );
-</script><script type="text/javascript">document.write(document.getElementById('matmulrows_loops_test_script').textContent + '\n// c: ' + JSON.stringify( c ));</script>  // Yes!  </pre>
+<pre class="prettyprint lang-js"><script type="text/javascript">expl_run( expl_matmulrows_loops );</script></pre>
 
 <p>Guessing the intent of <code>matmulrows_loops</code> from its implementation alone can be hard. Concepts are <em>not</em> encapsulated into separate functions, which slows down understanding, debugging and maintenance.</p>
 
@@ -220,64 +102,25 @@ c = matmulrows_loops( a, b );
 a = [ [1,2,3,4,], [5,6,7,8,], [9,10,11,12,], ]
 b = [ [13,14,], [15,16,], [17,18,], [19,20,]]
 
-c = map(lambda ra: map(lambda cb: sum(x*y for x,y in zip(ra,cb)), zip(*b)),a)
+# Matrix multiplication: c = a * b
 
-# or expressed using list comprehension:
+# Each number in c is the dot-product 
+# of a row ra with a column cb
 
 c = [[ sum(x*y for x,y in zip(ra,cb)) for cb in zip(*b) ] for ra in a ]
 
-# in both cases zip(*b) implements the "transposed matrix"
+# zip(*b) implements the "transposed matrix"
 
-# result:
+# Result:
 # >>> c
 # [[170, 180], [426, 452], [682, 724]]
 </code></pre>
 <p>The expression is concise, shorter than the nested loops used above, and the various concepts are well encapsulated: <code>map</code>, <code>sum</code> and <code>zip(*b)</code>. The reference to rows of <code>a</code> and columns of <code>b</code> is <em>explicit</em> through variables <code>ra</code>&nbsp;and&nbsp;<code>cb</code>, respectively. This can facilitate understanding.</p>
 
 <p>A similar implementation in JavaScript requires to define <code>zip</code> and <code>sum</code>:</p>
-<pre class="prettyprint lang-js"><script type="text/javascript" id="matmulrows_zip_script">// JavaScript
+<pre class="prettyprint lang-js">// JavaScript
 
-function matmulrows_zip( a, b )
-{
-  return a.map( function (ra) { 
-    return zip.apply( null, b ).map( function (cb) {
-      return sum( 
-        zip( ra, cb )
-          .map( function (xy) { return xy[ 0 ] * xy[ 1 ]; } )
-      );
-    } );
-  } );
-}
-
-// Tools
-
-function zip(/*...arguments...*/)
-{
-  var arg = [].slice.apply( arguments );
-  if (!arg.length)
-    return [];
- 
-  var n = arg[ 0 ].length
-  , ret = new Array( n )
-  ;
-  for (var i = 0; i < n; i++)
-    ret[ i ] = arg.map( function (x) { return x[i]; } );
-  
-  return ret;
-}
-
-function sum( a ) 
-{ 
-  return a.reduce( function (c,d) { return c + d; }, 0 ); 
-}
-</script><script type="text/javascript">document.write(document.getElementById('matmulrows_zip_script').textContent);</script>
-
-// Does this work?
-
-<script type="text/javascript" id="matmulrows_zip_test_script">a = [ [1,2,3,4], [5,6,7,8], [9,10,11,12] ];
-b = [ [13,14], [15,16], [17,18], [19,20] ];
-c = matmulrows_zip( a, b );
-</script><script type="text/javascript">document.write(document.getElementById('matmulrows_zip_test_script').textContent + '\n// c: ' + JSON.stringify( c ));</script>  // Yes!  </pre>
+<script type="text/javascript">expl_run( expl_matmulrows_zip );</script></pre>
 
 <p>Great! But given the number of nested function calls involved, <code>matmulrows_zip</code> may well run much slower than <code>matmulrows_loops</code>:</p>
 
@@ -290,79 +133,19 @@ c = matmulrows_zip( a, b );
 
 <p>So we have a fast but hard-to-read <code>matmulrows_loops</code>, and a concise, readable, well encapsulated but slow <code>matmulrows_zip</code>:
 
-<pre class="prettyprint lang-js"><script type="text/javascript">document.write(matmulrows_zip)+''</script></pre>
+<pre class="prettyprint lang-js"><script type="text/javascript">document.write(expl_matmulrows_zip.matmulrows_zip)+''</script></pre>
 
 <p>Can we keep the nice encapsulations in <code>matmulrows_zip</code> *and* speed it up? Let us try to write similar code, using <code>flatorize</code>: instead of working on numbers directly, we work on symbols:</p>
 
-<pre class="prettyprint lang-js"><script type="text/javascript" id="matmulrows_zip_flatorize_script">var matmulrows_zip_342 = flatorize( 
-  'a,b'
-  , function (a,b) { return symbol_matmulrows_zip_gen( a, b, 3, 4, 2 ); } 
-);
+<pre class="prettyprint lang-js"><script type="text/javascript">expl_run( expl_matmulrows_zip_flatorize );</script></pre>
 
-// Wrapper
-
-function symbol_matmulrows_zip_gen( a, b, I, J, K ) 
-{
-  // Create matrices of symbolic expressions (NOT numbers)
-  var sym_a = symbol_matrixrows( a, I, J )
-  ,   sym_b = symbol_matrixrows( b, J, K )
-  ;
-  // Multiply the symbolic matrices
-  return symbol_matmulrows_zip( sym_a, sym_b );
-}
-
-// Core
-
-function symbol_matmulrows_zip( a, b )
-{
-  return a.map( function (ra) { 
-    return zip.apply( null, b ).map( function (cb) {
-      return symbol_sum( 
-        zip( ra, cb )
-          .map( function (xy) { return FZ.expr( xy[ 0 ], '*', xy[ 1 ] ); } )
-      );
-    } );
- } );
-}
-
-// Tools
-
-function symbol_matrixrows( name, nrow, ncol )
-{
-  var ret = new Array( nrow );
-  for (var r = 0; r < nrow; r++)
-  {
-    var row = ret[ r ] = new Array( ncol );
-    for (var c = 0; c < ncol; c++)
-      row[ c ] = FZ.part( FZ.part( name, r ), c );
-  }
-  return ret;
-}
-
-function symbol_sum( arr )
-{
-  return FZ.expr.apply( null, arr.reduce( symbol_sum_step, [] ) );
-  function symbol_sum_step( left, right ) 
-  {
-    return left.length  ?  left.concat( [ '+', right ] )  :  [ right ]; 
-  }
-}
-</script><script type="text/javascript">document.write(document.getElementById('matmulrows_zip_flatorize_script').textContent)</script>
-
-// Does this work?
-
-<script type="text/javascript" id="matmulrows_zip_342_test_script">a = [ [1,2,3,4], [5,6,7,8], [9,10,11,12] ];
-b = [ [13,14], [15,16], [17,18], [19,20] ];
-c = matmulrows_zip_342( a, b );
-</script><script type="text/javascript">document.write(document.getElementById('matmulrows_zip_342_test_script').textContent + '\n// c: ' + JSON.stringify( c ));</script>  // Yes!  
-</pre>
 <p>The core remains very similar. Indeed, compare the number version:</p>
 
-<pre class="prettyprint lang-js"><script type="text/javascript">document.write(matmulrows_zip)</script></pre>
+<pre class="prettyprint lang-js"><script type="text/javascript">document.write( expl_matmulrows_zip.matmulrows_zip );</script></pre>
 
 <p>with the new symbolic version:</p>
 
-<pre class="prettyprint lang-js"><script type="text/javascript">document.write(symbol_matmulrows_zip)</script></pre>
+<pre class="prettyprint lang-js"><script type="text/javascript">document.write(expl_matmulrows_zip_flatorize.symbol_matmulrows_zip)</script></pre>
 
 <p>All we had to do was to replace:</p>
 <ul><li><code>sum</code> with <code>symbol_sum</code></li>
@@ -373,8 +156,13 @@ c = matmulrows_zip_342( a, b );
 
 <p>Here is the generated implementation:</p>
 <pre class="prettyprint lang-js">
-<script type="text/javascript">document.write(matmulrows_zip_342.getDirect())</script>
+<script type="text/javascript">
+var tmp = expl_matmulrows_zip_flatorize.matmulrows_zip_342.getDirect();
+document.write( tmp );
+document.getElementById( 'tldr-generated-js' ).textContent = tmp;
+</script>
 </pre>
+<p class="small">(This code, as a few others below, was produced and inserted as you loaded the page.)</p>
 
 <p>Now a look at speed:</p>
 
@@ -389,7 +177,17 @@ c = matmulrows_zip_342( a, b );
 -> relative speedup compared to "Classic": 0%
 </pre>
 
-<p><strong>So we can write well-encapsulated code, <code>flatorize</code> it automatically, and the generated code runs as fast as the original nested loops written by hand.</strong> Trade-off: the matrix dimensions must be known to generate the <code>flatorize</code>'d code.</p>
+<p><strong>So we can write well-encapsulated code, <code>flatorize</code> it automatically, and the generated code that runs as fast as the nested loops written by hand.</strong> Trade-off: the matrix dimensions must be known to generate the <code>flatorize</code>'d code.</p>
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -452,7 +250,15 @@ mat_c = matmul342( mat_a, mat_b );
 
 
 
-<h3 class="anchorable" id="dft">Discrete Fourier Transform (DFT) <a href="#dft" class="anchor">#</a></h3>
+
+
+
+
+
+
+
+
+<h3 class="anchorable" id="dft">Example: Discrete Fourier Transform (DFT) <a href="#dft" class="anchor">#</a></h3>
 
 
 <p>We now implement a DFT using the
@@ -607,10 +413,147 @@ Further speedups could involve <a href="http://asmjs.org"><code>asm.js</code></a
 
 <hr class="section-hr">
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h3 class="anchorable" id="why">Details<a href="#howto" class="anchor">#</a></h3>
+
+<p>The two core ideas are to <a href="#factorize">factorize</a> and to <a href="#flatten">flatten</a> the implementation of mathematical expressions, hence the name <code>flatorize</code>.</p>
+
+<p>Consider the function <code>f</code> of complex numbers <code class="prettyprint lang-js">a,b,c</code>:</p>
+
+<pre class="prettyprint lang-js">function f(a,b,c) { return csub( csub(a,cadd(b,c)), cadd(b,c) ); };</pre>
+
+
+<h4 class="anchorable" id="factorize">Factorize <a href="#factorize" class="anchor">#</a></h4>
+
+<p>To spare CPU, one can modify <code>f</code>
+  by evaluating <code class="prettyprint lang-js">add(b,c)</code>
+ only once:</p>
+<pre class="prettyprint lang-js"><code>function f(a,b,c) { 
+    var bc = add(b,c);
+    return sub( sub(a,bc), bc ); 
+}
+</code></pre>
+
+
+<h4 class="anchorable" id="flatten">Flatten <a href="#flatten" class="anchor">#</a></h4>
+
+<p>Small "building block" functions like <code class="prettyprint
+lang-js">add</code> or <code class="prettyprint
+lang-js">sub</code> are useful to <em>write</em> code, but <em>at runtime</em> the
+CPU spends more time in function overhead than just doing the simple operation(s) in them.<p>
+
+<p>In more complex cases like recursive expressions, the function overhead becomes even bigger.</p>
+
+<p>One can eliminate function overhead by inlining each small function, that&nbsp;is&nbsp;replacing each small function with its implementation:</p>
+<pre class="prettyprint lang-js"><code>function f(a,b,c) { 
+    var bc = b+c;
+    return (a - bc) - bc;
+}
+</code></pre>
+
+<p>The CPU performance should be pretty good at this point.</p>
+
+<p>One could try to further optimize,
+e.g. writing <code class="prettify lang-js">a-2*bc</code>, which
+amounts to mathematical expression simplification. This can be quite
+complicated, and it is not sure how much CPU speed can be gained this
+way -&nbsp;especially compared to function overhead elimination&nbsp;-
+so if we ever attempt simplification, we'll keep it very simple.
+</p>
+
+<h4 class="anchorable" id="usage">Usage: <code>expr</code>, <code>part</code> and <code>flatorize</code> <a href="#usage" class="anchor">#</a></h4>
+
+<p>
+<code class="prettyprint lang-js">flatorize('a,b,c', function f(a,b,c) { ... })</code> returns a new function, obtained by:
+  <ol>
+    <li>calling <code class="prettyprint lang-js">f('a','b','c')</code>, which returns an expression,</li>
+    <li>factorizing and flattening the expression,</li> 
+    <li>generating the new code for the expression.</li>
+  </ol>
+</p>
+
+<p><code class="prettyprint lang-js">f(a,b,c)</code> can use 3&nbsp;ways to build and return an expression:</p>
+<ul>
+<li><code class="prettyprint lang-js">flatorize.expr(a,'+',b)</code> defines the code expression <code class="prettyprint lang-js">a+b</code>.</li>
+<li><code class="prettyprint lang-js">flatorize.part(arr,3)</code> or <code class="prettyprint lang-js">flatorize.part(obj,'prop')</code> describe the extraction of a property value from an object (array or not).</li>
+<li><code class="prettyprint lang-js">[ 'a', anExpr ]</code> is an array expression composed of 2 sub-expressions.</li>
+</ul>
+
+<h4 class="anchorable" id="example">Example: complex numbers <a href="#example" class="anchor">#</a></h4>
+
+<p>We now work with complex numbers, which we represent as arrays of two numbers <code class="prettyprint lang-js">[re,im]</code>. Consider the function <code>f</code> of complex numbers <code class="prettyprint lang-js">a,b,c</code>:</p>
+
+<pre class="prettyprint lang-js"><code>f = <script type="text/javascript">document.write(f+'')</script>;</code></pre>
+
+<p>To produce an optimized implementation <code>f2</code> of the function <code>f</code>,
+we use <a href="flatorize.js">flatorize</a> and write the following code:</p>
+
+<pre class="prettyprint lang-js"><code>FZ    = flatorize;
+cadd  = FZ('a,b',   function (a,b)   { 
+    return cplx( FZ.expr( creal(a), '+', creal(b) ),
+                 FZ.expr( cimag(a), '+', cimag(b) ) 
+               ); 
+});
+csub  = FZ('a,b',   function (a,b)   { 
+    return cplx( FZ.expr( creal(a), '-', creal(b) ),
+                 FZ.expr( cimag(a), '-', cimag(b) ) 
+               ); 
+});
+creal = FZ('a',     function (a)     { return FZ.part( a, 0 ); });
+cimag = FZ('a',     function (a)     { return FZ.part( a, 1 ); });
+cplx  = FZ('re,im', function (re,im) { return [ re, im ]; });
+
+f  = <script type="text/javascript">document.write(f+'');</script>
+f2 = FZ('a,b,c',f);
+</code></pre>
+
+<p>All functions returned by <code class="prettyprint lang-js">flatorize</code>
+can be used to build further expressions: in the above example, <code>creal</code> is used to express <code>cadd</code>, which itself is used to expressed <code>f</code>. Definition order does not matter.
+</p>
+
+<p>All functions returned by <code class="prettyprint lang-js">flatorize</code>
+can also be called with values, for computation. For example, calling <code class="prettyprint lang-js">f2(a,b,c)</code> executes
+the flat, factorized:</p>
+
+<pre class="prettyprint lang-js" id="example-generated"><code><script type="text/javascript">document.write(f2.getDirect()+'')</script></code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <h3 class="anchorable" id="details">Miscellaneous details <a href="#details" class="anchor">#</a></h3>
 
 
-<p>Above in the article, the three main functions were described: <code>flatorize</code>, <code>flatorize.expr</code> and <code>flatorize.part</code>. In addition:</p>
+<p>Above, the three main functions were described: <code>flatorize</code>, <code>flatorize.expr</code> and <code>flatorize.part</code>. In addition:</p>
 <ol>
   <li>The method <code>getDirect</code> and the convenience function <code>flatorize.now</code> give you direct access to the flatorized implementation, which you can use for computations (even better performance). <code>flatorize.now</code> makes sense when you know that you will never use the flatorized function to build further expressions, e.g. in specific cases of a parameterizable implementation (<code>matmul342</code>); else use <code>getDirect</code>.</li>
   <li>Within a function that builds an expression, a call to the method <code>evalnow</code> delivers a value (instead of an expression). See <a href="#dft">above</a> the call <code>cpol.evalnow</code> within <code>dft_exprgenF</code>.</li>

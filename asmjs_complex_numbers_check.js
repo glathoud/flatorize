@@ -5,6 +5,8 @@ asmjs_complex_numbers_check();
 var passed;
 function asmjs_complex_numbers_check()
 {
+    (passed  ||  (passed = {})).asmjs_complex_numbers_check = false;
+
     // "Complex numbers" example
 
     // --- Inputs and output
@@ -17,11 +19,11 @@ function asmjs_complex_numbers_check()
     // Input views
     var n2i = f2_asmjsGen.array_name2info
 
-    ,   a = new Float32Array( f2_buffer, 4 * n2i.a.begin, n2i.a.n )
-    ,   b = new Float32Array( f2_buffer, 4 * n2i.b.begin, n2i.b.n )
-    ,   c = new Float32Array( f2_buffer, 4 * n2i.c.begin, n2i.c.n )
-    // Output view
-    ,   d = new Float32Array( f2_buffer, 4 * n2i.d.begin, n2i.d.n )
+    ,   a = new Float32Array( f2_buffer, n2i.a.begin_bytes, n2i.a.n )
+    ,   b = new Float32Array( f2_buffer, n2i.b.begin_bytes, n2i.b.n )
+    ,   c = new Float32Array( f2_buffer, n2i.c.begin_bytes, n2i.c.n )
+    // Output view                                  
+    ,   d = new Float32Array( f2_buffer, n2i.d.begin_bytes, n2i.d.n )
     ;
 
     // Write input values

@@ -345,6 +345,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             ;
             ret.name  = name;
             ret.begin = count;
+            ret.begin_bytes = ret.begin * cat_bytes;
             count += ret.n;
             ret.end   = count;
 
@@ -777,31 +778,6 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             return '  ' + s;
         }
 
-	function code_replace_numberstring_with_constant( outtype, numberstring )
-	// Goal: share constants.
-	{
-	    (numberstring || null).substring.call.a;  // Must be a non-empty string
-
-	    var numberstring2constantname = outtype in type2numberstring2constantname 
-		? type2numberstring2constantname[ outtype ]
-		: (type2numberstring2constantname[ outtype ] = {})
-	    ;
-	    
-	    if (numberstring in numberstring2constantname)
-		return numberstring2constantname[ numberstring ];
-
-	    var constantname = outtype.toUpperCase() + '_' + 
-		numberstring.replace( /-/g, 'm' )
-		.replace( /\./g, '_' )
-		.replace( /\+/g, '+' )
-	    ;
-	    if (constantname in constantname2declcode)
-		throw new Error('bug');
-
-	    constantname2declcode[ constantname ] = 'const ' + outtype + ' ' + constantname + ' = ' + numberstring + ';';
-	    constantnameArr.push( constantname );
-	    return numberstring2constantname[ numberstring ] = constantname;
-	}
     }
 
 
