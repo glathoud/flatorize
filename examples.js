@@ -246,28 +246,29 @@ function tryit_speed_matmulrows_zip( button )
 
     // Make sure both implementations work
 
-    var rows_c = matmulrows_loops( rows_a, rows_b );
-    check_rows( rows_c, rows_c_expected );
-
-    var matmulrows_zip = expl_matmulrows_zip.matmulrows_zip;
+    var matmulrows_zip   = expl_matmulrows_zip.matmulrows_zip;
+    var matmulrows_loops = expl_matmulrows_loops.matmulrows_loops;
 
     var rows_c = matmulrows_zip( rows_a, rows_b );
+    check_rows( rows_c, rows_c_expected );
+
+    var rows_c = matmulrows_loops( rows_a, rows_b );
     check_rows( rows_c, rows_c_expected );
     
     // Measure their respective speeds
 
     var N = 3e5;
 
-    time('speed_matmulrows_loops');
-    for (var i = N; i--;)
-        var rows_c = matmulrows_loops( rows_a, rows_b );
-    timeEnd('speed_matmulrows_loops');
-    
     time('speed_matmulrows_zip');
     for (var i = N; i--;)
         var rows_c = matmulrows_zip( rows_a, rows_b );
     timeEnd('speed_matmulrows_zip');
 
+    time('speed_matmulrows_loops');
+    for (var i = N; i--;)
+        var rows_c = matmulrows_loops( rows_a, rows_b );
+    timeEnd('speed_matmulrows_loops');
+    
     if ('undefined' !== typeof document)
     {
         var outnode = document.getElementById( 'tryit_speed_matmulrows_zip_output' );
@@ -279,14 +280,14 @@ function tryit_speed_matmulrows_zip( button )
         }
     }
     
-    var t_orig = time['speed_matmulrows_loops'] / 1000
-    ,   t_flat = time['speed_matmulrows_zip'] / 1000
-    ,  sp_orig = N / t_orig
-    ,  sp_flat = N / t_flat
-    , speedup_percent = get_speedup_percent( sp_orig, sp_flat )
-    ,  line_a  = '   Classic matrix rows multip.: ' + sp_orig.toPrecision( 3 ) + ' matmulrows_loops(a,b) calls per second\n'
-    ,  line_b  = '   ZIP     matrix rows multip.: ' + sp_flat.toPrecision( 3 ) + ' matmulrows_zip(a,b) calls per second\n'
-    ,  line_c  = '-> relative speedup: ' + get_speedup_percent_str( speedup_percent ) + '\n\n'
+    var t_loops = time['speed_matmulrows_loops'] / 1000
+    ,   t_zip = time['speed_matmulrows_zip'] / 1000
+    ,  sp_loops = N / t_loops
+    ,  sp_zip = N / t_zip
+    , speedup_percent = get_speedup_percent( sp_zip, sp_loops )
+    ,  line_a  = 'ZIP   matrix multip.: ' + sp_zip.toPrecision( 3 ) + ' matmulrows_zip(a,b) calls per second\n\n'
+    ,  line_b  = 'LOOPS matrix multip.: ' + sp_loops.toPrecision( 3 ) + ' matmulrows_loops(a,b) calls per second\n'
+    ,  line_c  = '-> speedup relative to ZIP: ' + get_speedup_percent_str( speedup_percent ) + '\n\n\n'
     ;
     
     if (outnode)
@@ -298,10 +299,10 @@ function tryit_speed_matmulrows_zip( button )
         button.removeAttribute( 'disabled' );
 
     return {
-        t_orig : t_orig
-        , t_flat : t_flat
-        , sp_orig : sp_orig
-        , sp_flat : sp_flat
+        t_loops : t_loops
+        , t_zip : t_zip
+        , sp_loops : sp_loops
+        , sp_zip : sp_zip
         , speedup_percent : speedup_percent
     };
 }
@@ -337,6 +338,8 @@ function tryit_speed_matmulrows_zip_342( button )
 
     // Make sure all implementations work
 
+    var matmulrows_loops = expl_matmulrows_loops.matmulrows_loops;
+
     var rows_c = matmulrows_loops( rows_a, rows_b );
     check_rows( rows_c, rows_c_expected );
 
@@ -354,16 +357,16 @@ function tryit_speed_matmulrows_zip_342( button )
 
     var N = 3e5;
 
-    time('speed_matmulrows_loops');
-    for (var i = N; i--;)
-        var rows_c = matmulrows_loops( rows_a, rows_b );
-    timeEnd('speed_matmulrows_loops');
-    
     time('speed_matmulrows_zip');
     for (var i = N; i--;)
         var rows_c = matmulrows_zip( rows_a, rows_b );
     timeEnd('speed_matmulrows_zip');
 
+    time('speed_matmulrows_loops');
+    for (var i = N; i--;)
+        var rows_c = matmulrows_loops( rows_a, rows_b );
+    timeEnd('speed_matmulrows_loops');
+    
     time('speed_matmulrows_zip_342');
     for (var i = N; i--;)
         var rows_c = matmulrows_zip_342( rows_a, rows_b );
@@ -380,21 +383,24 @@ function tryit_speed_matmulrows_zip_342( button )
         }
     }
     
-    var t_orig = time['speed_matmulrows_loops'] / 1000
+    var t_loops = time['speed_matmulrows_loops'] / 1000
     ,   t_zip  = time['speed_matmulrows_zip'] / 1000
     ,   t_flat = time['speed_matmulrows_zip_342'] / 1000
-    ,  sp_orig = N / t_orig
+    ,  sp_loops = N / t_loops
     ,  sp_zip  = N / t_zip
     ,  sp_flat = N / t_flat
-    , speedup_percent_zip = get_speedup_percent( sp_orig, sp_zip )
-    , speedup_percent_flat = get_speedup_percent( sp_orig, sp_flat )
-    ,  line_a  = '   Classic matrix rows multip.: ' + sp_orig.toPrecision( 3 ) + ' matmulrows_loops(a,b) calls per second\n\n'
-    ,  line_b  = '   ZIP     matrix rows multip.: ' + sp_zip .toPrecision( 3 ) + ' matmulrows_zip(a,b) calls per second\n'
-    ,  line_b2  = '-> relative speedup compared to "Classic": ' + get_speedup_percent_str( speedup_percent_zip ) + '\n\n'
-    ,  line_c  = '   ZIPFLAT matrix rows multip.: ' + sp_flat.toPrecision( 3 ) + ' matmulrows_zip_342(a,b) calls per second\n'
-    ,  line_c2  = '-> relative speedup compared to "Classic": ' + get_speedup_percent_str( speedup_percent_flat ) + '\n\n\n'
+    , speedup_percent_loops = get_speedup_percent( sp_zip, sp_loops )
+    , speedup_percent_flat = get_speedup_percent( sp_zip, sp_flat )
+
+    ,  line_a  = 'ZIP     matrix multip.: ' + sp_zip.toPrecision( 3 ) + ' matmulrows_zip(a,b) calls per second\n\n'
+
+    ,  line_b  = 'LOOPS   matrix multip.: ' + sp_loops.toPrecision( 3 ) + ' matmulrows_loops(a,b) calls per second\n'
+    ,  line_c  = '-> speedup relative to ZIP: ' + get_speedup_percent_str( speedup_percent_loops ) + '\n\n'
+
+    ,  line_d  = 'ZIPFLAT matrix multip.: ' + sp_flat.toPrecision( 3 ) + ' matmulrows_zip_342(a,b) calls per second\n'
+    ,  line_e  = '-> speedup relative to ZIP: ' + get_speedup_percent_str( speedup_percent_flat ) + '\n\n'
     
-    , text = line_a + line_b + line_b2 + line_c + line_c2
+    , text = line_a + line_b + line_c + line_d + line_e + '\n'
     ;
     
     if (outnode)
@@ -406,10 +412,10 @@ function tryit_speed_matmulrows_zip_342( button )
         button.removeAttribute( 'disabled' );
 
     return {
-        t_orig : t_orig
+        t_loops : t_loops
         , t_zip : t_zip
         , t_flat : t_flat
-        , sp_orig : sp_orig
+        , sp_loops : sp_loops
         , sp_zip : sp_zip
         , sp_flat : sp_flat
         , speedup_percent_zip : speedup_percent_zip

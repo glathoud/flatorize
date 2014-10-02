@@ -15,7 +15,9 @@ function expl_matmulrows_zip()
             return zip.apply( null, b ).map( function (cb) {
                 return sum( 
                     zip( ra, cb )
-                        .map( function (xy) { return xy[ 0 ] * xy[ 1 ]; } )
+                        .map( function (xy) { 
+                            return xy[ 0 ] * xy[ 1 ]; 
+                        } )
                 );
             } );
         } );

@@ -16,6 +16,8 @@
 </head>
 <body>
 
+<div id="top"></div>
+
 <ul class="screen-hidden">
   <li>github: <a href="https://github.com/glathoud/flatorize">https://github.com/glathoud/flatorize</a></li>
   <li>[1] <a href="http://glat.info">http://glat.info</a></li>
@@ -29,16 +31,40 @@
 
 <h2>Flatorize: Generate fast, flat, factorized code for mathematical expressions</h2>
 
+<div class="fixed-br print-hidden"><a href="#top">Back to the top</a></div>
+
 <p style="text-align:right">by <a href="http://glat.info">Guillaume Lathoud</a><span class="print">&nbsp;[1]</span>, April 2013</p>
 
-<h3 class="anchorable" id="tldr">Summary <a href="#tldr" class="anchor">#</a></h3>
+
+
+
+
+
+
+
+
+
+
+<h3 class="anchorable" id="contents">Contents <a href="#contents" class="anchor">#</a></h3>
+
+<ul class="contents-ul"></ul>
+
+
+
+
+
+
+
+
+
+<h3 class="anchorable" id="tldr">Idea <a href="#tldr" class="anchor">#</a></h3>
 
 <p>Think like this:</p>
 <pre>Matrix multiplication a * b: Each row of a with each column of b</pre>
 
 
-<p>Then write code like you think it, i.e. well encapsulated:</p>
-<pre class="prettyprint lang-python"># Python
+<p>...write code like you think, without caring about performance...</p>
+<pre class="prettyprint lang-python"># Python   c = a * b
 c = [[ sum(x*y for x,y in zip(ra,cb)) for cb in zip(*b) ] for ra in a ]
 </pre>
 
@@ -53,32 +79,35 @@ function matmulrows_zip( a, b )
             );
         } );
     } );
-}</pre>
+}
 
-<p>The code is well encapsulated into many small functions. But the overhead of the many nested function calls slows down the execution.
-</p>
+// --> Well encapsulated code, but slow due to function call overhead.
+</pre>
 
-<p>The proposed <code>flatorize</code> takes the above, and generates <strong>very fast</strong> JavaScript code:</p>
 
-<!--ul><li>factorizing: evaluate each piece of the expression only one time.</li>
-<li>flattening: eliminate all nested function calls.</li>
-</ul>
+<p>...and let <code>flatorize</code> transform the above into <strong>very fast</strong> JavaScript code:</p>
 
-<p>Example of generated code:</p-->
-<pre class="prettyprint lang-js" id="tldr-generated-js"></pre>
+<pre class="prettyprint lang-js">// Generated "flatorized" code == factorized + flattened
+// 
+// - factorized: avoid repeating computations.
+// - flattened:  no function call.
+
+<span id="tldr-generated-js"></span></pre>
 
 <p>Speedups exceed +1000% in many cases, including matrix multiplication and the Discrete Fourier Transform (<a href="#push-all">full results</a>).</p>
 
 <p>A plugin permits to generate fast C code as well (<a href="c_code.html">examples</a>).</p></ul>
 
-<p>"flatorize" stands for "factorize and flatten".</p>
 
-<h3 class="anchorable" id="contents">Contents <a href="#contents" class="anchor">#</a></h3>
-
-xxx
+<p>Source files: on <a href="https://github.com/glathoud/flatorize">github</a>, or here (<a href="flatorize.js">flatorize.js</a>, <a href="examples.js">examples.js</a>, <a href="log.js">log.js</a>).</p>
 
 
-<p><code>flatorize</code> source files: on <a href="https://github.com/glathoud/flatorize">github</a>, or here (<a href="flatorize.js">flatorize.js</a>, <a href="examples.js">examples.js</a>, <a href="log.js">log.js</a>).</p>
+
+
+
+
+
+
 
 
 
@@ -90,11 +119,22 @@ xxx
 
 <h3 class="anchorable" id="matmulrows">Example: matrix multiplication (arrays of rows)<a href="#matmulrows" class="anchor">#</a></h3>
 
+
+
+
+<h4 class="anchorable" id="loops">LOOPS <a href="#loops" class="anchor">#</a></h4>
+
 <p>Consider matrices expressed as 2-dimensional arrays of rows. Here is an implementation of matrix multiplication using 3 nested loops:</p>
-<pre class="prettyprint lang-js"><script type="text/javascript">expl_run( expl_matmulrows_loops );</script></pre>
+<pre class="prettyprint lang-js">// LOOPS
+
+<script type="text/javascript">expl_run( expl_matmulrows_loops );</script></pre>
 
 <p>Guessing the intent of <code>matmulrows_loops</code> from its implementation alone can be hard. Concepts are <em>not</em> encapsulated into separate functions, which slows down understanding, debugging and maintenance.</p>
 
+
+
+
+<h4 class="anchorable" id="zip">ZIP <a href="#zip" class="anchor">#</a></h4>
 
 <p>Can we express the concept of matrix multiplication in a more concise and better encapsulated way? For example, in Python:</p>
 <pre class="prettyprint lang-python"><code># Python
@@ -115,10 +155,12 @@ c = [[ sum(x*y for x,y in zip(ra,cb)) for cb in zip(*b) ] for ra in a ]
 # >>> c
 # [[170, 180], [426, 452], [682, 724]]
 </code></pre>
-<p>The expression is concise, shorter than the nested loops used above, and the various concepts are well encapsulated: <code>map</code>, <code>sum</code> and <code>zip(*b)</code>. The reference to rows of <code>a</code> and columns of <code>b</code> is <em>explicit</em> through variables <code>ra</code>&nbsp;and&nbsp;<code>cb</code>, respectively. This can facilitate understanding.</p>
+<p>The expression is concise, shorter than the nested loops used above, and the various concepts are well encapsulated: <code>map</code>, <code>sum</code> and <code>zip</code>.</p>
+
+<p>The reference to rows of <code>a</code> and columns of <code>b</code> is <em>explicit</em> through variables <code>ra</code>&nbsp;and&nbsp;<code>cb</code>, respectively. This can facilitate understanding.</p>
 
 <p>A similar implementation in JavaScript requires to define <code>zip</code> and <code>sum</code>:</p>
-<pre class="prettyprint lang-js">// JavaScript
+<pre class="prettyprint lang-js">// ZIP (JavaScript)
 
 <script type="text/javascript">expl_run( expl_matmulrows_zip );</script></pre>
 
@@ -126,26 +168,36 @@ c = [[ sum(x*y for x,y in zip(ra,cb)) for cb in zip(*b) ] for ra in a ]
 
 <p><button id="tryit_speed_matmulrows_zip" onclick="tryit_speed_matmulrows_zip( this )">Measure the speed!</button> (Feel free to do it multiple times.)</p><pre id="tryit_speed_matmulrows_zip_output">(The speed measurement can last long in some browsers.)</pre>
 <p>Example of result:</p>
-<pre>   Classic matrix rows multip.: 1.72e+6 matmulrows_loops(a,b) calls per second
-   ZIP     matrix rows multip.: 3.43e+4 matmulrows_zip(a,b) calls per second
--> relative speedup: -98%
+<pre>ZIP   matrix multip.: 3.07e+4 matmulrows_zip(a,b) calls per second
+
+LOOPS matrix multip.: 6.25e+6 matmulrows_loops(a,b) calls per second
+-> speedup relative to ZIP: +20227%
 </pre>
 
-<p>So we have a fast but hard-to-read <code>matmulrows_loops</code>, and a concise, readable, well encapsulated but slow <code>matmulrows_zip</code>:
+<!--p>So we have a fast but hard-to-read <code>matmulrows_loops</code>, and a concise, readable, well encapsulated but slow <code>matmulrows_zip</code>:
 
-<pre class="prettyprint lang-js"><script type="text/javascript">document.write(expl_matmulrows_zip.matmulrows_zip)+''</script></pre>
+<pre class="prettyprint lang-js"><script type="text/javascript">document.write(expl_matmulrows_zip.matmulrows_zip)+''</script></pre-->
 
-<p>Can we keep the nice encapsulations in <code>matmulrows_zip</code> *and* speed it up? Let us try to write similar code, using <code>flatorize</code>: instead of working on numbers directly, we work on symbols:</p>
+
+
+<h4 class="anchorable" id="zipflat">ZIPFLAT: symbols first, numbers later <a href="#zipflat" class="anchor">#</a></h4>
+
+
+<p>Can we keep the nice encapsulations in <code>matmulrows_zip</code> *and* speed it up? We now write similar code using <code>flatorize</code>: instead of working on numbers, we work on symbols:</p>
 
 <pre class="prettyprint lang-js"><script type="text/javascript">expl_run( expl_matmulrows_zip_flatorize );</script></pre>
 
 <p>The core remains very similar. Indeed, compare the number version:</p>
 
-<pre class="prettyprint lang-js"><script type="text/javascript">document.write( expl_matmulrows_zip.matmulrows_zip );</script></pre>
+<pre class="prettyprint lang-js">// ZIP
+
+<script type="text/javascript">document.write( expl_matmulrows_zip.matmulrows_zip );</script></pre>
 
 <p>with the new symbolic version:</p>
 
-<pre class="prettyprint lang-js"><script type="text/javascript">document.write(expl_matmulrows_zip_flatorize.symbol_matmulrows_zip)</script></pre>
+<pre class="prettyprint lang-js">// ZIPFLAT
+
+<script type="text/javascript">document.write(expl_matmulrows_zip_flatorize.symbol_matmulrows_zip)</script></pre>
 
 <p>All we had to do was to replace:</p>
 <ul><li><code>sum</code> with <code>symbol_sum</code></li>
@@ -155,7 +207,9 @@ c = [[ sum(x*y for x,y in zip(ra,cb)) for cb in zip(*b) ] for ra in a ]
 
 
 <p>Here is the generated implementation:</p>
-<pre class="prettyprint lang-js">
+<pre class="prettyprint lang-js">// ZIPFLAT
+// Generated code (function matmulrows_zip_342)
+
 <script type="text/javascript">
 var tmp = expl_matmulrows_zip_flatorize.matmulrows_zip_342.getDirect();
 document.write( tmp );
@@ -168,16 +222,20 @@ document.getElementById( 'tldr-generated-js' ).textContent = tmp;
 
 <p><button id="tryit_speed_matmulrows_zip_342" onclick="tryit_speed_matmulrows_zip_342( this )">Measure the speed!</button> (Feel free to do it multiple times.)</p><pre id="tryit_speed_matmulrows_zip_342_output">(The speed measurement can last long in some browsers.)</pre>
 <p>Example of result:</p>
-<pre>   Classic matrix rows multip.: 1.75e+6 matmulrows_loops(a,b) calls per second
+<pre>ZIP     matrix multip.: 2.99e+4 matmulrows_zip(a,b) calls per second
 
-   ZIP     matrix rows multip.: 3.55e+4 matmulrows_zip(a,b) calls per second
--> relative speedup compared to "Classic": -98%
+LOOPS   matrix multip.: 6.12e+6 matmulrows_loops(a,b) calls per second
+-> speedup relative to ZIP: +20408%
 
-   ZIPFLAT matrix rows multip.: 1.75e+6 matmulrows_zip_342(a,b) calls per second
--> relative speedup compared to "Classic": 0%
+ZIPFLAT matrix multip.: 3.03e+6 matmulrows_zip_342(a,b) calls per second
+-> speedup relative to ZIP: +10051%
 </pre>
 
-<p><strong>So we can write well-encapsulated code, <code>flatorize</code> it automatically, and the generated code that runs as fast as the nested loops written by hand.</strong> Trade-off: the matrix dimensions must be known to generate the <code>flatorize</code>'d code.</p>
+<p>Depending on the JavaScript engine, LOOPS written by hand may run faster or slower than the generated ZIPFLAT code. However, both speeds have similar orders of magnitude.</p><p> More importantly:</p>
+
+<blockquote>We write well-encapsulated code, <code>flatorize</code> it automatically, and the generated code runs orders of magnitude faster (ZIPFLAT).</blockquote>
+
+<p>Trade-off: the matrix dimensions must be known to generate the <code>flatorize</code>'d code.</p>
 
 
 
@@ -195,51 +253,6 @@ document.getElementById( 'tldr-generated-js' ).textContent = tmp;
 
 
 
-<div style="display:none">xxx Given the previous section, this section would confuse the reader at the moment... I probably need to reformulate this section.
-<h3 class="anchorable" id="matmul">Example: matrix multiplication (flat matrices) <a href="#matmul" class="anchor">#</a></h3>
-
-<p>If we know we are going to do some intensive computations,
-multiplying matrices of known sizes (3x4 and 4x2 in the example below), we
-can use (1)&nbsp;flat matrices, i.e. stored as 1-dimensional arrays of numbers, and (2)&nbsp;<code>flatorize</code> to generate a fast implementation <code>matmul342</code>:</p>
-
-<pre class="prettyprint lang-js"><code>matmul342 = flatorize('a,b', matmul_exprgenF(3,4,2));
-
-<script type="text/javascript">document.write(matmul_exprgenF+'');</script>
-</code></pre>
-
-<p>This generates the following function:</p>
-<pre class="prettyprint lang-js" id="matmul-generated"><code><script type="text/javascript">document.write(matmul342+'');</script>
-</code></pre>
-
-<p>Let us verify that `matmul342` actually works:</p>
-<pre class="prettyprint lang-js"><code>mat_a = [ 1,  2,  3, 4, 
-          5,  6,  7, 8,
-          9, 10, 11, 12
-        ];
-
-mat_b = [ 13, 14,
-          15, 16,
-          17, 18,
-          19, 20
-        ];
-
-mat_c = matmul342( mat_a, mat_b );
-/* mat_c has the value:
-   [170, 180, 
-    426, 452, 
-    682, 724
-   ]
-*/
-</code></pre>
-
-<p>So <code>matmul342</code> works fine. But does it bring any improvement over a standard matrix multiplication loop?</p>
-
-<p><button id="tryit_speed_matmul342" onclick="tryit_speed_matmul342( this )">Measure the speed!</button> (Feel free to do it multiple times.)</p><pre id="tryit_speed_matmul342_output">(The speed measurement can last long in some browsers.)</pre>
-
-<p>In Firefox&nbsp;21 on a linux Ubuntu 12.04, I obtained a slowdown about&nbsp;-33%, and in Chrome&nbsp;27 a speedup about&nbsp;+200%. There are more results <a href="#push-all">below</a>, with large speedups for Firefox as well.</p>
-
-
-</div>
 
 
 
@@ -490,7 +503,8 @@ so if we ever attempt simplification, we'll keep it very simple.
 <ul>
 <li><code class="prettyprint lang-js">flatorize.expr(a,'+',b)</code> defines the code expression <code class="prettyprint lang-js">a+b</code>.</li>
 <li><code class="prettyprint lang-js">flatorize.part(arr,3)</code> or <code class="prettyprint lang-js">flatorize.part(obj,'prop')</code> describe the extraction of a property value from an object (array or not).</li>
-<li><code class="prettyprint lang-js">[ 'a', anExpr ]</code> is an array expression composed of 2 sub-expressions.</li>
+<li><code class="prettyprint lang-js">[ 'a', anExpr ]</code> is an array expression composed of 2 sub-expressions. Similary an object <code class="prettyprint lang-js">{ a : anExpr }</code> can be returned.
+</li>
 </ul>
 
 <h4 class="anchorable" id="example">Example: complex numbers <a href="#example" class="anchor">#</a></h4>
@@ -581,14 +595,26 @@ the rest on <a href="https://github.com/glathoud/flatorize">github</a>.</p>
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" src="contents_ul.js"></script>
+
+
+
+
 <script type="text/javascript" src="prettify/prettify.js"></script>
 <script type="text/javascript">setTimeout( prettyPrint );</script>
 <script type="text/javascript">
-[ 
-    'tryit_speed_matmul342', 'tryit_speed_matmulrows_zip', 'tryit_flatorize_dft16', 'tryit_speed_dft16', 'tryit_flatorize_dft1024', 'tryit_speed_dft1024', 'tryit_all'
-].forEach(
-    function (id) { document.getElementById(id).removeAttribute('disabled'); }
-);
+[].forEach.call( document.getElementsByTagName( 'button' ), function (btn_node) { btn_node.removeAttribute( 'disabled' ); } );
 window.ontouchstart = function () { Array.prototype.forEach.call( document.getElementsByClassName( "anchor" ), function (node) { node.className = node.className.replace( /\banchor\b/g, '' ); } ); };
 </script>
 <script type="text/javascript" src="../MathJax/MathJax.js?config=default"></script>

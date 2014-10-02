@@ -37,7 +37,9 @@ function expl_matmulrows_zip_flatorize()
             return zip.apply( null, b ).map( function (cb) {
                 return symbol_sum( 
                     zip( ra, cb )
-                        .map( function (xy) { return FZ.expr( xy[ 0 ], '*', xy[ 1 ] ); } )
+                        .map( function (xy) { 
+                            return FZ.expr( xy[ 0 ], '*', xy[ 1 ] ); 
+                        } )
                 );
             } );
         } );
@@ -46,18 +48,23 @@ function expl_matmulrows_zip_flatorize()
     // Tools
 
     function symbol_matrixrows( name, nrow, ncol )
+    // m := [ [ m[0][0], m[0][1], m[0][2], ... ], 
+    //        [ m[1][0], m[1][1], m[1][2], ... ], 
+    //        ... 
+    //      ]
     {
         var ret = new Array( nrow );
         for (var r = 0; r < nrow; r++)
         {
             var row = ret[ r ] = new Array( ncol );
             for (var c = 0; c < ncol; c++)
-                row[ c ] = FZ.part( FZ.part( name, r ), c );
+                row[ c ] = FZ.part( FZ.part( name, r ), c ); // e.g. m[r][c]
         }
         return ret;
     }
 
     function symbol_sum( arr )
+    // sum( arr ) := arr[0] + arr[1] + ...
     {
         return FZ.expr.apply( null, arr.reduce( symbol_sum_step, [] ) );
         function symbol_sum_step( left, right ) 
