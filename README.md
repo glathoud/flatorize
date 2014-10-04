@@ -1,7 +1,9 @@
 flatorize
 =========
 
-Generate fast implementations of mathematical expressions (see also the [slides](bpjs2014/index.html) and [video](http://www.youtube.com/watch?v=FxNNSvNDbW8) from the Budapest 2014 bpjs/node.js meetup).
+Generate fast implementations of mathematical expressions.
+
+(See also the [slides](bpjs2014/index.html) and [video](http://www.youtube.com/watch?v=FxNNSvNDbW8) from the Budapest 2014 bpjs/node.js meetup.)
 
 ## Idea
 
@@ -81,7 +83,7 @@ return [ [ (_1 * _g) + (_2 * _j) + (_3 * _m) + (_4 * _p), (_1 * _h) + (_2 * _k) 
 
 Speedups exceed +1000% in many cases, including matrix multiplication and the Discrete Fourier Transform (full results).
 
-A plugin permits to generate fast C code as well (examples).
+A plugin permits to generate fast C code as well. See [./c_code.html] (c_code.html).
 
 I am currently working on an extension for asm.js, including multidimensional arrays. See [./asmjs.html](asmjs.html)
 
