@@ -35,7 +35,7 @@ function matmulrows_zip( a, b )
 // --> Well encapsulated code, but slow due to function call overhead.
 ```
 
-...and let flatorize transform the above into very fast JavaScript code:
+...and let `flatorize` transform the above into very fast JavaScript code:
 
 ```
 // Generated "flatorized" code == factorized + flattened
