@@ -3,7 +3,7 @@ flatorize
 
 Generate fast implementations of mathematical expressions.
 
-(See also the [slides](bpjs2014/index.html) and [video](http://www.youtube.com/watch?v=FxNNSvNDbW8) from the Budapest 2014 bpjs/node.js meetup.)
+(See also the [slides](http://glat.info/bpjs2014/index.html) and [video](http://www.youtube.com/watch?v=FxNNSvNDbW8) from the Budapest 2014 bpjs/node.js meetup.)
 
 ## Idea
 
@@ -91,5 +91,5 @@ I am currently working on an extension for asm.js, including multidimensional ar
 
 For more details see the article:
  * Download this repository and open [./index.html](index.html)
- * or the live site: [//glat.info/flatorize](//glat.info/flatorize)
+ * or the live site: [http://glat.info/flatorize](http://glat.info/flatorize)
 
