@@ -1,9 +1,7 @@
 flatorize
 =========
 
-Generate fast implementations of mathematical expressions.
-
-[ Budapest 2014 bpjs/node.js meetup and [slides](bpjs2014/index.html) and [video](http://www.youtube.com/watch?v=FxNNSvNDbW8) ].
+Generate fast implementations of mathematical expressions (see also the [slides](bpjs2014/index.html) and [video](http://www.youtube.com/watch?v=FxNNSvNDbW8) from the Budapest 2014 bpjs/node.js meetup).
 
 ## Idea
 
