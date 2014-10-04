@@ -87,6 +87,8 @@ I am currently working on an extension for asm.js, including multidimensional ar
 
 ## More
 
-For more details see the article download this repository and open [./index.html](index.html), or visit the live [page](http://glat.info/flatorize)
+For more details read the article:
+ * download this repository and open [./index.html](index.html)
+ * or visit the live [page](http://glat.info/flatorize)
 
 See also the [slides](http://glat.info/bpjs2014/index.html) and [video](http://www.youtube.com/watch?v=FxNNSvNDbW8) from the Budapest 2014 nodebp/bpjs meetup.
