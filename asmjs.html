@@ -11,6 +11,7 @@
 <script type="text/javascript">generate_small_functions();</script>
 <script type="text/javascript" src="flatorize_asmjs.js"></script>
 <script type="text/javascript" src="modifsplitradix.js"></script>
+<script type="text/javascript" src="expl/matmulrows_zip_flatorize.js"></script>
 </head>
 <body>
 
@@ -50,7 +51,7 @@
 <script type="text/javascript">document.write(f2.exprgen+"");</script></code></pre>
 
 <p>A call to <code>flatorize()</code>:</p>
-<pre class="prettyprint lang-js"><code>// note the type declarations, ignored by JavaScript but used later for C
+<pre class="prettyprint lang-js"><code>// note the type declarations, ignored by JavaScript but used later for asm.js
 f2 = flatorize('a:[2 float],b:[2 float],c:[2 float]->d:[2 float]',f);
 </code></pre>
 
@@ -86,7 +87,45 @@ f2 = flatorize('a:[2 float],b:[2 float],c:[2 float]->d:[2 float]',f);
 
 
 
+
+
+
+
+
+
+
+
 <h3 class="anchorable" id="matmulrows"><code>matmulrows:</code> 2-dimensional array example (matrix multiplication)<a href="#matmulrows" class="anchor">#</a></h3>
+
+<script type="text/javascript">expl_matmulrows_zip_flatorize();</script>
+
+<p>A call to <code>flatorize()</code>:</p>
+<pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(/^\s*var\s+matmulrows_zip_342\s+=\s+flatorize\([\s\S]*?^\s*?\);\s*?$/m.exec(expl_matmulrows_zip_flatorize+'')[0].replace(/^\s\s\s\s\s/gm,''))</script>
+</code></pre>
+
+<p>...generates flatorized JavaScript code:</p>
+<pre class="prettyprint lang-js"><code>// matmulrows_zip_342.getDirect():
+<script type="text/javascript">var matmulrows_zip_342 = expl_matmulrows_zip_flatorize.matmulrows_zip_342;
+document.write(matmulrows_zip_342.getDirect()+"");</script></code></pre>
+
+<p>Then, a call to <code>flatorize.getAsmjs()</code>:</p>
+<script type="text/javascript" id="script-gen-matmulrows_zip_342_asmjs">var matmulrows_zip_342_asmjsGen = flatorize.getAsmjsGen( { switcher: matmulrows_zip_342, name: "matmulrows_zip_342" } );</script>
+<pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(document.getElementById("script-gen-matmulrows_zip_342_asmjs").textContent);</script></code></pre>
+
+<p>...returns an <code>asm.js</code> generator:</p>
+
+<pre class="prettyprint lang-js"><code>// matmulrows_zip_342_asmjsGen:
+<script type="text/javascript">document.write(matmulrows_zip_342_asmjsGen+'')</script>
+</code></pre>
+
+
+<p>The generator can be used as follows to compile the <code>asm.js</code> code:</p>
+<pre class="prettyprint lang-js"><code><script type="text/javascript" src="asmjs_matmulrows_zip_342_check.js"></script>
+<script type="text/javascript">document.write(asmjs_matmulrows_zip_342_check);</script></code></pre>
+<p class="small">(This check, as a few others below, ran as you loaded the page.)</p>
+
+
+
 
 
 

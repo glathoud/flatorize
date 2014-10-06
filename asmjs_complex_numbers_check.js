@@ -17,13 +17,14 @@ function asmjs_complex_numbers_check()
 
     // --- Example of use
     // Input views
-    var n2i = f2_asmjsGen.array_name2info
+    var         n2i = f2_asmjsGen.array_name2info
+    ,    TypedArray = f2_asmjsGen.TypedArray
 
-    ,   a = new Float32Array( f2_buffer, n2i.a.begin_bytes, n2i.a.n )
-    ,   b = new Float32Array( f2_buffer, n2i.b.begin_bytes, n2i.b.n )
-    ,   c = new Float32Array( f2_buffer, n2i.c.begin_bytes, n2i.c.n )
+    ,   a = new TypedArray( f2_buffer, n2i.a.begin_bytes, n2i.a.n )
+    ,   b = new TypedArray( f2_buffer, n2i.b.begin_bytes, n2i.b.n )
+    ,   c = new TypedArray( f2_buffer, n2i.c.begin_bytes, n2i.c.n )
     // Output view                                  
-    ,   d = new Float32Array( f2_buffer, n2i.d.begin_bytes, n2i.d.n )
+    ,   d = new TypedArray( f2_buffer, n2i.d.begin_bytes, n2i.d.n )
     ;
 
     // Write input values

@@ -29,7 +29,7 @@
 if ('undefined' === typeof flatorize  &&  'function' === typeof load)
     load( 'flatorize.js' );  // e.g. V8
 
-(function () {
+(function (global) {
 
     // First variant: optimize through post-processing (reordering)
 
@@ -177,14 +177,8 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
     var CODE2STR_CFG_ID  = '__code2str_cfg_id' // xxx link to flatorize.js in a more principled way
     ,   CODE2STR_CACHE   = 'STAT'              // xxx link to flatorize.js in a more principled way
-    ;
     
-    function typeIsArraySametype( typedecl )
-    {
-        return typedecl instanceof Array  &&  typedecl.sametype;
-    }
-
-    var _EXPR_IDNUM  = '__exprIdnum__'
+    ,   _EXPR_IDNUM  = '__exprIdnum__'
     ,   _EXPR_ISEXPR = '__isExpr__'
     ;
     
@@ -364,7 +358,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                 ]
             );
          
-            body = funBodyCodeAsmjs( typed_out_varname, typed_out_vartype, out_e, idnum2type, idnum2expr, duplicates, dupliidnum2varname, array_name2info, cat_varname )
+            body = funBodyCodeAsmjs( bt_out, typed_out_varname, typed_out_vartype, out_e, idnum2type, idnum2expr, duplicates, dupliidnum2varname, array_name2info, cat_varname )
             
             after = [ 
                 , '}' 
@@ -407,6 +401,8 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
         gen.array_name2info = array_name2info;
 
+        gen.TypedArray = global[ cat_js + 'Array' ];  // Constructor function, e.g. Float64Array
+
         return gen;
     }
 
@@ -432,7 +428,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         );
     }
 
-    function funBodyCodeAsmjs( typed_out_varname, typed_out_vartype, out_e, idnum2type, idnum2expr, duplicates, dupliidnum2varname, array_name2info, cat_varname )
+    function funBodyCodeAsmjs( bt_out, typed_out_varname, typed_out_vartype, out_e, idnum2type, idnum2expr, duplicates, dupliidnum2varname, array_name2info, cat_varname )
     // Returns an array of codeline strings.
     {
         var is_out_type_simple = 'string' === typeof typed_out_vartype
@@ -506,83 +502,30 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         }
         else
         {
-            // Do not use return
+            // Arrays: Do not use return
             
-            var is_level_1, basictype
-            , outvar_info  = array_name2info[ typed_out_varname ]
+            var outvar_info  = array_name2info[ typed_out_varname ]
             , outvar_begin = outvar_info.begin
             ;
             outvar_begin.toPrecision.call.a;
 
-            if (
-                typeIsArraySametype( typed_out_vartype )  &&  
-                    (
-                        (is_level_1 = 'string' === typeof (basictype = typed_out_vartype[ 0 ]))  ||  
-                            (typeIsArraySametype( typed_out_vartype[ 0 ] )  &&  'string' === typeof (basictype = typed_out_vartype[ 0 ][ 0 ]))
-                    )
-            )
+            var n = typed_out_vartype.length;
+
+            var basictype = bt_out.type;
+            (basictype || 0).substring.call.a;  // Must be a string
+
+            for (var i = 0; i < n; i++)
             {
-                var n = typed_out_vartype.length
-                ,   p = !is_level_1  &&  typed_out_vartype[ 0 ].length
+                var ei = out_e[ i ]
+                
+                , code = cat_varname + '[' + (outvar_begin + i) + '] = ' + expcode_cast_if_needed( basictype, out_e[ i ] ) + ';'
                 ;
-                basictype.substring.call.a;  // Must be a string
-
-                for (var i = 0; i < n; i++)
-                {
-                    if (is_level_1)
-                    {
-                        var ei = out_e[ i ]
-                        
-                        , code = cat_varname + '[' + (outvar_begin + i) + '] = ' + expcode_cast_if_needed( basictype, out_e[ i ] ) + ';'
-                        ;
-                        
-                        if (INSERT_EARLY)
-                            insert_early( ret , ei ,  code );
-                        else
-                            ret.push( code );
-                    }
-                    else
-                    {
-                        null.xxx_todo;
-
-                        for (var j = 0; j < p; j++)
-                        {
-                            var eij = out_e[ i ][ j ]
-
-                            , assign = typed_out_varname + '[' + i + ']' + '[' + j + ']'
-
-                            ,  code = assign + ' = ' + expcode_cast_if_needed( basictype, eij ) + ';' 
-                            ,  codeObj = 
-                                (function (s, e)
-                                 {
-                                     return complete_with_dependency_information(
-                                         { toString : function () { return s; } }
-                                         , e
-                                     );
-                                 })
-                            (
-                                code
-                                , eij
-                            )
-                            ;
-                            
-                            if (INSERT_EARLY)
-                                insert_early( ret , eij , codeObj );
-                            else
-                                ret.push( codeObj );
-                        }
-
-                    }
-                }
-
-                if (!is_level_1  &&  HEURISTIC_1)
-                    heuristic_proof_of_concept_reorder_a_bit_to_reduce_register_spill( ret );
+                
+                if (INSERT_EARLY)
+                    insert_early( ret , ei ,  code );
+                else
+                    ret.push( code );
             }
-            else
-            {
-                throw new Error( 'funBodyCodeAsmjs: vartype not supported yet.' );
-            }
-            
         }
         
 	var constantdeclcode = [];
@@ -875,4 +818,4 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         return ret;
     }
     
-})();
+})(this);
