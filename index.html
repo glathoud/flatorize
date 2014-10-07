@@ -96,10 +96,17 @@ function matmulrows_zip( a, b )
 
 <p>Speedups exceed +1000% in many cases, including matrix multiplication and the Discrete Fourier Transform (<a href="#push-all">full results</a>).</p>
 
-<p>A plugin permits to generate fast C code as well (<a href="c_code.html">examples</a>).</p></ul>
 
+<p>Extras:</p>
+<ul>
+<li><a href="asmjs.html">Plugin</a> to generate fast <code>
+    asm.js
+    </code>
+  code.</li>
+<li><a href="c_code.html">Plugin</a> to generate fast C code.</li>
+</ul>
 
-<p>Source files: on <a href="https://github.com/glathoud/flatorize">github</a>, or here (<a href="flatorize.js">flatorize.js</a>, <a href="examples.js">examples.js</a>, <a href="log.js">log.js</a>).</p>
+<p>All source files are available in their latest version on <a href="https://github.com/glathoud/flatorize">GitHub</a>.</p>
 
 
 
@@ -407,8 +414,16 @@ with the original Cooley-Tukey:</p>
 
 <h3 class="anchorable" id="conclusion">Conclusion <a href="#conclusion" class="anchor">#</a></h3>
 
-<p>The huge performance improvements validate the interest of <code>flatorize</code>.
-Further speedups could involve <a href="http://asmjs.org"><code>asm.js</code></a><span class="screen-hidden">&nbsp;[2]</span>, <a href="http://www.khronos.org/webcl/">WebCL</a>, <a href="http://code.google.com/p/nativeclient/">NaCl</a> or <a href="http://www.chromium.org/nativeclient/pnacl/building-and-testing-portable-native-client">PNaCl</a>.
+<p>The huge performance improvements validate the interest
+    of <code>flatorize</code>.</p>
+
+<p> A&nbsp;<a href="asmjs.html">plugin</a>&nbsp;is available that
+    generates <code> asm.js
+    </code>
+  code, which runs even faster (tested in 
+    Firefox and Chrome).</p>
+
+<p>Future: One could also try <a href="http://www.khronos.org/webcl/">WebCL</a>, <a href="http://code.google.com/p/nativeclient/">NaCl</a> or <a href="http://www.chromium.org/nativeclient/pnacl/building-and-testing-portable-native-client">PNaCl</a>.
 </p>
 
 <hr class="section-hr">
@@ -441,7 +456,7 @@ Further speedups could involve <a href="http://asmjs.org"><code>asm.js</code></a
 
 
 
-<h3 class="anchorable" id="why">Details<a href="#howto" class="anchor">#</a></h3>
+<h3 class="anchorable" id="details-howto">Details (HOWTO)<a href="#details-howto" class="anchor">#</a></h3>
 
 <p>The two core ideas are to <a href="#factorize">factorize</a> and to <a href="#flatten">flatten</a> the implementation of mathematical expressions, hence the name <code>flatorize</code>.</p>
 
@@ -564,7 +579,7 @@ the flat, factorized:</p>
 
 
 
-<h3 class="anchorable" id="details">Miscellaneous details <a href="#details" class="anchor">#</a></h3>
+<h3 class="anchorable" id="misc-details">Miscellaneous details <a href="#misc-details" class="anchor">#</a></h3>
 
 
 <p>Above, the three main functions were described: <code>flatorize</code>, <code>flatorize.expr</code> and <code>flatorize.part</code>. In addition:</p>
