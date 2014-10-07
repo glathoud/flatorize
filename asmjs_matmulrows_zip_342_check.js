@@ -16,13 +16,17 @@ function asmjs_matmulrows_zip_342_check()
     var matmulrows_zip_342_asmjsO = matmulrows_zip_342_asmjsGen( window, {}, matmulrows_zip_342_buffer );
 
     // --- Example of use
-    // Input views
+
     var      n2i = matmulrows_zip_342_asmjsGen.array_name2info
     , TypedArray = matmulrows_zip_342_asmjsGen.TypedArray
     
+    // Input views
+
     ,   a = new TypedArray( matmulrows_zip_342_buffer, n2i.a.begin_bytes, n2i.a.n )
     ,   b = new TypedArray( matmulrows_zip_342_buffer, n2i.b.begin_bytes, n2i.b.n )
+
     // Output view                                  
+
     ,   c = new TypedArray( matmulrows_zip_342_buffer, n2i.c.begin_bytes, n2i.c.n )
     ;
 
@@ -38,10 +42,17 @@ function asmjs_matmulrows_zip_342_check()
         .reduce( function (a,b) { return a.concat(b); }, [] )
         .map( function (number,i) { return number - c[ i ]; } )
     
-    , error = Math.max.apply( Math, error_v.map( function (delta) { return Math.abs( delta ); } ) )
+    , error = Math.max.apply( Math, error_v.map( 
+        function (delta) { return Math.abs( delta ); } 
+    ) )
     ;
     if (1e-10 < error)
         throw new Error( 'asmjs_matmulrows_zip_342_check failed!' );
 
     (passed  ||  (passed = {})).asmjs_matmulrows_zip_342_check = true;
+
+    function set_rows( typedArray, rows )
+    {
+        typedArray.set( rows.reduce( function (a,b) { return a.concat(b); }, [] ) );
+    }
 }

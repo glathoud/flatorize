@@ -343,10 +343,53 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             count += ret.n;
             ret.end   = count;
 
+            ret.matchFun = matchFun;
+
             array_name2info[ name ] = ret;
             
             return ret;
 
+            function matchFun( e )
+            {
+                if (e instanceof Object  &&  e.part)
+                {
+                    var ind_arr = [];
+                    
+                    for (var d = bt.dim; d--;)
+                    {
+                        if (e.part)
+                        {
+                            var ind = e.part.where;
+                            if (!(ind.toPrecision  &&  ind.toPrecision.call))
+                                null.unsupported; // Must be a number
+                            
+                            ind_arr.unshift( ind );
+                            
+                            var epx = e.part.x;
+
+                            if (epx === name)
+                            {
+                                var partial = d > 0
+                                ,   ret = { 
+                                    partial     : partial
+                                    , missing_d : d
+                                }
+                                ;
+                                if (!partial)
+                                    ret.flat_ind = bt.flatIndFun( ind_arr );
+                                    
+                                return ret;
+                            }
+                            else if (epx instanceof Object)
+                            {
+                                e = epx;
+                                continue;
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
         }
 
         
@@ -438,6 +481,13 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 	,   constantnameArr = []
         ;
         
+        // ---- asm.js support for multidimensional arrays: flatten the access
+        // i.e. assuming `a` is a 3x4 matrix, `a[1][2]` becomes e.g. `float64[1*3+2]`
+
+        var o = flatten_duplicates( duplicates, idnum2expr, array_name2info, bt_out.type, cat_varname );
+
+        duplicates = o.duplicates;
+        idnum2expr = o.idnum2expr;
         
 
         // ---- asm.js "type" declarations
@@ -509,23 +559,10 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             ;
             outvar_begin.toPrecision.call.a;
 
-            var n = typed_out_vartype.length;
-
             var basictype = bt_out.type;
             (basictype || 0).substring.call.a;  // Must be a string
 
-            for (var i = 0; i < n; i++)
-            {
-                var ei = out_e[ i ]
-                
-                , code = cat_varname + '[' + (outvar_begin + i) + '] = ' + expcode_cast_if_needed( basictype, out_e[ i ] ) + ';'
-                ;
-                
-                if (INSERT_EARLY)
-                    insert_early( ret , ei ,  code );
-                else
-                    ret.push( code );
-            }
+            outarray_code_push_recursive( out_e );
         }
         
 	var constantdeclcode = [];
@@ -540,6 +577,40 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 	    constantdeclcode.push('');  // Insert an empty line after constants declarations.
 
         return constantdeclcode.concat( ret ).map( indent );
+
+        function outarray_code_push_recursive( arr, ind_arr )
+        {
+            arr.concat.call.a;
+
+            ind_arr  ||  (ind_arr = []);
+
+            var d = 1 + ind_arr.length
+            , dim = outvar_info.dim
+            ,   n = arr.length
+            ;
+            for (var i = 0; i < n; i++)
+            {
+                var arr_i = arr[ i ]
+                ,   ia2   = ind_arr.concat( i )
+                ;
+                
+                if (d < dim)
+                {
+                    outarray_code_push_recursive( arr_i, ia2 );
+                }
+                else
+                {
+                    var ind = outvar_info.begin + outvar_info.flatIndFun( ia2 )
+                    ,  code = cat_varname + '[' + ind + '] = ' + expcode_cast_if_needed( basictype, arr_i ) + ';'
+                    ;
+                    
+                    if (INSERT_EARLY)
+                        insert_early( ret, arr_i, code );
+                    else
+                        ret.push( code );
+                }
+            }
+        }
         
         function heuristic_proof_of_concept_reorder_a_bit_to_reduce_register_spill( arr )
         // Before we try a more general implementation, let us first
@@ -737,6 +808,83 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         
         return ret;
     }
+
+
+
+    function flatten_duplicates( duplicates, idnum2expr, array_name2info, bt_out_type, cat_varname )
+    // ---- asm.js support for multidimensional arrays: flatten the access
+    // i.e. assuming `a` is a 3x4 matrix, `a[1][2]` becomes e.g. `float64[1*3+2]`
+    //
+    // Example:
+    // {{{
+    // var o = flatten_duplicates( duplicates, idnum2expr );
+    //
+    // duplicates = o.duplicates;
+    // idnum2expr = o.idnum2expr;
+    // }}}
+    {
+        (cat_varname || 0).substring.call.a;
+
+        var new_duplicates = []
+        ,   new_idnum2expr = {}
+        ;
+        duploop: for (var ndup = duplicates.length, i = 0; i < ndup; i++) 
+        {
+            var idnum = duplicates[ i ];
+            idnum.toPrecision.call.a;
+            
+            var e = idnum2expr[ idnum ];
+
+            if (e  &&  e.part)
+            {
+                for (var name in array_name2info) { if (!(name in _emptyObj)) {   // More flexible than hasOwnProperty
+                    
+                    var info = array_name2info[ name ]
+                    ,   m    = info.matchFun( e )
+                    ;
+                    if (!m)
+                        continue;
+                    
+                    // Found a matching `part` expression.
+                    
+                    if (m.partial)
+                        continue duploop;  // Things like C's pointer `float*` don't go in asm.js -> flatten multidimensional arrays completely
+                    
+                    var ind = info.begin + m.flat_ind;
+                    if (isNaN( ind )  ||  !(ind.toPrecision))
+                        null.bug;
+                    
+                    e.length = 1;
+
+                    var s = cat_varname + '[' + ind + ']';
+                    e[ 0 ] = bt_out_type === 'double'  ||  bt_out_type === 'float'  ?  '+' + s
+                        : bt_out_type === 'int'  ?  '(' + s + '|0)'
+                        : null.unsupported
+                    ;
+                    e.part = { x : cat_varname, where : ind };
+                    
+                    new_duplicates.push( idnum );
+                    new_idnum2expr[ idnum ] = e;
+                    continue duploop;
+                }}
+                null.bug;  // Must find a match!
+            }
+            else
+            {
+                // Not a `part` expression
+                // -> keep it as is
+                new_duplicates.push( idnum );
+                new_idnum2expr[ idnum ] = e;
+            }
+        }
+        
+        return {
+            duplicates   : new_duplicates
+            , idnum2expr : new_idnum2expr
+        };
+    }
+
+
 
     function get_idnum2needArrObj( idnum2expr, idnum2codeline )
     {

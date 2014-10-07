@@ -418,7 +418,7 @@ function tryit_speed_matmulrows_zip_342( button )
         , sp_loops : sp_loops
         , sp_zip : sp_zip
         , sp_flat : sp_flat
-        , speedup_percent_zip : speedup_percent_zip
+        , speedup_percent_loops : speedup_percent_loops
         , speedup_percent_flat : speedup_percent_flat
     };
 }

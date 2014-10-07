@@ -365,23 +365,47 @@
             ;
             
             if ('string' === typeof t0)
-                return { n : n, type : t0, dim : 1, dim_n : [ n ] }; // Success
+            {
+                var dim      = 1
+                ,   dim_step = [ 1 ]
+                ;
+                return { n : n, type : t0, dim : dim, dim_n : [ n ], dim_step : dim_step, flatIndFun : flatIndFun }; // Success
+            }
             
             var sub = tryToGetArrayBasicTypeDescription( t[ 0 ] );
             if (sub)
             {
                 // Success
+
+                var dim      = 1 + sub.dim
+                ,   dim_step = [ sub.dim_step[ 0 ] * sub.n ].concat( sub.dim_step )
+                ;
+
                 return { 
                     n       : n * sub.n
                     , type  : sub.type 
-                    , dim   : 1 + sub.dim
+                    , dim   : dim
                     , dim_n : [ n ].concat( sub.dim_n )
+                    , dim_step   : dim_step
+                    , flatIndFun : flatIndFun
                 };
             }
         }
         
         // Failure
         return null;
+
+        function flatIndFun( /*array of `dim` indices*/ind_arr )
+        {
+            if (ind_arr.length !== dim)
+                null.wrong_dimensionality;
+
+            var flat_ind = 0;
+            for (var i = 0; i < dim; i++)
+                flat_ind += ind_arr[ i ] * dim_step[ i ];
+            
+            return flat_ind;
+        }
     }
 
     // -------------------- Private implementation --------------------
