@@ -621,38 +621,44 @@ function generate_dftrealflat( dftsize )
     };
 }
 
-function check_dftreal( dftsize, fun )
+function get_dftreal_sin_input_output_for_check( dftsize )
 {
-    sinreal = [];
+    var sinreal = new Array( dftsize );
     for (var i = dftsize; i--; )
         sinreal[i] = 10 * Math.sin( i / 4 * Math.PI ); 
     
-    sin    = fun( sinreal );
-    sincut = sin.map( function (xy) { return xy.map( cutzero ); });
-
     // Two peaks, and two peaks only
+
+    var sinfreq = new Array( dftsize );
+    for (var i = dftsize; i--;)
+        sinfreq[ i ] = [ 0, 0 ];
 
     var left  = dftsize / 8
     ,   right = dftsize - left
     , howmuch = 5 * dftsize
     ;
+    sinfreq[ left ][ 1 ]  = -howmuch;
+    sinfreq[ right ][ 1 ] = +howmuch;
 
-    for (var i = dftsize; i--;)
-    {
-        var X = sincut[ i ];
-        if (i === left  &&  X[0] === 0  && cutzero( -howmuch - X[1] ) === 0 )
-            continue;
-
-        if (i === right  &&  X[0] === 0  &&  cutzero( +howmuch - X[1] ) === 0 )
-            continue;
-
-        if (X[0] === 0  &&  X[1] === 0)
-            continue;
-
-        alert('tryit_flatorize_dft(' + dftsize + '): Something went wrong!');
-    }
-
+    
+    return { input : sinreal, expected : sinfreq };
 }
+
+function check_dftreal( dftsize, fun )
+{
+    var     io = get_dftreal_sin_input_output_for_check( dftsize )
+    , obtained = fun( io.input )
+    ;
+    if (obtained.some( 
+        function (x,i) {
+            var expected_i = this[ i ];
+            return cutzero( Math.abs( x[0] - expected_i[0] ) )  ||  cutzero( Math.abs( x[1] - expected_i[1] ) ); 
+        }
+        , io.expected )
+       )
+        alert('tryit_flatorize_dft(' + dftsize + '): Something went wrong!');
+}
+
 
 function tryit_all( button, opt )
 {

@@ -1,19 +1,19 @@
 /*global passed asmjs_complex_numbers_check matmulrows_zip_342_asmjsGen ArrayBuffer window Float32Array*/
 
-asmjs_matmulrows_zip_342_check();
-
 var passed;
 function asmjs_matmulrows_zip_342_check()
 {
     (passed  ||  (passed = {})).asmjs_matmulrows_zip_342_check = false;
 
-    // "Complex numbers" example
+    // "Matrix multiplication" example
 
     // --- Inputs and output
     var matmulrows_zip_342_buffer = new ArrayBuffer( matmulrows_zip_342_asmjsGen.buffer_bytes );
 
     // --- Compile the asm.js code
-    var matmulrows_zip_342_asmjsO = matmulrows_zip_342_asmjsGen( window, {}, matmulrows_zip_342_buffer );
+    var matmulrows_zip_342_asmjsO = matmulrows_zip_342_asmjsGen( 
+        window, {}, matmulrows_zip_342_buffer 
+    );
 
     // --- Example of use
 
@@ -53,6 +53,9 @@ function asmjs_matmulrows_zip_342_check()
 
     function set_rows( typedArray, rows )
     {
-        typedArray.set( rows.reduce( function (a,b) { return a.concat(b); }, [] ) );
+        typedArray.set( rows.reduce( 
+            function (a,b) { return a.concat(b); }
+            , [] 
+        ) );
     }
 }

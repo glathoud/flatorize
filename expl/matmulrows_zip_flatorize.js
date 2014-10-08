@@ -12,7 +12,7 @@ function expl_matmulrows_zip_flatorize()
     //#BEGIN_BODY
     var matmulrows_zip_342 = flatorize( 
         // note the :[type] declarations, ignored by `flatorize`
-        // but useful later in C or asm.js contexts
+        // but useful later in asm.js or C contexts
         'a:[3 [4 double]],b:[4 [2 double]]->c:[3 [2 double]]'
         , function (a,b) { return symbol_matmulrows_zip_gen( a, b, 3, 4, 2 ); } 
     );

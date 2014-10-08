@@ -33,8 +33,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
     // First variant: optimize through post-processing (reordering)
 
-    var INSERT_EARLY = true;
-    var HEURISTIC_1  = true;
+    var INSERT_OUTPUT_EARLY = true;
     
     // ---------- Public API
 
@@ -145,8 +144,12 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         {
             if ('string' === typeof t)
                 return;
-            
-            if (t instanceof Array)
+
+            if (!t)
+            {
+                throw new Error( 'Type information is required to generate asm.js code!' );
+            }
+            else if (t instanceof Array)
             {
                 var bt = flatorize.tryToGetArrayBasicTypeDescription( t );
                 if (!bt)
@@ -301,6 +304,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         ,   before = []
         ,   body   = []
         ,   after  = []
+        ,   wrap   = []
 
         ,   cat = common_array_btd  &&  common_array_btd.type
         ,   cat_js = cat === 'int'  ?  'Int32'
@@ -403,9 +407,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
          
             body = funBodyCodeAsmjs( bt_out, typed_out_varname, typed_out_vartype, out_e, idnum2type, idnum2expr, duplicates, dupliidnum2varname, array_name2info, cat_varname )
             
-            after = [ 
-                , '}' 
-            ];
+            after = [ '}' ];
 
             wrap = [ '', 'return { ' + topFunName + ' : ' + topFunName + ' };' ];
         }
@@ -476,9 +478,8 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
     {
         var is_out_type_simple = 'string' === typeof typed_out_vartype
         ,   ret = [ ]
-	,   type2numberstring2constantname = {}
-        ,   constantname2declcode = {}
-	,   constantnameArr = []
+        ,   ret_idnumSet = {}
+        ,   ret_idnumMax = -Infinity
         ;
         
         // ---- asm.js support for multidimensional arrays: flatten the access
@@ -513,7 +514,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         
         // ---- Intermediary calculations
 
-        if (!INSERT_EARLY)
+        if (!INSERT_OUTPUT_EARLY)
             ret.push( '/* Intermediary calculations: implementation */' );
 
         for (var n = duplicates.length, i = 0; i < n; i++)
@@ -524,9 +525,9 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             ,   d_name = dupliidnum2varname[ idnum ]
             ;
             d_type.substring.call.a;  // Must be a simple type
-            ret.push
-            (
-                (function (s, e) {
+            ret_push_nonString(
+                idnum
+                , (function (s, e) {
                     return complete_with_dependency_information
                     ( 
                         { toString : function () { return s; }, idnum : idnum }
@@ -541,7 +542,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         
         // Return
 
-        if (!INSERT_EARLY)
+        if (!INSERT_OUTPUT_EARLY)
             ret.push( '', '/* output */' );
 
         if (is_out_type_simple)
@@ -565,19 +566,18 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             outarray_code_push_recursive( out_e );
         }
         
-	var constantdeclcode = [];
-	for (var n = constantnameArr.length
-	     , i = 0; i < n; i++
-	    )
-	    constantdeclcode.push( constantname2declcode[ constantnameArr[ i ] ] )
-	;
-	
-	
-	if (constantdeclcode.length)
-	    constantdeclcode.push('');  // Insert an empty line after constants declarations.
+        return ret.map( indent );
 
-        return constantdeclcode.concat( ret ).map( indent );
-
+        function ret_push_nonString( idnum, x )
+        {
+            if ('string' === typeof x)
+                null.bug;
+            
+            ret.push( x );
+            ret_idnumSet[ idnum ] = 1;
+            ret_idnumMax = Math.max( ret_idnumMax, idnum );
+        }
+        
         function outarray_code_push_recursive( arr, ind_arr )
         {
             arr.concat.call.a;
@@ -601,50 +601,22 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                 else
                 {
                     var ind = outvar_info.begin + outvar_info.flatIndFun( ia2 )
+                    if (ind === 33)
+                        'xxx';
+
+                    var ind = outvar_info.begin + outvar_info.flatIndFun( ia2 )
                     ,  code = cat_varname + '[' + ind + '] = ' + expcode_cast_if_needed( basictype, arr_i ) + ';'
                     ;
                     
-                    if (INSERT_EARLY)
-                        insert_early( ret, arr_i, code );
+                    if (INSERT_OUTPUT_EARLY)
+                        insert_output_early( ret, arr_i, code );
                     else
                         ret.push( code );
                 }
             }
         }
         
-        function heuristic_proof_of_concept_reorder_a_bit_to_reduce_register_spill( arr )
-        // Before we try a more general implementation, let us first
-        // check whether this can bring performance at all.
-        {
-            var already = {};
-            
-            for (var i = arr.length - 1; i > 0;)
-            {
-                var co = arr[ i ]
-                , ddsi = co.depSortedId
-                , changed = false;
-                ;
-                if (ddsi  &&  !(ddsi in already))
-                {
-                    already[ ddsi ] = true;
-                    for (var j = i-1; j >= 0; j--)
-                    {
-                        var aj = arr[ j ];
-                        if (ddsi === aj.depSortedId  &&  i-j > 1)
-                        {
-                            arr.splice( j + 1, 0, arr.splice( i, 1 )[ 0 ] );
-                            changed = true;
-                            break;
-                        }
-                    }                    
-                }
-                if (!changed)
-                    i--;
-            }
-            
-
-        }
-
+        
         function complete_with_dependency_information( codeObj, e )
         {
             var depSortedArr = get_depSortedArr( e );
@@ -676,29 +648,57 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             return depSortedArr;
         }
 
-        function insert_early( ret, e, code )
+        function insert_output_early( ret, e, code )
         // Assumption: expr id num increases bottom-up with the
         // construction (construct id num > all idnums of construct's
         // dependencies).
+        //
+        // Goal: reduce register spill by using intermediary variables
+        // as soon as possible == write the related output lines as
+        // early as possible.
         {
-            var max = -Infinity;
-            for (var k = e.length; k--;)
-            {
-                var ek = e[ k ];
-                if (ek.__isExpr__)
-                    max = Math.max( max, ek.__exprIdnum__ );
-            }
+            var max = max_in_ret_subset( e );
             
-            for (var n = ret.length, i = 0; i < n; i++)
+            if (max < ret_idnumMax)
             {
-                if (ret[ i ].idnum > max)
+                for (var n = ret.length, i = n; i--;)
                 {
-                    ret.splice( i, 0, code );
-                    return;
+                    if (ret[ i ].idnum <= max)
+                    {
+                        ret.splice( i + 1, 0, code );
+                        return;
+                    }
                 }
             }
             
             ret.push( code );
+        }
+
+        function max_in_ret_subset( e, tmpMax )
+        // Recursive deep evaluation of the maximum expression id used
+        // in `e` that is within the subset of already "written"
+        // intermediary code.
+        //
+        // Return -Infinity or an integer `idnum`.
+        {
+            tmpMax != null  ||  (tmpMax = -Infinity);
+            
+            for (var k = e.length; k--;)
+            {
+                var    ek = e[ k ];
+                if (ek.__isExpr__)
+                {
+                    var idnum = ek.__exprIdnum__;
+                    idnum.toPrecision.call.a;
+                    
+                    if (idnum in ret_idnumSet  &&  idnum > tmpMax)
+                        tmpMax = idnum;
+                    
+                    tmpMax = max_in_ret_subset( ek, tmpMax );
+                }
+            }
+            
+            return tmpMax;
         }
 
         function expcode_cast_if_needed( outtype, e, /*?string?*/outname )
@@ -713,11 +713,13 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                 var toe = typeof e;
 
                 if ('number' === toe)
-                    return '' + e;
-                
-                if ('string' === toe)
-                    return e;
-                
+                {
+                    jscode = '' + e;
+                }
+                else if ('string' === toe)
+                {
+                    jscode = e;
+                }
                 else if (e.length === 1  &&  'string' === typeof e[ 0 ])
                 {
                     jscode = e[ 0 ];
@@ -763,7 +765,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                         var s = cat_varname + '[' + (info.begin + where)+ ']';
 
                         return outtype === 'float'  ||  outtype === 'double'  ?  '+' + s 
-                            :  outtyoe === 'int'  ?  '(' + s + ')|0'
+                            :  outtype === 'int'  ?  '(' + s + ')|0'
                             :  null.unsupported
                         ;
                         

@@ -9,9 +9,17 @@
 <script type="text/javascript" src="flatorize.js"></script>
 <script type="text/javascript" src="examples.js"></script>
 <script type="text/javascript">generate_small_functions();</script>
+
 <script type="text/javascript" src="flatorize_asmjs.js"></script>
-<script type="text/javascript" src="modifsplitradix.js"></script>
+<script type="text/javascript" src="modifsplitradix.js"></script> <!-- xxx check whether really needed -->
+
 <script type="text/javascript" src="expl/matmulrows_zip_flatorize.js"></script>
+<script type="text/javascript" src="expl/dftreal16_flatorize.js"></script>
+
+<script type="text/javascript" src="asmjs_complex_numbers_check.js"></script>
+<script type="text/javascript" src="asmjs_matmulrows_zip_342_check.js"></script>
+<script type="text/javascript" src="asmjs_dftreal16flat_check.js"></script>
+
 </head>
 <body>
 
@@ -27,16 +35,19 @@
 
 <p style="text-align:right">by <a href="http://glat.info">Guillaume Lathoud</a><span class="print">&nbsp;[1]</span>, September 2014</p>
 
+<div class="fixed-br print-hidden"><a href="#top">Back to the top</a></div>
+
+
 <p>This page presents a plugin method <code>flatorize.getAsmjs()</code> (GitHub <a href="https://github.com/glathoud/flatorize/blob/master/flatorize_asmjs.js">source</a>) that goes on top of <code>flatorize</code> (see the <a href="index.html">main article</a>, GitHub <a href="https://github.com/glathoud/flatorize/blob/master/flatorize.js">source</a>).</p>
 
-<p>Several examples describe how to use <code>flatorize.getAsmjs()</code> to generate <code>asm.js</code> implementations that should run very fast in at least Firefox and Chrome. Inputs and output are limited to numbers and arrays of numbers. All arrays must have the same type because a single array is used for both inputs and output, so as to spare array creation costs.</p>
-<ul class="small">
-  <li><a href="#f2">complex numbers (how-to example)</a></li>
-  <li><a href="#matmul">matrix multiplication (speedup example)</a><br></li>
-  <li><a href="#dft">Discrete Fourier Transform (speedup example)</a><br></li>
-</li>
-</ul>
-  
+<p>Several examples describe how to use <code>flatorize.getAsmjs()</code> to generate <code>asm.js</code> implementations that run very fast in at least Firefox and Chrome. </p>
+
+<p>Each input or output can be a number or an array of numbers. All arrays are grouped into a single one (inputs and/or output), so they must have the same type: <code>double</code>, <code>float</code> or <code>int</code> in <code>flatorize</code> notation, i.e. respectively <code>Float64Array</code>, <code>Float32Array</code> or <code>Int32Array</code> in JavaScript notation.</p>
+
+
+<h3 class="anchorable" id="contents">Contents <a href="#contents" class="anchor">#</a></h3>
+
+<ul class="contents-ul"></ul>
 
 
 
@@ -44,7 +55,7 @@
 
 
 
-<h3 class="anchorable" id="f2">Complex numbers (how-to example)<a href="#f2" class="anchor">#</a></h3>
+<h3 class="anchorable" id="f2">Complex numbers (HOWTO example)<a href="#f2" class="anchor">#</a></h3>
 
 <p>Expression definition  (details in the <a href="index.html#example">main article</a>):</p>
 <pre class="prettyprint lang-js"><code>// f:
@@ -70,9 +81,8 @@ f2 = flatorize('a:[2 float],b:[2 float],c:[2 float]->d:[2 float]',f);
 </code></pre>
 
 
-<p>The generator can be used as follows to compile the <code>asm.js</code> code:</p>
-<pre class="prettyprint lang-js"><code><script type="text/javascript" src="asmjs_complex_numbers_check.js"></script>
-<script type="text/javascript">document.write(asmjs_complex_numbers_check);</script></code></pre>
+<p>The generator can be used as follows to compile and use the <code>asm.js</code> code:</p>
+<pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(asmjs_complex_numbers_check);</script></code></pre>
 <script type="text/javascript">asmjs_complex_numbers_check();</script>
 <p class="small">(This check, as a few others below, ran as you loaded the page.)</p>
 
@@ -99,7 +109,7 @@ f2 = flatorize('a:[2 float],b:[2 float],c:[2 float]->d:[2 float]',f);
 
 <script type="text/javascript">expl_matmulrows_zip_flatorize();</script>
 
-<p>A call to <code>flatorize()</code>:</p>
+<p>A call to <code>flatorize()</code> (details in the <a href="index.html#zipflat">main article</a>):</p>
 <pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(/^\s*var\s+matmulrows_zip_342\s+=\s+flatorize\([\s\S]*?^\s*?\);\s*?$/m.exec(expl_matmulrows_zip_flatorize+'')[0].replace(/^\s\s\s\s\s/gm,''))</script>
 </code></pre>
 
@@ -109,7 +119,9 @@ f2 = flatorize('a:[2 float],b:[2 float],c:[2 float]->d:[2 float]',f);
 document.write(matmulrows_zip_342.getDirect()+"");</script></code></pre>
 
 <p>Then, a call to <code>flatorize.getAsmjs()</code>:</p>
-<script type="text/javascript" id="script-gen-matmulrows_zip_342_asmjs">var matmulrows_zip_342_asmjsGen = flatorize.getAsmjsGen( { switcher: matmulrows_zip_342, name: "matmulrows_zip_342" } );</script>
+<script type="text/javascript" id="script-gen-matmulrows_zip_342_asmjs">var matmulrows_zip_342_asmjsGen = flatorize.getAsmjsGen( 
+  { switcher: matmulrows_zip_342, name: "matmulrows_zip_342" } 
+);</script>
 <pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(document.getElementById("script-gen-matmulrows_zip_342_asmjs").textContent);</script></code></pre>
 
 <p>...returns an <code>asm.js</code> generator:</p>
@@ -119,9 +131,56 @@ document.write(matmulrows_zip_342.getDirect()+"");</script></code></pre>
 </code></pre>
 
 
-<p>The generator can be used as follows to compile the <code>asm.js</code> code:</p>
-<pre class="prettyprint lang-js"><code><script type="text/javascript" src="asmjs_matmulrows_zip_342_check.js"></script>
-<script type="text/javascript">document.write(asmjs_matmulrows_zip_342_check);</script></code></pre>
+<p>The generator can be used as follows to compile and use the <code>asm.js</code> code:</p>
+<pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(asmjs_matmulrows_zip_342_check);</script></code></pre>
+<script type="text/javascript">asmjs_matmulrows_zip_342_check();</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h3 class="anchorable" id="dftreal16">Discrete Fourier Transform: DFT16 (real signals)<a href="#dftreal16" class="anchor">#</a></h3>
+
+<script type="text/javascript">expl_dftreal16_flatorize();</script>
+
+<p>A call to <code>flatorize()</code> (details in the <a href="index.html#dft">main article</a>):</p>
+<pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(/var\s+power\b[^;]*?;/m.exec(expl_dftreal16_flatorize+'')[0].replace(/^\s\s\s\s\s/gm,''))</script>
+</code></pre>
+
+<p>...generates flatorized JavaScript code:</p>
+<pre class="prettyprint lang-js"><code>// dftreal16flat.getDirect():
+<script type="text/javascript">var dftreal16flat = expl_dftreal16_flatorize.dftreal16flat;
+document.write(dftreal16flat.getDirect()+"");</script></code></pre>
+
+<p>Then, a call to <code>flatorize.getAsmjs()</code>:</p>
+<script type="text/javascript" id="script-gen-dftreal16flat_asmjs">var dftreal16flat_asmjsGen = flatorize.getAsmjsGen( 
+  { switcher: dftreal16flat, name: "dftreal16flat" } 
+);</script>
+<pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(document.getElementById("script-gen-dftreal16flat_asmjs").textContent);</script></code></pre>
+
+<p>...returns an <code>asm.js</code> generator:</p>
+
+<pre class="prettyprint lang-js"><code>// dftreal16flat_asmjsGen:
+<script type="text/javascript">document.write(dftreal16flat_asmjsGen+'')</script>
+</code></pre>
+
+
+<p>The generator can be used as follows to compile and use the <code>asm.js</code> code:</p>
+<pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(asmjs_dftreal16flat_check);</script></code></pre>
+<script type="text/javascript">asmjs_dftreal16flat_check()</script>
+
+
+
 
 
 
@@ -177,25 +236,179 @@ var all_passed;
 
 
 
+<h3 class="anchorable" id="performance">Performance (under construction)<a href="#performance" class="anchor">#</a></h3>
 
+
+<script type="text/javascript">
+function xxxperf()
+{
+var input = new Array(16).join(',').split(',').map( Math.random )
+, N = 1e6
+;
+
+var flatimpl = dftreal16flat.getDirect();
+console.time('flatorized')
+for (var i = N; i--;)
+    var output = flatimpl( input );
+console.timeEnd('flatorized')
+
+   // --- Inputs and output
+    var dftreal16flat_buffer = new ArrayBuffer( 
+        dftreal16flat_asmjsGen.buffer_bytes 
+    );
+
+    // --- Compile the asm.js code
+    var dftreal16flat_asmjsO = dftreal16flat_asmjsGen( 
+        window, {}, dftreal16flat_buffer 
+    );
+
+    // --- Example of use
+
+    var      n2i = dftreal16flat_asmjsGen.array_name2info
+    , TypedArray = dftreal16flat_asmjsGen.TypedArray
+    
+    // Input views
+
+    , arr  = new TypedArray( 
+        dftreal16flat_buffer, n2i.arr.begin_bytes, n2i.arr.n 
+    )
+    
+    // Output view                                  
+
+    , freq = new TypedArray( 
+        dftreal16flat_buffer, n2i.freq.begin_bytes, n2i.freq.n 
+    )
+    ;
+
+    // Write input values
+arr.set( input );
+
+console.time('flatorized+asm.js');
+for (var i = N; i--;)
+   dftreal16flat_asmjsO.dftreal16flat();
+console.timeEnd('flatorized+asm.js');
+
+}
+</script>
+
+
+<pre>
+Firefox on DFT REAL 16:
+
+flatorized: 647.95ms
+flatorized+asm.js deactivated (no "use asm"): 130.51ms (fine)
+flatorized+asm.js: 364.52ms (fine but lesser than without use asm - probably classical issue when test code NOT in asm.js)
+
+.
+
+Chrome on DFT REAL 16:
+
+flatorized: 556.000ms
+flatorized+asm.js deactivated (no "use asm"): 52.000ms (wow?)
+flatorized+asm.js: 53.000ms (wow!)
+
+</pre>
+
+<p>xxx need to expand the tests, and write up this part</p>
+
+<p>Not surprising, and not directly comparable, because output array creation vs. in-place, but still...</p>
+
+
+<h4>wrapped with array/read-write for direct comparison</h4>
+
+<script type="text/javascript">
+function xxxperfwrapped()
+{
+var input = new Array(16).join(',').split(',').map( Math.random )
+, N = 1e6
+;
+
+var flatimpl = dftreal16flat.getDirect();
+console.time('flatorized')
+for (var i = N; i--;)
+    var output = flatimpl( input );
+console.timeEnd('flatorized')
+
+   // --- Inputs and output
+    var dftreal16flat_buffer = new ArrayBuffer( 
+        dftreal16flat_asmjsGen.buffer_bytes 
+    );
+
+    // --- Compile the asm.js code
+    var dftreal16flat_asmjsO = dftreal16flat_asmjsGen( 
+        window, {}, dftreal16flat_buffer 
+    );
+
+    // --- Example of use
+
+    var      n2i = dftreal16flat_asmjsGen.array_name2info
+    , TypedArray = dftreal16flat_asmjsGen.TypedArray
+    
+    // Input views
+
+    , arr  = new TypedArray( 
+        dftreal16flat_buffer, n2i.arr.begin_bytes, n2i.arr.n 
+    )
+    
+    // Output view                                  
+
+    , freq = new TypedArray( 
+        dftreal16flat_buffer, n2i.freq.begin_bytes, n2i.freq.n 
+    )
+    ;
+
+    // Write input values
+console.time('flatorized+asm.js');
+for (var i = N; i--;)
+{
+   arr.set( input );  // write
+   dftreal16flat_asmjsO.dftreal16flat();
+var output_freq = [].slice.call( output );  // read
+}
+console.timeEnd('flatorized+asm.js');
+
+}
+</script>
+
+<pre>
+Firefox
+
+flatorized: 671.75ms
+flatorized+asm.js wrapped: 920.15ms  (worse)
+-> read/write cost about 920-360=560ms
+
+.
+
+Chrome
+
+flatorized: 525.000ms 
+flatorized+asm.js wrapped: 397.000ms    (still better!)
+-> read/write cost about 400-50=350ms
+</pre>
+
+
+
+
+
+
+
+
+<script type="text/javascript" src="contents_ul.js"></script>
 
 <script type="text/javascript" src="prettify/prettify.js"></script>
 <script type="text/javascript">setTimeout( prettyPrint );</script>
 <script type="text/javascript">
-/* xxx
-[ 
-    'tryit_speed_matmul342', 'tryit_flatorize_dft16', 'tryit_speed_dft16', 'tryit_flatorize_dft1024', 'tryit_speed_dft1024', 'tryit_all'
-].forEach(
-    function (id) { document.getElementById(id).removeAttribute('disabled'); }
-);
-*/
+[].forEach.call( document.getElementsByTagName( 'button' ), function (btn_node) { btn_node.removeAttribute( 'disabled' ); } );
 window.ontouchstart = function () { Array.prototype.forEach.call( document.getElementsByClassName( "anchor" ), function (node) { node.className = node.className.replace( /\banchor\b/g, '' ); } ); };
 </script>
 <script type="text/javascript" src="../MathJax/MathJax.js?config=default"></script>
 <script type="text/javascript">
+if (!/\d+\.\d+\.\d+\.\d+|localhost/.test( location.hostname ))
+{
 setTimeout( function () {
 var _gaq = _gaq || [];  _gaq.push(['_setAccount', 'UA-5516483-1']);  _gaq.push(['_trackPageview']);  (function() {    var ga = document.createElement('script');    ga.src = ('https:' == document.location.protocol ? 'https://ssl' :         'http://www') + '.google-analytics.com/ga.js';    ga.setAttribute('async', 'true');    document.documentElement.firstChild.appendChild(ga);  })();
 }, 0 );
+}
 </script>
 
 </body>

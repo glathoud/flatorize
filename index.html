@@ -175,10 +175,10 @@ c = [[ sum(x*y for x,y in zip(ra,cb)) for cb in zip(*b) ] for ra in a ]
 
 <p><button id="tryit_speed_matmulrows_zip" onclick="tryit_speed_matmulrows_zip( this )">Measure the speed!</button> (Feel free to do it multiple times.)</p><pre id="tryit_speed_matmulrows_zip_output">(The speed measurement can last long in some browsers.)</pre>
 <p>Example of result:</p>
-<pre>ZIP   matrix multip.: 3.07e+4 matmulrows_zip(a,b) calls per second
+<pre>ZIP   matrix multip.: 3.56e+4 matmulrows_zip(a,b) calls per second
 
-LOOPS matrix multip.: 6.25e+6 matmulrows_loops(a,b) calls per second
--> speedup relative to ZIP: +20227%
+LOOPS matrix multip.: 1.76e+6 matmulrows_loops(a,b) calls per second
+-> speedup relative to ZIP: +4855%
 </pre>
 
 <!--p>So we have a fast but hard-to-read <code>matmulrows_loops</code>, and a concise, readable, well encapsulated but slow <code>matmulrows_zip</code>:
@@ -229,13 +229,13 @@ document.getElementById( 'tldr-generated-js' ).textContent = tmp;
 
 <p><button id="tryit_speed_matmulrows_zip_342" onclick="tryit_speed_matmulrows_zip_342( this )">Measure the speed!</button> (Feel free to do it multiple times.)</p><pre id="tryit_speed_matmulrows_zip_342_output">(The speed measurement can last long in some browsers.)</pre>
 <p>Example of result:</p>
-<pre>ZIP     matrix multip.: 2.99e+4 matmulrows_zip(a,b) calls per second
+<pre>ZIP     matrix multip.: 3.53e+4 matmulrows_zip(a,b) calls per second
 
-LOOPS   matrix multip.: 6.12e+6 matmulrows_loops(a,b) calls per second
--> speedup relative to ZIP: +20408%
+LOOPS   matrix multip.: 1.50e+6 matmulrows_loops(a,b) calls per second
+-> speedup relative to ZIP: +4147%
 
-ZIPFLAT matrix multip.: 3.03e+6 matmulrows_zip_342(a,b) calls per second
--> speedup relative to ZIP: +10051%
+ZIPFLAT matrix multip.: 1.69e+6 matmulrows_zip_342(a,b) calls per second
+-> speedup relative to ZIP: +4698%
 </pre>
 
 <p>Depending on the JavaScript engine, LOOPS written by hand may run faster or slower than the generated ZIPFLAT code. However, both speeds have similar orders of magnitude.</p><p> More importantly:</p>
@@ -622,9 +622,6 @@ the rest on <a href="https://github.com/glathoud/flatorize">github</a>.</p>
 
 
 <script type="text/javascript" src="contents_ul.js"></script>
-
-
-
 
 <script type="text/javascript" src="prettify/prettify.js"></script>
 <script type="text/javascript">setTimeout( prettyPrint );</script>

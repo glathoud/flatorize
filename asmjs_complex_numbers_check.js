@@ -1,7 +1,5 @@
 /*global passed asmjs_complex_numbers_check f2_asmjsGen ArrayBuffer window Float32Array*/
 
-asmjs_complex_numbers_check();
-
 var passed;
 function asmjs_complex_numbers_check()
 {
@@ -40,7 +38,9 @@ function asmjs_complex_numbers_check()
         d[0]   - (1.2  - 2*(0 + -1))
         , d[1] - (-3.4 - 2*(1 + 9.99))
     ]
-    , error = Math.max.apply( Math, error_v.map( function (delta) { return Math.abs( delta ); } ) )
+    , error = Math.max.apply( Math, error_v.map( 
+        function (delta) { return Math.abs( delta ); } 
+    ) )
     ;
     if (1e-5 < error)
         throw new Error( 'asmjs_complex_numbers_check failed!' );
