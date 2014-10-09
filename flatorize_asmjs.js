@@ -683,6 +683,14 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         {
             tmpMax != null  ||  (tmpMax = -Infinity);
             
+            if (e.__isExpr__)
+            {
+                var e_idnum = e.__exprIdnum__;
+                if (e_idnum != null)
+                    return e_idnum;
+            }
+            
+
             for (var k = e.length; k--;)
             {
                 var    ek = e[ k ];
@@ -694,7 +702,8 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                     if (idnum in ret_idnumSet  &&  idnum > tmpMax)
                         tmpMax = idnum;
                     
-                    tmpMax = max_in_ret_subset( ek, tmpMax );
+                    if (!(idnum in duplicates)) // Test to spare unnecessary work
+                        tmpMax = null.xxx_never_here, max_in_ret_subset( ek, tmpMax );
                 }
             }
             

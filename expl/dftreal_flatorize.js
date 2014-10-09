@@ -1,15 +1,17 @@
-function expl_dftreal16_flatorize()
+function expl_dftreal_flatorize( /*integer, e.g. 16 or 1024*/dftsize )
 {
     // Give external access, for example to display source code.
     // Example of use: ../index.html
 
-    var E = expl_dftreal16_flatorize;
+    var E = expl_dftreal_flatorize;
 
     //#BEGIN_BODY
     
-    var power       = 4
-    ,   dftsize     = 1 << power
-    ,   dftrealflat = flatorize( 
+    var power = Math.log( dftsize ) / Math.log( 2 );
+    if (power !== power | 0)
+        throw new Error( 'dftsize must be a power of 2!' );
+    
+    var dftrealflat = flatorize( 
         // note the :[type] declarations, ignored by `flatorize`
         // but useful later in asm.js or C contexts
         'arr:[' + dftsize + ' double]->freq:[' + dftsize + ' [2 double]]'

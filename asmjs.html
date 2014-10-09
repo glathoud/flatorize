@@ -14,11 +14,11 @@
 <script type="text/javascript" src="modifsplitradix.js"></script> <!-- xxx check whether really needed -->
 
 <script type="text/javascript" src="expl/matmulrows_zip_flatorize.js"></script>
-<script type="text/javascript" src="expl/dftreal16_flatorize.js"></script>
+<script type="text/javascript" src="expl/dftreal_flatorize.js"></script>
 
-<script type="text/javascript" src="asmjs_complex_numbers_check.js"></script>
-<script type="text/javascript" src="asmjs_matmulrows_zip_342_check.js"></script>
-<script type="text/javascript" src="asmjs_dftreal16flat_check.js"></script>
+<script type="text/javascript" src="expl/asmjs_complex_numbers_check.js"></script>
+<script type="text/javascript" src="expl/asmjs_matmulrows_zip_342_check.js"></script>
+<script type="text/javascript" src="expl/asmjs_dftrealflat_check.js"></script>
 
 </head>
 <body>
@@ -40,7 +40,7 @@
 
 <p>This page presents a plugin method <code>flatorize.getAsmjs()</code> (GitHub <a href="https://github.com/glathoud/flatorize/blob/master/flatorize_asmjs.js">source</a>) that goes on top of <code>flatorize</code> (see the <a href="index.html">main article</a>, GitHub <a href="https://github.com/glathoud/flatorize/blob/master/flatorize.js">source</a>).</p>
 
-<p>Several examples describe how to use <code>flatorize.getAsmjs()</code> to generate <code>asm.js</code> implementations that run very fast in at least Firefox and Chrome. </p>
+<p>Examples describe how to use <code>flatorize.getAsmjs()</code> to generate <code>asm.js</code> implementations that run <strong>very fast in at least Firefox and Chrome</strong>. </p>
 
 <p>Each input or output can be a number or an array of numbers. All arrays are grouped into a single one (inputs and/or output), so they must have the same type: <code>double</code>, <code>float</code> or <code>int</code> in <code>flatorize</code> notation, i.e. respectively <code>Float64Array</code>, <code>Float32Array</code> or <code>Int32Array</code> in JavaScript notation.</p>
 
@@ -151,15 +151,14 @@ document.write(matmulrows_zip_342.getDirect()+"");</script></code></pre>
 
 <h3 class="anchorable" id="dftreal16">Discrete Fourier Transform: DFT16 (real signals)<a href="#dftreal16" class="anchor">#</a></h3>
 
-<script type="text/javascript">expl_dftreal16_flatorize();</script>
+<script type="text/javascript">expl_dftreal_flatorize( 16 );</script>
 
 <p>A call to <code>flatorize()</code> (details in the <a href="index.html#dft">main article</a>):</p>
-<pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(/var\s+power\b[^;]*?;/m.exec(expl_dftreal16_flatorize+'')[0].replace(/^\s\s\s\s\s/gm,''))</script>
-</code></pre>
+<pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(/(var\s+power\b[\s\S]*?)(^\s*\/\/ Does this work)/m.exec(expl_dftreal_flatorize+'')[1].replace(/^\s\s\s\s\s/gm,''))</script></code></pre>
 
 <p>...generates flatorized JavaScript code:</p>
 <pre class="prettyprint lang-js"><code>// dftreal16flat.getDirect():
-<script type="text/javascript">var dftreal16flat = expl_dftreal16_flatorize.dftreal16flat;
+<script type="text/javascript">var dftreal16flat = expl_dftreal_flatorize.dftreal16flat;
 document.write(dftreal16flat.getDirect()+"");</script></code></pre>
 
 <p>Then, a call to <code>flatorize.getAsmjs()</code>:</p>
@@ -176,8 +175,132 @@ document.write(dftreal16flat.getDirect()+"");</script></code></pre>
 
 
 <p>The generator can be used as follows to compile and use the <code>asm.js</code> code:</p>
-<pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(asmjs_dftreal16flat_check);</script></code></pre>
-<script type="text/javascript">asmjs_dftreal16flat_check()</script>
+<pre class="prettyprint lang-js"><code><script type="text/javascript" id="asmjs_dftrealflat_check_script">asmjs_dftrealflat_check( 16 );</script><script type="text/javascript">document.write(document.getElementById("asmjs_dftrealflat_check_script").textContent)</script>
+
+<script type="text/javascript">document.write(asmjs_dftrealflat_check);</script></code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h3 class="anchorable" id="dftreal1024">Discrete Fourier Transform: DFT1024 (real signals)<a href="#dftreal1024" class="anchor">#</a></h3>
+
+<p>A call to <code>flatorize()</code> (details in the <a href="index.html#dft">main article</a>):</p>
+<pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(/(var\s+power\b[\s\S]*?)(^\s*\/\/ Does this work)/m.exec(expl_dftreal_flatorize+'')[1].replace(/^\s\s\s\s\s/gm,''))</script></code></pre>
+
+
+<p>...generates flatorized JavaScript code:</p><!-- This takes a while so we do NOT do it on page load, only on user demand later on -->
+<p><button disabled="disabled" onclick="genflatcode_dftreal1024flat()" id="genflatcode_dftreal1024flat_btn">Do it!</button> <small>(<span id="genflatcode_dftreal1024flat_duration">Might last a few seconds.</span>)</small></p>
+<pre class="pre-scroll prettyprint"><code id="genflatcode_dftreal1024flat_output"></code></pre>
+<script type="text/javascript">
+var dftreal1024flat;
+function genflatcode_dftreal1024flat()
+{
+    if (genflatcode_dftreal1024flat.called)
+        return;
+    genflatcode_dftreal1024flat.called = true;
+    
+    var button = document.getElementById( "genflatcode_dftreal1024flat_btn" );
+    button.setAttribute( "disabled", "disabled" );
+  
+
+    var t_begin = Date.now();
+
+    expl_dftreal_flatorize( 1024 );    
+
+    var t_end = Date.now();
+
+
+    dftreal1024flat = expl_dftreal_flatorize.dftreal1024flat;
+
+    write_duration( t_end - t_begin, "genflatcode_dftreal1024flat_duration" );
+    
+    var outnode = document.getElementById( 'genflatcode_dftreal1024flat_output' );
+    outnode.textContent = "// dftreal1024flat.getDirect():\n\n"+dftreal1024flat.getDirect();
+}
+
+function write_duration( duration_ms, idstring_or_node )
+{
+    var node = "string" === typeof idstring_or_node  ?  document.getElementById( idstring_or_node )  :  idstring_or_node;
+    node.innerHTML = "Lasted " + ((duration_ms / 1000).toFixed(1)) + " seconds.";
+}
+
+</script>
+
+
+<p>Then, a call to <code>flatorize.getAsmjs()</code>:</p>
+<pre class="prettyprint lang-js"><code id="genflatcode_asmjs_dftreal1024flat_code">var dftreal1024flat_asmjsGen = flatorize.getAsmjsGen( 
+  { switcher: dftreal1024flat, name: "dftreal1024flat" } 
+);</code></pre>
+
+
+<p>...returns an <code>asm.js</code> generator:</p><!-- This takes a while so we do NOT do it on page load, only on user demand later on -->
+<p><button disabled="disabled" onclick="genflatcode_asmjs_dftreal1024flat()" id="genflatcode_asmjs_dftreal1024flat_btn">Do it!</button> <small>(<span id="genflatcode_asmjs_dftreal1024flat_duration">May well last long</span>)</small></p>
+
+<pre class="pre-scroll prettyprint"><code id="genflatcode_asmjs_dftreal1024flat_output"></code></pre>
+<script type="text/javascript">
+var dftreal1024flat_asmjsGen;
+function genflatcode_asmjs_dftreal1024flat()
+{
+    // First, make sure flatorize has already been called
+
+    genflatcode_dftreal1024flat();
+
+    // Second, call flatorize.getAsmjsGen
+
+    if (genflatcode_asmjs_dftreal1024flat.called)
+        return;
+    genflatcode_asmjs_dftreal1024flat.called = true;
+    
+    var button = document.getElementById( "genflatcode_asmjs_dftreal1024flat_btn" );
+    button.setAttribute( "disabled", "disabled" );
+  
+
+    var f = new Function( document.getElementById("genflatcode_asmjs_dftreal1024flat_code").textContent + "; return dftreal1024flat_asmjsGen;");
+
+
+    var t_begin = Date.now();
+    
+    dftreal1024flat_asmjsGen = f();
+
+    var t_end = Date.now();
+
+
+    var outnode = document.getElementById( 'genflatcode_asmjs_dftreal1024flat_output' );
+    outnode.textContent = "" + dftreal1024flat_asmjsGen;
+
+    write_duration( t_end - t_begin, "genflatcode_asmjs_dftreal1024flat_duration" );
+
+    null.["xxx add call to checker and show alert if failure"];
+}
+</script>
+
+
+
+<p>The generator can be used as follows to compile and use the <code>asm.js</code> code:</p>
+<pre class="prettyprint lang-js pre-scroll"><code><span id="asmjs_dftrealflat_check_1024_code">asmjs_dftrealflat_check( 1024 );</span>
+
+<script type="text/javascript">document.write(asmjs_dftrealflat_check);</script></code></pre>
 
 
 
@@ -304,7 +427,7 @@ flatorized+asm.js: 364.52ms (fine but lesser than without use asm - probably cla
 Chrome on DFT REAL 16:
 
 flatorized: 556.000ms
-flatorized+asm.js deactivated (no "use asm"): 52.000ms (wow?)
+flatorized+asm.js deactivated (no "use asm"): 52.000ms (wow!)
 flatorized+asm.js: 53.000ms (wow!)
 
 </pre>
