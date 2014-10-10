@@ -291,7 +291,14 @@ function genflatcode_asmjs_dftreal1024flat()
 
     write_duration( t_end - t_begin, "genflatcode_asmjs_dftreal1024flat_duration" );
 
-    null.["xxx add call to checker and show alert if failure"];
+    var works = false;
+    try {
+        asmjs_dftrealflat_check( 1024 );
+        works = passed.asmjs_dftreal1024flat_check;
+    } catch (e) {
+    }
+    if (!works)
+        alert( 'DFT1024: bug' );
 }
 </script>
 
@@ -363,53 +370,58 @@ var all_passed;
 
 
 <script type="text/javascript">
-function xxxperf()
+function xxxperf(dftsize)
 {
-var input = new Array(16).join(',').split(',').map( Math.random )
-, N = 1e6
-;
+    (dftsize  ||  null).toPrecision.call.a;
 
-var flatimpl = dftreal16flat.getDirect();
-console.time('flatorized')
-for (var i = N; i--;)
-    var output = flatimpl( input );
-console.timeEnd('flatorized')
+    console.log('dftsize: ' + dftsize);
+    var input = new Array(dftsize).join(',').split(',').map( Math.random )
+    , N = Math.round( 1e6 * 16 / dftsize )
+    ;
 
-   // --- Inputs and output
-    var dftreal16flat_buffer = new ArrayBuffer( 
-        dftreal16flat_asmjsGen.buffer_bytes 
-    );
+    var flatimpl = this[ 'dftreal' + dftsize + 'flat' ].getDirect();
+    console.time('flatorized')
+    for (var i = N; i--;)
+        var output = flatimpl( input );
+    console.timeEnd('flatorized')
+
+    // --- Inputs and output
+    var dftrealflat_asmjsGen = this[ 'dftreal' + dftsize + 'flat_asmjsGen' ]
+    ,   dftrealflat_buffer = 
+        new ArrayBuffer( dftrealflat_asmjsGen.buffer_bytes );
 
     // --- Compile the asm.js code
-    var dftreal16flat_asmjsO = dftreal16flat_asmjsGen( 
-        window, {}, dftreal16flat_buffer 
+    var dftrealflat_asmjsO = dftrealflat_asmjsGen( 
+        window, {}, dftrealflat_buffer 
     );
 
     // --- Example of use
 
-    var      n2i = dftreal16flat_asmjsGen.array_name2info
-    , TypedArray = dftreal16flat_asmjsGen.TypedArray
+    var      n2i = dftrealflat_asmjsGen.array_name2info
+    , TypedArray = dftrealflat_asmjsGen.TypedArray
     
     // Input views
 
     , arr  = new TypedArray( 
-        dftreal16flat_buffer, n2i.arr.begin_bytes, n2i.arr.n 
+        dftrealflat_buffer, n2i.arr.begin_bytes, n2i.arr.n 
     )
     
     // Output view                                  
 
     , freq = new TypedArray( 
-        dftreal16flat_buffer, n2i.freq.begin_bytes, n2i.freq.n 
+        dftrealflat_buffer, n2i.freq.begin_bytes, n2i.freq.n 
     )
     ;
 
     // Write input values
-arr.set( input );
+    arr.set( input );
 
-console.time('flatorized+asm.js');
-for (var i = N; i--;)
-   dftreal16flat_asmjsO.dftreal16flat();
-console.timeEnd('flatorized+asm.js');
+    var asmjsimpl = dftrealflat_asmjsO[ 'dftreal' + dftsize + 'flat' ];
+
+    console.time('flatorized+asm.js');
+    for (var i = N; i--;)
+        asmjsimpl();
+    console.timeEnd('flatorized+asm.js');
 
 }
 </script>
@@ -429,6 +441,35 @@ Chrome on DFT REAL 16:
 flatorized: 556.000ms
 flatorized+asm.js deactivated (no "use asm"): 52.000ms (wow!)
 flatorized+asm.js: 53.000ms (wow!)
+
+__________
+
+Firefox on DFT REAL 1024:
+
+flatorized: 7535ms
+flatorized+asm.js deactivated (no "use asm"): 7238ms (logical)
+flatorized+asm.js: 655ms (wow!)
+
+.
+
+Chrome on DFT REAL 1024:
+
+xxxperf(1024);xxxperf(1024);xxxperf(1024);xxxperf(1024);xxxperf(1024);
+dftsize: 1024 
+flatorized: 4502.000ms 
+flatorized+asm.js: 3254.000ms (heating up)
+dftsize: 1024 
+flatorized: 1292.000ms 
+flatorized+asm.js: 442.000ms (wow!)
+dftsize: 1024 
+flatorized: 1282.000ms 
+flatorized+asm.js: 444.000ms (wow!)
+dftsize: 1024 
+flatorized: 1405.000ms 
+flatorized+asm.js: 1305.000ms (what?)
+dftsize: 1024 
+flatorized: 1280.000ms 
+flatorized+asm.js: 441.000ms (wow!)
 
 </pre>
 

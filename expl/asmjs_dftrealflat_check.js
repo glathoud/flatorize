@@ -47,21 +47,62 @@ function asmjs_dftrealflat_check( /*integer, e.g. 16 or 1024*/dftsize )
     arr.set( io.input );
     
     // Compute
+
     dftrealflat_asmjsO[ 'dftreal' + dftsize + 'flat' ]();
     
     // The result is accessible through `freq`
-    var error_v = io.expected
-        .reduce( function (a,b) { return a.concat(b); }
-                 , [] )
-        .map( function (number,i) { return number - freq[ i ]; } )
+
+    check_error( freq, io.expected );
     
-    , error = Math.max.apply( Math, error_v.map( 
-        function (delta) { return Math.abs( delta ); } 
-    ) )
+    // Sanity check: original flatorized implementation
+    
+    var original_flat = this[ 'dftreal' + dftsize + 'flat' ]
+    ,   original_freq = original_flat( io.input )
     ;
-    if (1e-10 < error)
-        throw new Error( checkname + ' failed!' );
+    check_error( original_freq, io.expected );
+
+    // Finer check on a random vector: are the two implementation
+    // consistent? (Don't worry, the original one is independently
+    // proofed in ./index.html).
+
+    var random_input = new Array( dftsize ).join(',').split(',').map( Math.random )
+    ,   original_output = original_flat( random_input )
+    ;
+    arr.set( random_input );
+    dftrealflat_asmjsO[ 'dftreal' + dftsize + 'flat' ]();
+    
+    check_error( freq, original_output );
+    
+    // 
 
     (passed  ||  (passed = {}))[ checkname ] = true;
 
+    // --- Details
+
+    function check_error( obtained, expected )
+    {
+        var error_v = get_error( flattened( obtained ), flattened( expected ) ) 
+        
+        , error = Math.max.apply( Math, error_v.map( 
+            function (delta) { return Math.abs( delta ); } 
+        ) )
+        ;
+        if (1e-10 < error)
+            throw new Error( checkname + ' failed!' );
+    }
+
+    function get_error( obtained_flat, expected_flat )
+    {
+        return expected_flat.map( function (number,i) { return number - obtained_flat[ i ]; } );
+    }
+    
+
+    function flattened( an_array )
+    {
+        return [].reduce.call( 
+            an_array
+            ,function (a,b) { return a.concat(b); }
+            , [] 
+        );
+    }
 }

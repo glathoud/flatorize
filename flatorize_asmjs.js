@@ -511,7 +511,9 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                 ) + ';'
             );
         }
-        
+        if (n)
+            ret.push( '' );
+
         // ---- Intermediary calculations
 
         if (!INSERT_OUTPUT_EARLY)
@@ -601,7 +603,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                 else
                 {
                     var ind = outvar_info.begin + outvar_info.flatIndFun( ia2 )
-                    if (ind === 33)
+                    if (ind === 47)
                         'xxx';
 
                     var ind = outvar_info.begin + outvar_info.flatIndFun( ia2 )
@@ -686,24 +688,27 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             if (e.__isExpr__)
             {
                 var e_idnum = e.__exprIdnum__;
-                if (e_idnum != null)
+                if (e_idnum != null  &&  e_idnum in ret_idnumSet)
                     return e_idnum;
-            }
-            
 
-            for (var k = e.length; k--;)
-            {
-                var    ek = e[ k ];
-                if (ek.__isExpr__)
+                for (var k = e.length; k--;)
                 {
-                    var idnum = ek.__exprIdnum__;
-                    idnum.toPrecision.call.a;
-                    
-                    if (idnum in ret_idnumSet  &&  idnum > tmpMax)
-                        tmpMax = idnum;
-                    
-                    if (!(idnum in duplicates)) // Test to spare unnecessary work
-                        tmpMax = null.xxx_never_here, max_in_ret_subset( ek, tmpMax );
+                    var    ek = e[ k ];
+                    if (ek.__isExpr__)
+                    {
+                        var idnum = ek.__exprIdnum__;
+                        idnum.toPrecision.call.a;
+                        
+                        if (idnum in ret_idnumSet)
+                        {
+                            if (idnum > tmpMax)
+                                tmpMax = idnum;
+                        }
+                        else
+                        {
+                            tmpMax = max_in_ret_subset( ek, tmpMax );
+                        }
+                    }
                 }
             }
             
@@ -745,9 +750,9 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                         , no_paren: true
                     };
                     
-                    var modified_e = e.map( modify_input_access );
+                    var modified_e = modify_input_access( e );
 
-                    jscode = e.__toStr__.call( modified_e, opt, topopt );
+                    jscode = 'string' === typeof modified_e  ?  modified_e  :  e.__toStr__.call( modified_e, opt, topopt );
                 }
             }
 
@@ -758,6 +763,15 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
             function modify_input_access( one )
             {
+                var idnum;
+                if (one.__isExpr__  &&  (idnum = one.__exprIdnum__) != null  &&  idnum in ret_idnumSet)
+                {
+                    var dupli_varname = dupliidnum2varname[ idnum ];
+                    (dupli_varname  ||  0).substring.call.a;
+                    return dupli_varname;
+                }
+                
+
                 var part = one.part;
                 
                 if (part)
@@ -784,13 +798,14 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                 var tof_one = typeof one
                 , is_one_o  = 'object' === tof_one
                 , is_one_expr = is_one_o  &&  one[ _EXPR_ISEXPR ]
+                ;
 
-                ,        idnum = is_one_expr  &&  one  &&  one[ _EXPR_IDNUM ]
-                , duplivarname = idnum  &&  dupliidnum2varname[ idnum ]
+                var      idnum = is_one_expr  &&  one  &&  one[ _EXPR_IDNUM ]
+                , duplivarname = idnum  &&  idnum in ret_idnumSet  &&  dupliidnum2varname[ idnum ]
                 ;
                 if (duplivarname)
                     return duplivarname;
-
+                
                 if (is_one_expr)
                     return one.__toStr__.call( one.map( modify_input_access ), opt, topopt );
 

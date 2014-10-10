@@ -8,7 +8,8 @@ function asmjs_matmulrows_zip_342_check()
     // "Matrix multiplication" example
 
     // --- Inputs and output
-    var matmulrows_zip_342_buffer = new ArrayBuffer( matmulrows_zip_342_asmjsGen.buffer_bytes );
+    var matmulrows_zip_342_buffer =
+        new ArrayBuffer( matmulrows_zip_342_asmjsGen.buffer_bytes );
 
     // --- Compile the asm.js code
     var matmulrows_zip_342_asmjsO = matmulrows_zip_342_asmjsGen( 
@@ -31,13 +32,16 @@ function asmjs_matmulrows_zip_342_check()
     ;
 
     // Write input values
+
     set_rows( a, [ [1,2,3,4], [5,6,7,8], [9,10,11,12] ] );
     set_rows( b, [ [13,14], [15,16], [17,18], [19,20] ] );
 
     // Compute
+
     matmulrows_zip_342_asmjsO.matmulrows_zip_342();
     
     // The result is accessible through `c`
+
     var error_v = [[170,180],[426,452],[682,724]]
         .reduce( function (a,b) { return a.concat(b); }, [] )
         .map( function (number,i) { return number - c[ i ]; } )
