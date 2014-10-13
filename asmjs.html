@@ -255,7 +255,7 @@ function write_duration( duration_ms, idstring_or_node )
 
 
 <p>...returns an <code>asm.js</code> generator:</p><!-- This takes a while so we do NOT do it on page load, only on user demand later on -->
-<p><button disabled="disabled" onclick="genflatcode_asmjs_dftreal1024flat()" id="genflatcode_asmjs_dftreal1024flat_btn">Do it!</button> <small>(<span id="genflatcode_asmjs_dftreal1024flat_duration">May well last long</span>)</small></p>
+<p><button disabled="disabled" onclick="genflatcode_asmjs_dftreal1024flat()" id="genflatcode_asmjs_dftreal1024flat_btn">Do it!</button> <small>(<span id="genflatcode_asmjs_dftreal1024flat_duration">Might last a few seconds</span>)</small></p>
 
 <pre class="pre-scroll prettyprint"><code id="genflatcode_asmjs_dftreal1024flat_output"></code></pre>
 <script type="text/javascript">
@@ -271,6 +271,7 @@ function genflatcode_asmjs_dftreal1024flat()
     if (genflatcode_asmjs_dftreal1024flat.called)
         return;
     genflatcode_asmjs_dftreal1024flat.called = true;
+
     
     var button = document.getElementById( "genflatcode_asmjs_dftreal1024flat_btn" );
     button.setAttribute( "disabled", "disabled" );
@@ -280,8 +281,10 @@ function genflatcode_asmjs_dftreal1024flat()
 
 
     var t_begin = Date.now();
+console.profile('xxx')
     
     dftreal1024flat_asmjsGen = f();
+console.profileEnd('xxx')
 
     var t_end = Date.now();
 
@@ -388,7 +391,8 @@ function xxxperf(dftsize)
     // --- Inputs and output
     var dftrealflat_asmjsGen = this[ 'dftreal' + dftsize + 'flat_asmjsGen' ]
     ,   dftrealflat_buffer = 
-        new ArrayBuffer( dftrealflat_asmjsGen.buffer_bytes );
+        new ArrayBuffer( dftrealflat_asmjsGen.buffer_bytes )
+    ;
 
     // --- Compile the asm.js code
     var dftrealflat_asmjsO = dftrealflat_asmjsGen( 
@@ -481,10 +485,10 @@ flatorized+asm.js: 441.000ms (wow!)
 <h4>wrapped with array/read-write for direct comparison</h4>
 
 <script type="text/javascript">
-function xxxperfwrapped()
+function xxxperfwrapped( dftsize )
 {
-var input = new Array(16).join(',').split(',').map( Math.random )
-, N = 1e6
+var input = new Array(dftsize).join(',').split(',').map( Math.random )
+ , N = Math.round( 1e6 * 16 / dftsize )
 ;
 
 var flatimpl = dftreal16flat.getDirect();
@@ -494,39 +498,43 @@ for (var i = N; i--;)
 console.timeEnd('flatorized')
 
    // --- Inputs and output
-    var dftreal16flat_buffer = new ArrayBuffer( 
-        dftreal16flat_asmjsGen.buffer_bytes 
-    );
+
+    var dftrealflat_asmjsGen = this[ 'dftreal' + dftsize + 'flat_asmjsGen' ]
+    ,   dftrealflat_buffer = 
+        new ArrayBuffer( dftrealflat_asmjsGen.buffer_bytes )
+    ;
 
     // --- Compile the asm.js code
-    var dftreal16flat_asmjsO = dftreal16flat_asmjsGen( 
-        window, {}, dftreal16flat_buffer 
+    var dftrealflat_asmjsO = dftrealflat_asmjsGen( 
+        window, {}, dftrealflat_buffer 
     );
 
     // --- Example of use
 
-    var      n2i = dftreal16flat_asmjsGen.array_name2info
-    , TypedArray = dftreal16flat_asmjsGen.TypedArray
+    var      n2i = dftrealflat_asmjsGen.array_name2info
+    , TypedArray = dftrealflat_asmjsGen.TypedArray
     
     // Input views
 
     , arr  = new TypedArray( 
-        dftreal16flat_buffer, n2i.arr.begin_bytes, n2i.arr.n 
+        dftrealflat_buffer, n2i.arr.begin_bytes, n2i.arr.n 
     )
     
     // Output view                                  
 
     , freq = new TypedArray( 
-        dftreal16flat_buffer, n2i.freq.begin_bytes, n2i.freq.n 
+        dftrealflat_buffer, n2i.freq.begin_bytes, n2i.freq.n 
     )
     ;
 
     // Write input values
+    var asmjsimpl = dftrealflat_asmjsO[ 'dftreal' + dftsize + 'flat' ];
+
 console.time('flatorized+asm.js');
 for (var i = N; i--;)
 {
    arr.set( input );  // write
-   dftreal16flat_asmjsO.dftreal16flat();
+   asmjsimpl();
 var output_freq = [].slice.call( output );  // read
 }
 console.timeEnd('flatorized+asm.js');
@@ -561,19 +569,9 @@ flatorized+asm.js wrapped: 397.000ms    (still better!)
 
 <script type="text/javascript" src="prettify/prettify.js"></script>
 <script type="text/javascript">setTimeout( prettyPrint );</script>
-<script type="text/javascript">
-[].forEach.call( document.getElementsByTagName( 'button' ), function (btn_node) { btn_node.removeAttribute( 'disabled' ); } );
-window.ontouchstart = function () { Array.prototype.forEach.call( document.getElementsByClassName( "anchor" ), function (node) { node.className = node.className.replace( /\banchor\b/g, '' ); } ); };
-</script>
+<script type="text/javascript" src="btn_anchor.js"></script>
 <script type="text/javascript" src="../MathJax/MathJax.js?config=default"></script>
-<script type="text/javascript">
-if (!/\d+\.\d+\.\d+\.\d+|localhost/.test( location.hostname ))
-{
-setTimeout( function () {
-var _gaq = _gaq || [];  _gaq.push(['_setAccount', 'UA-5516483-1']);  _gaq.push(['_trackPageview']);  (function() {    var ga = document.createElement('script');    ga.src = ('https:' == document.location.protocol ? 'https://ssl' :         'http://www') + '.google-analytics.com/ga.js';    ga.setAttribute('async', 'true');    document.documentElement.firstChild.appendChild(ga);  })();
-}, 0 );
-}
-</script>
+<script type="text/javascript" src="ga.js"></script>
 
 </body>
 </html>

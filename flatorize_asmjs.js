@@ -89,15 +89,9 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         ,   varnameset  = js_direct.varnameset
         ;
         
-        console.log( 'xxx flatorize_asmjsGen js_direct:' );
-        console.dir( js_direct );
-
         var common_array_btd = checkType( typed_in_var, typed_out_vartype );
 
         var idnum2type  = propagateType( js_direct );
-        
-        console.log( 'xxx flatorize_asmjsGen idnum2type:' );
-        console.dir( idnum2type );
         
         return generateAsmjsGen( js_direct, idnum2type, topFunName, common_array_btd );
     }
@@ -175,89 +169,110 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
     }
 
 
-
-    // xxx when it works, remove the unused local vars in propagateType and generateCodeC
-
-    var CODE2STR_CFG_ID  = '__code2str_cfg_id' // xxx link to flatorize.js in a more principled way
-    ,   CODE2STR_CACHE   = 'STAT'              // xxx link to flatorize.js in a more principled way
-    
-    ,   _EXPR_IDNUM  = '__exprIdnum__'
+    var _EXPR_IDNUM  = '__exprIdnum__'
     ,   _EXPR_ISEXPR = '__isExpr__'
     ;
     
-    function propagateType( /*object e.g. `js_direct`*/info, /*?object?*/input_idnum2type )
+    function propagateType( /*object e.g. `js_direct`*/info )
     {
         // Input
 
         var typed_in_var      = info.typed_in_var
         
         ,   exprCache         = info.exprCache
-        ,   idnum2expr        = exprCache.idnum2expr
-        
-        ,   out_e             = info.e
-        ,   typed_out_vartype = info.typed_out_vartype
-
-        ,   out_e_isExpr   = out_e.__isExpr__
-        ,   out_e_isArray  = out_e instanceof Array
-        ,   out_e_isNumber = typeof out_e === 'number' 
 
         // Output
 
-        ,   isTop      = !input_idnum2type
-        ,   idnum2type = input_idnum2type  ||  {}
-        ;
+        , idnum2type = {}
         
+        // Flatten the "info" object for better performance when doing
+        // the recursive walk (create less objects).
+
+        ,             out_e = info.e
+        , typed_out_vartype = info.typed_out_vartype
+        ;
+
         // Check
 
-        (typed_out_vartype.substring  ||  typed_out_vartype.concat).call.a;   // must be a string or an array
-
-        // Determine the type of `out_e`
-
-        if (out_e_isExpr)
-        {
-            var idnum = out_e[ _EXPR_IDNUM ];
-            idnum.toPrecision.call.a;  // Must be a number
-
-            idnum2type[ idnum ] = typed_out_vartype;
-        }
-        else if (out_e_isArray)
-        {
-            if (isTop  &&  !(typed_out_vartype instanceof Array))
-                throw new Error( '(top) `out_e` and `typed_out_vartype` must be consistent!' );
-        }
-        else if (out_e_isNumber)
-        {
-            idnum2type[ idnum ] = out_e === out_e | 0  ?  'int'  :  'float';
-        }
-        else
-        {
-            out_e.substring.call.a;  // Must be a string
-            return;
-        }
-
-        // Recurse
+        if (out_e instanceof Array  &&  !(typed_out_vartype instanceof Array))
+            throw new Error( '(top: array case) `out_e` and `typed_out_vartype` must be consistent!' );
         
-        if (out_e_isExpr  ||  out_e_isArray)
-        {
-            for (var n = out_e.length, i = 0; i < n; i++)
-            {
-                var e_i    = out_e[ i ]
-                ,   e_info = {
-
-                    typed_in_var : typed_in_var
-                    , exprCache  : exprCache
-
-                    , e                 : e_i
-                    , typed_out_vartype : out_e_isExpr  ?  typed_out_vartype  :  out_e_isArray  ?  typed_out_vartype[ i ]  :  /*error*/null
-                }
-                ;
-                propagateType( e_info, idnum2type );
-            }
-        }
+        // Recursive walk, updating `idnum2type`
         
+        propagateType_impl( out_e, typed_out_vartype );
+
         // Done
 
         return idnum2type;
+
+        // --- Details
+
+        function propagateType_impl( out_e, typed_out_vartype )
+        {
+            var out_e_isExpr 
+            ,   out_e_isArray
+            ,   out_e_isNumber
+            ;
+            
+            // Check
+            
+            (typed_out_vartype.substring  ||  typed_out_vartype.concat).call.a;   // must be a string or an array
+            
+            // Determine the type of `out_e`
+            
+            if (out_e_isExpr = out_e.__isExpr__)
+            {
+                var idnum = out_e[ _EXPR_IDNUM ];
+                idnum.toPrecision.call.a;  // Must be a number
+                
+                if (idnum in idnum2type)
+                    return;
+
+                idnum2type[ idnum ] = typed_out_vartype;
+            }
+            else if (out_e_isArray = out_e instanceof Array)
+            {
+            }
+            else if (typeof out_e === 'number')
+            {
+                return;
+            }
+            else
+            {
+                out_e.substring.call.a;  // Must be a string
+                return;
+            }
+            
+            // Recurse
+            
+            if (out_e_isExpr  ||  out_e_isArray)
+            {
+                for (var n = out_e.length, i = 0; i < n; i++)
+                {
+                    var i_out_e = out_e[ i ]
+                    ,   i_toe   = typeof i_out_e
+                    ;
+                    if (i_toe === 'string'  ||  i_toe === 'number')
+                        continue;
+                    
+                    var i_idnum = i_out_e[ _EXPR_IDNUM ]
+                    ,   i_typed_out_vartype = out_e_isExpr  ?  typed_out_vartype
+                        :  out_e_isArray  ?  typed_out_vartype[ i ]
+                        :  null.error
+                    ;
+
+                    if (i_idnum != null  &&  i_idnum in idnum2type)
+                    {
+                        if (idnum2type[ i_idnum ] !== i_typed_out_vartype)
+                            null.error_or_bug;
+
+                        continue;
+                    }
+                    
+                    propagateType_impl( i_out_e, i_typed_out_vartype );
+                }
+            }
+        }
     }
 
 
@@ -480,6 +495,8 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         ,   ret = [ ]
         ,   ret_idnumSet = {}
         ,   ret_idnumMax = -Infinity
+
+        ,   idnum2max_in_ret_subset = {}  // cache for speedup
         ;
         
         // ---- asm.js support for multidimensional arrays: flatten the access
@@ -551,7 +568,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         {
             // Use return
 
-            null.xxx_return;
+            null.xxx_todo_return;
         }
         else
         {
@@ -602,10 +619,6 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                 }
                 else
                 {
-                    var ind = outvar_info.begin + outvar_info.flatIndFun( ia2 )
-                    if (ind === 47)
-                        'xxx';
-
                     var ind = outvar_info.begin + outvar_info.flatIndFun( ia2 )
                     ,  code = cat_varname + '[' + ind + '] = ' + expcode_cast_if_needed( basictype, arr_i ) + ';'
                     ;
@@ -676,39 +689,47 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             ret.push( code );
         }
 
-        function max_in_ret_subset( e, tmpMax )
+        function max_in_ret_subset( e )
         // Recursive deep evaluation of the maximum expression id used
         // in `e` that is within the subset of already "written"
         // intermediary code.
         //
         // Return -Infinity or an integer `idnum`.
         {
-            tmpMax != null  ||  (tmpMax = -Infinity);
+            var tmpMax = -Infinity;
             
             if (e.__isExpr__)
             {
                 var e_idnum = e.__exprIdnum__;
-                if (e_idnum != null  &&  e_idnum in ret_idnumSet)
-                    return e_idnum;
-
-                for (var k = e.length; k--;)
+                if (e_idnum != null)
                 {
-                    var    ek = e[ k ];
-                    if (ek.__isExpr__)
+                    if (e_idnum in ret_idnumSet)
+                        return e_idnum;
+
+                    if (e_idnum in idnum2max_in_ret_subset)
+                        return idnum2max_in_ret_subset[ e_idnum ];
+
+                    for (var k = e.length; k--;)
                     {
-                        var idnum = ek.__exprIdnum__;
-                        idnum.toPrecision.call.a;
-                        
-                        if (idnum in ret_idnumSet)
+                        var    ek = e[ k ];
+                        if (ek.__isExpr__)
                         {
-                            if (idnum > tmpMax)
-                                tmpMax = idnum;
-                        }
-                        else
-                        {
-                            tmpMax = max_in_ret_subset( ek, tmpMax );
+                            var idnum = ek.__exprIdnum__;
+                            idnum.toPrecision.call.a;
+                            
+                            if (idnum in ret_idnumSet)
+                            {
+                                if (idnum > tmpMax)
+                                    tmpMax = idnum;
+                            }
+                            else
+                            {
+                                tmpMax = Math.max( tmpMax, max_in_ret_subset( ek ) );
+                            }
                         }
                     }
+
+                    idnum2max_in_ret_subset[ e_idnum ] = tmpMax;
                 }
             }
             
