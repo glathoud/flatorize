@@ -16,17 +16,25 @@ function f2body( f )
     return (f+'').replace(/^[^\{]*?\{([\s\S]*)\}[^\}]*$/, '$1' )
 }
 
-function expl_run( f )
+function expl_run( f, /*?object?*/opt )
 {
+    var opt_args   = opt  &&  opt.args
+    ,   doc_silent = opt  &&  opt.doc_silent
+
     try {
-        var r = f()
+        var r = f.apply( null, opt_args )
         ,   s_expected = JSON.stringify( r.expected )
         ,   s_obtained = JSON.stringify( r.obtained )
 
         ,  ok = s_expected === s_obtained
         ;
-        document.write( f2body( f ) + '\n// ' + r.name + ': ' + s_obtained + (ok  ?  '   // Yes!'  :  '   // NOOOO!\n//\n// expected:\n// ' + r.name + ': ' + s_expected ) );
+        if (!doc_silent)
+            document.write( f2body( f ) + '\n// ' + r.name + ': ' + s_obtained + (ok  ?  '   // Yes!'  :  '   // NOOOO!\n//\n// expected:\n// ' + r.name + ': ' + s_expected ) );
     } catch (e) {
-        document.write( '--- expl_run: FAILED! ---\n\ne:\n\n' + e );
+        if (!doc_silent)
+            document.write( '--- expl_run: FAILED! ---\n\ne:\n\n' + e );
+        ok = false;
     }
+    
+    return ok;
 }

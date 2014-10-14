@@ -13,8 +13,11 @@
 <script type="text/javascript" src="flatorize_asmjs.js"></script>
 <script type="text/javascript" src="modifsplitradix.js"></script> <!-- xxx check whether really needed -->
 
+<script type="text/javascript" src="expl.js"></script>
 <script type="text/javascript" src="expl/matmulrows_zip_flatorize.js"></script>
 <script type="text/javascript" src="expl/dftreal_flatorize.js"></script>
+<script type="text/javascript" src="expl/scalar_from_vector.js"></script>
+<script type="text/javascript" src="expl/scalar_from_matrix.js"></script>
 
 <script type="text/javascript" src="expl/asmjs_complex_numbers_check.js"></script>
 <script type="text/javascript" src="expl/asmjs_matmulrows_zip_342_check.js"></script>
@@ -281,10 +284,8 @@ function genflatcode_asmjs_dftreal1024flat()
 
 
     var t_begin = Date.now();
-console.profile('xxx')
     
     dftreal1024flat_asmjsGen = f();
-console.profileEnd('xxx')
 
     var t_end = Date.now();
 
@@ -317,6 +318,15 @@ console.profileEnd('xxx')
 
 
 
+
+
+
+
+
+
+
+
+<script type="text/javascript" src="asmjs_remaining_tests.js"></script>
 
 
 

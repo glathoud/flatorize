@@ -1,9 +1,9 @@
 /*global passed asmjs_complex_numbers_check f2_asmjsGen ArrayBuffer window Float32Array*/
 
 var passed;
-function asmjs_complex_numbers_check()
+function asmjs_scalar_from_vector_check( /*integer*/vsize )
 {
-    (passed  ||  (passed = {})).asmjs_complex_numbers_check = false;
+    (passed  ||  (passed = {})).asmjs_scalar_from_vector_check = false;
 
     // "Complex numbers" example
 
@@ -11,7 +11,6 @@ function asmjs_complex_numbers_check()
     var f2_buffer = new ArrayBuffer( f2_asmjsGen.buffer_bytes );
 
     // --- Compile the asm.js code
-
     var f2_asmjsO = f2_asmjsGen( window, {}, f2_buffer );
 
     // --- Example of use
@@ -33,7 +32,6 @@ function asmjs_complex_numbers_check()
 
     // Compute
     f2_asmjsO.f2();
-
     
     // The result is accessible through `d`
     var error_v = [
@@ -45,7 +43,7 @@ function asmjs_complex_numbers_check()
     ) )
     ;
     if (1e-5 < error)
-        throw new Error( 'asmjs_complex_numbers_check failed!' );
+        throw new Error( 'asmjs_scalar_from_vector_check failed!' );
 
-    (passed  ||  (passed = {})).asmjs_complex_numbers_check = true;
+    (passed  ||  (passed = {})).asmjs_scalar_from_vector_check = true;
 }

@@ -194,7 +194,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
         // Check
 
-        if (out_e instanceof Array  &&  !(typed_out_vartype instanceof Array))
+        if (!out_e[ _EXPR_ISEXPR ]  &&  out_e instanceof Array  &&  !(typed_out_vartype instanceof Array))
             throw new Error( '(top: array case) `out_e` and `typed_out_vartype` must be consistent!' );
         
         // Recursive walk, updating `idnum2type`
@@ -346,6 +346,9 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         
         if (bt_out)
         {
+            if (cat  &&  cat !== bt_out.type)
+                throw new Error('input & output basic types must be identical (e.g. all "double").')
+
             var tmp = {};
             tmp[ typed_out_varname ] = typed_out_vartype;
             name_2_info_side.call( tmp, typed_out_varname );
@@ -420,7 +423,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                 ]
             );
          
-            body = funBodyCodeAsmjs( bt_out, typed_out_varname, typed_out_vartype, out_e, idnum2type, idnum2expr, duplicates, dupliidnum2varname, array_name2info, cat_varname )
+            body = funBodyCodeAsmjs( bt_out, typed_out_varname, typed_out_vartype, out_e, idnum2type, idnum2expr, duplicates, dupliidnum2varname, array_name2info, cat_varname, common_array_btd )
             
             after = [ '}' ];
 
@@ -488,7 +491,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         );
     }
 
-    function funBodyCodeAsmjs( bt_out, typed_out_varname, typed_out_vartype, out_e, idnum2type, idnum2expr, duplicates, dupliidnum2varname, array_name2info, cat_varname )
+    function funBodyCodeAsmjs( bt_out, typed_out_varname, typed_out_vartype, out_e, idnum2type, idnum2expr, duplicates, dupliidnum2varname, array_name2info, cat_varname, common_array_btd )
     // Returns an array of codeline strings.
     {
         var is_out_type_simple = 'string' === typeof typed_out_vartype
@@ -502,7 +505,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         // ---- asm.js support for multidimensional arrays: flatten the access
         // i.e. assuming `a` is a 3x4 matrix, `a[1][2]` becomes e.g. `float64[1*3+2]`
 
-        var o = flatten_duplicates( duplicates, idnum2expr, array_name2info, bt_out.type, cat_varname );
+        var o = flatten_duplicates( duplicates, idnum2expr, array_name2info, common_array_btd  &&  common_array_btd.type, cat_varname );
 
         duplicates = o.duplicates;
         idnum2expr = o.idnum2expr;
@@ -568,7 +571,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         {
             // Use return
 
-            null.xxx_todo_return;
+            ret.push( 'return ' + expcode_cast_if_needed( typed_out_vartype, out_e ) + ';' );
         }
         else
         {
@@ -858,7 +861,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
 
 
-    function flatten_duplicates( duplicates, idnum2expr, array_name2info, bt_out_type, cat_varname )
+    function flatten_duplicates( duplicates, idnum2expr, array_name2info, bt_type, cat_varname )
     // ---- asm.js support for multidimensional arrays: flatten the access
     // i.e. assuming `a` is a 3x4 matrix, `a[1][2]` becomes e.g. `float64[1*3+2]`
     //
@@ -904,8 +907,8 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                     e.length = 1;
 
                     var s = cat_varname + '[' + ind + ']';
-                    e[ 0 ] = bt_out_type === 'double'  ||  bt_out_type === 'float'  ?  '+' + s
-                        : bt_out_type === 'int'  ?  '(' + s + '|0)'
+                    e[ 0 ] = bt_type === 'double'  ||  bt_type === 'float'  ?  '+' + s
+                        : bt_type === 'int'  ?  '(' + s + '|0)'
                         : null.unsupported
                     ;
                     e.part = { x : cat_varname, where : ind };
