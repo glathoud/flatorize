@@ -1,13 +1,13 @@
 /*global expl_scalar_from_vector flatorize ArrayBuffer window*/
 
-function expl_scalar_from_vector( /*integer*/size )
+function expl_flatasmjs_scalar_from_vector( /*integer*/size )
 // Probably not the most sumingful use(s) of flatorize (already flat)
 // BUT useful as a unit test for both flatorize and flatorize+asm.js
 {
     // Give external access, for example to display source code.
     // Example of use: ../index.html
 
-    var E = expl_scalar_from_vector;
+    var E = expl_flatasmjs_scalar_from_vector;
 
     //#BEGIN_BODY
     

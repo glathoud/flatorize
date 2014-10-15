@@ -16,12 +16,17 @@
 <script type="text/javascript" src="expl.js"></script>
 <script type="text/javascript" src="expl/matmulrows_zip_flatorize.js"></script>
 <script type="text/javascript" src="expl/dftreal_flatorize.js"></script>
-<script type="text/javascript" src="expl/scalar_from_vector.js"></script>
-<script type="text/javascript" src="expl/scalar_from_matrix.js"></script>
 
 <script type="text/javascript" src="expl/asmjs_complex_numbers_check.js"></script>
 <script type="text/javascript" src="expl/asmjs_matmulrows_zip_342_check.js"></script>
 <script type="text/javascript" src="expl/asmjs_dftrealflat_check.js"></script>
+
+<script type="text/javascript" src="expl/flatasmjs_scalar_from_scalar.js"></script>
+<script type="text/javascript" src="expl/flatasmjs_scalar_from_vector.js"></script>
+<script type="text/javascript" src="expl/flatasmjs_scalar_from_matrix.js"></script>
+
+<script type="text/javascript" src="expl/flatasmjs_vector_from_vector.js"></script>
+<script type="text/javascript" src="expl/flatasmjs_vector_from_matrix.js"></script>
 
 </head>
 <body>
@@ -52,7 +57,7 @@
 
 <ul class="contents-ul"></ul>
 
-
+<p class="print-hidden"><span class="global-result"></span></p>
 
 
 
@@ -342,40 +347,6 @@ function genflatcode_asmjs_dftreal1024flat()
 
 
 
-<h3 class="anchorable" id="test-summary">Test summary<a href="#test-summary" class="anchor">#</a></h3>
-
-<p><span id="global-result"></span>.</p>
-
-<p>Detail:</p>
-<ul>
-<script type="text/javascript">
-var passed;
-var all_passed;
-(function ()
-{
-    var empty = {};
-    all_passed = passed  &&  Object.keys( passed ).map( function (k) { 
-        if (k in empty)
-            return true;
-  
-        var pk = passed[ k ];
-        document.write( '\x3Cli\x3E' + k + ' \x3Cspan class="' + (pk  ?  'happy'  :  'sad') + '"\x3E' + (pk  ?  'passed'  :  'failed')+ '.\x3C/span\x3E' +  '\x3C/li\x3E' );
-    
-        return pk;
-    }).every( function (x) { return x; }); 
-    
-    document.getElementById('global-result').innerHTML = all_passed  ?  'ALL TESTS \x3Cspan class="happy"\x3Epassed\x3C/span\x3E'  :  'Some test(s) \x3Cspan class="sad"\x3EFAILED\x3C/span\x3E';
-})();
-</script>
-</ul>
-</p>
-
-
-
-
-
-
-
 
 
 
@@ -567,6 +538,62 @@ flatorized: 525.000ms
 flatorized+asm.js wrapped: 397.000ms    (still better!)
 -> read/write cost about 400-50=350ms
 </pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h3 class="anchorable" id="test">Unit tests<a href="#test" class="anchor">#</a></h3>
+
+<p><span class="global-result"></span>.</p>
+
+<p>Detail:</p>
+<ul>
+<script type="text/javascript">
+var passed;
+var all_passed;
+(function ()
+{
+    var empty = {};
+    all_passed = passed  &&  Object.keys( passed ).map( function (k) { 
+        if (k in empty)
+            return true;
+  
+        var pk = passed[ k ];
+        document.write( '\x3Cli\x3E' + k + ' \x3Cspan class="' + (pk  ?  'happy'  :  'sad') + '"\x3E' + (pk  ?  'passed'  :  'failed')+ '.\x3C/span\x3E' +  '\x3C/li\x3E' );
+    
+        return pk;
+    }).every( function (x) { return x; }); 
+    
+    [].forEach.call( document.getElementsByClassName( 'global-result' ), function ( grnode ) { 
+        grnode.innerHTML = all_passed  ?  'ALL TESTS \x3Cspan class="happy"\x3Epassed\x3C/span\x3E'  :  'Some test(s) \x3Cspan class="sad"\x3EFAILED\x3C/span\x3E';
+    });
+})();
+</script>
+</ul>
+</p>
+
+
+
+
+
+
+
+
 
 
 

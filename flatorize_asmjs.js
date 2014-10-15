@@ -320,19 +320,29 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         ,   body   = []
         ,   after  = []
         ,   wrap   = []
+        ;
 
-        ,   cat = common_array_btd  &&  common_array_btd.type
-        ,   cat_js = cat === 'int'  ?  'Int32'
-            :  cat === 'float'  ?  'Float32'
-            :  cat === 'double'  ?  'Float64'
-            : (null).unsupported
+        if (common_array_btd)
+        {
+            var cat = common_array_btd  &&  common_array_btd.type
+            ,   cat_js = cat === 'int'  ?  'Int32'
+                :  cat === 'float'  ?  'Float32'
+                :  cat === 'double'  ?  'Float64'
+                : (null).unsupported
+            
+            ,   cat_bits  = /\d+$/.exec( cat_js )|0
+            ,   cat_bytes = cat_bits >> 3
+            
+            ,   cat_varname = cat_js.toLowerCase()  // xxx make sure not in duplicates, else change cat_varname's value a bit (impl: use flatorize.xxx())
+            ;
+        }
+        else
+        {
+            // Dealing with scalars only
+        }
         
-        ,   cat_bits  = /\d+$/.exec( cat_js )|0
-        ,   cat_bytes = cat_bits >> 3
-        
-        ,   cat_varname = cat_js.toLowerCase()  // xxx make sure not in duplicates, else change cat_varname's value a bit (impl: use flatorize.xxx())
 
-        ,   simple_in_vararr = untyped_vararr.filter( function (name) { return 'string' === typeof this[ name ]; }, typed_in_var )
+        var simple_in_vararr = untyped_vararr.filter( function (name) { return 'string' === typeof this[ name ]; }, typed_in_var )
         ,   array_in_vararr  = untyped_vararr.filter( function (name) { return 'string' !== typeof this[ name ]; }, typed_in_var )
 
         ,   count = 0
@@ -417,11 +427,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         
         if (isTop)
         {
-            before = funDeclCodeAsmjs( simple_in_vararr, typed_in_var, topFunName ).concat(
-                [ 
-                    '{'
-                ]
-            );
+            before = funDeclCodeAsmjs( simple_in_vararr, typed_in_var, topFunName );
          
             body = funBodyCodeAsmjs( bt_out, typed_out_varname, typed_out_vartype, out_e, idnum2type, idnum2expr, duplicates, dupliidnum2varname, array_name2info, cat_varname, common_array_btd )
             
@@ -475,16 +481,17 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
     {
         return [
             'function ' + topFunName + '( ' + simple_in_vararr.join( ', ' ) + ' )'
+            , '{'
         ].concat(
             simple_in_vararr.map( function (name) {
 
                 var t = typed_in_var[ name ];
 
                 if (t === 'float'  ||  t === 'double')
-                    return 'name = +' + name + ';';
+                    return name + '= +' + name + ';';
 
                 if (t === 'int')
-                    return 'name = ' + name + '|0';
+                    return name + '= ' + name + '|0';
 
                 (null).unsupported;
             })
@@ -505,17 +512,23 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         // ---- asm.js support for multidimensional arrays: flatten the access
         // i.e. assuming `a` is a 3x4 matrix, `a[1][2]` becomes e.g. `float64[1*3+2]`
 
-        var o = flatten_duplicates( duplicates, idnum2expr, array_name2info, common_array_btd  &&  common_array_btd.type, cat_varname );
-
-        duplicates = o.duplicates;
-        idnum2expr = o.idnum2expr;
+        if (cat_varname)
+        {
+            var o = flatten_duplicates( duplicates, idnum2expr, array_name2info, common_array_btd  &&  common_array_btd.type, cat_varname );
+            
+            duplicates = o.duplicates;
+            idnum2expr = o.idnum2expr;
+        }
         
 
         // ---- asm.js "type" declarations
 
-        ret.push( '/* Intermediary calculations: asm.js "type" declarations */' );
+        var n = duplicates.length;
 
-        for (var n = duplicates.length, i = 0; i < n; i++)
+        if (n)
+            ret.push( '/* Intermediary calculations: asm.js "type" declarations */' );
+
+        for (var i = 0; i < n; i++)
         {
             var idnum  = duplicates[ i ]
             ,   d_e    = idnum2expr[ idnum ]
@@ -758,7 +771,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                 {
                     jscode = e;
                 }
-                else if (e.length === 1  &&  'string' === typeof e[ 0 ])
+                else if (!e.part  &&  e.length === 1  &&  'string' === typeof e[ 0 ])
                 {
                     jscode = e[ 0 ];
                 }
@@ -800,25 +813,32 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                 
                 if (part)
                 {
-                    var   x = part.x
-                    , where = part.where
+                    for (var name in array_name2info) { if (!(name in _emptyObj)) {   // More flexible than hasOwnProperty
+                    
+                        var info = array_name2info[ name ]
+                        ,   m    = info.matchFun( one )
+                        ;
+                        if (!m)
+                            continue;
+                        
+                        // Found a matching `part` expression.
+                        
+                        if (m.partial)
+                            null.bug_or_error;  // Things like C's pointer `float*` don't go in asm.js -> flatten multidimensional arrays completely
+                    
+                        var ind = info.begin + m.flat_ind;
+                        if (isNaN( ind )  ||  !(ind.toPrecision))
+                            null.bug;
 
-                    , info = 'string' === typeof x  &&  array_name2info[ x ]
-                    ;
-                    if (info)
-                    {
-                        where.toPrecision.call.a;
-
-                        var s = cat_varname + '[' + (info.begin + where)+ ']';
+                        var s = cat_varname + '[' + ind + ']';
 
                         return outtype === 'float'  ||  outtype === 'double'  ?  '+' + s 
                             :  outtype === 'int'  ?  '(' + s + ')|0'
                             :  null.unsupported
                         ;
-                        
-                    }
+                    }}
                 }
-
+                
                 var tof_one = typeof one
                 , is_one_o  = 'object' === tof_one
                 , is_one_expr = is_one_o  &&  one[ _EXPR_ISEXPR ]
@@ -832,6 +852,16 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                 
                 if (is_one_expr)
                     return one.__toStr__.call( one.map( modify_input_access ), opt, topopt );
+
+                if (tof_one === 'number')
+                {
+                    var s_one = '' + one;
+                    
+                    return outtype === 'float'  ||  outtype === 'double'  ?  (/\./.test( s_one )  ?  s_one  :  '+(' + s_one + ')')
+                    :  outtype === 'int'  ? (/^[+-]?\d+$/.test( s_one )  ?  s_one  :  '(' + one + ')|0')
+                    :  null.unsupported
+                    ;
+                }
 
                 return one;
             }
@@ -867,7 +897,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
     //
     // Example:
     // {{{
-    // var o = flatten_duplicates( duplicates, idnum2expr );
+    // var o = duplicates( duplicates, idnum2expr, array_name2info, bt_type, cat_varname )
     //
     // duplicates = o.duplicates;
     // idnum2expr = o.idnum2expr;

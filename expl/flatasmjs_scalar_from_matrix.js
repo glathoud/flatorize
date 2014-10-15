@@ -1,13 +1,13 @@
-/*global expl_scalar_from_matrix flatorize ArrayBuffer window*/
+/*global expl_flatasmjs_scalar_from_matrix flatorize ArrayBuffer window*/
 
-function expl_scalar_from_matrix( /*integer*/nrow, /*integer*/ncol )
+function expl_flatasmjs_scalar_from_matrix( /*integer*/nrow, /*integer*/ncol )
 // Probably not the most sumingful use(s) of flatorize (no fun call)
 // BUT useful as a unit test for both flatorize and flatorize+asm.js
 {
     // Give external access, for example to display source code.
     // Example of use: ../index.html
 
-    var E = expl_scalar_from_matrix;
+    var E = expl_flatasmjs_scalar_from_matrix;
 
     //#BEGIN_BODY
     
@@ -87,7 +87,7 @@ function expl_scalar_from_matrix( /*integer*/nrow, /*integer*/ncol )
     ,   matsumflat_asmjs_input_arr    = new TypedArray( matsumflat_asmjs_buffer, n2i.mat.begin_bytes, n2i.mat.n )
     ;
     
-    matsumflat_asmjs_input_arr.set( input );
+    matsumflat_asmjs_input_arr.set( input.reduce( function (a,b) { return a.concat(b); } ) );
 
     var obtained_asmjs = matsumflat_asmjs();
     
