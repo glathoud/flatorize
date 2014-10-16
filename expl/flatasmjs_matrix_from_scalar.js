@@ -1,0 +1,102 @@
+/*global expl_flatasmjs_matrix_from_scalar flatorize ArrayBuffer window*/
+
+function expl_flatasmjs_matrix_from_scalar( /*integer*/nrow, /*integer*/ncol )
+// Probably not the most sumingful use(s) of flatorize (already flat)
+// BUT useful as a unit test for both flatorize and flatorize+asm.js
+{
+    // Give external access, for example to display source code.
+    // Example of use: ../index.html
+
+    var E = expl_flatasmjs_matrix_from_scalar;
+
+    //#BEGIN_BODY
+
+    var factor = Math.pow( 10, Math.ceil( Math.log( Math.max( nrow, ncol ) ) / Math.log( 10 ) ) )
+
+    ,   s2m_name = 's2m'
+    ,   s2m      = flatorize(
+        // note the :[type] declarations, ignored by `flatorize`
+        // but useful later in asm.js or C contexts
+        'x:double->mat:[' + nrow + ' [' + ncol + ' double]]'
+        , function ( x_name )
+        {
+            return new Array( nrow ).join( ',' ).split( ',' ).map(
+                function ( tmp, irow )
+                {
+                    return new Array( ncol ).join( ',' ).split( ',' ).map(
+                        function ( tmp, icol )
+                        {
+                            return flatorize.expr( 
+                                x_name, '+', (irow + icol / factor) / factor
+                            );
+                        }
+                    );
+                }
+            );
+        }
+    )
+    
+    ,   s2m_asmjs_name = s2m_name + '_asmjs'
+    ,   s2m_asmjs_gen  = flatorize.getAsmjsGen( { switcher : s2m, name : s2m_asmjs_name } )
+    ;
+
+    // --- Do they work?
+
+    var  input = 1234.56789
+
+    , expected = new Array( nrow ).join( ',' ).split( ',' ).map( 
+
+        function ( tmp, irow ) {
+
+            return new Array( ncol ).join( ',' ).split( ',' ).map( 
+
+                function ( tmp, icol ) {
+
+                    return input + (irow + icol / factor) / factor;
+                }
+            );
+        }
+    )
+    ; 
+    
+    // flatorized version
+
+    var obtained = s2m( input );
+    
+    // flatorized+asm.js version
+    
+    var s2m_asmjs_buffer = new ArrayBuffer( s2m_asmjs_gen.buffer_bytes )
+    ,   s2m_asmjs_O      = s2m_asmjs_gen( window, {}, s2m_asmjs_buffer )  // compile
+    ,   s2m_asmjs        = s2m_asmjs_O[ s2m_asmjs_name ]
+
+    ,   n2i        = s2m_asmjs_gen.array_name2info
+    ,   TypedArray = s2m_asmjs_gen.TypedArray
+   
+    ,   s2m_asmjs_output_mat = new TypedArray( s2m_asmjs_buffer, n2i.mat.begin_bytes, n2i.mat.n )
+    ;
+    
+    s2m_asmjs( input );
+
+    var obtained_asmjs = [].slice.apply( s2m_asmjs_output_mat );
+
+    //#END_BODY
+
+    // More exports
+
+    E[ s2m_name ] = s2m;
+
+    E[ s2m_asmjs_name ] = s2m_asmjs;
+
+    // For `expl_run`
+
+    return { name : 's2m'
+             , obtained : { flatorize : obtained
+                            , flatorize_asmjs : obtained_asmjs
+                          }
+             
+             , expected : { flatorize : expected
+                            , flatorize_asmjs : expected.reduce( function (a,b) { return a.concat(b); } )
+                          }
+             , input : input 
+           };
+}

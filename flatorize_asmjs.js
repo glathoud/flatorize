@@ -297,6 +297,10 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
     // 
     // glathoud@yahoo.fr
     {
+        if (topFunName === 'count_a_few10')
+            'xxx';
+
+
         // Some of the `info` fields are only required at the top
         // level (`topFunName` given, i.e. `isTop === true`).
 
@@ -350,10 +354,8 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         ,   array_in_vararr_info = array_in_vararr.map( name_2_info_side, typed_in_var )
 
         ,   bt_out = flatorize.tryToGetArrayBasicTypeDescription( typed_out_vartype )
-
-        ,   asmjs_buffer_bytes = Math.ceil( count * cat_bytes / (1 << 24) ) << 24
         ;
-        
+
         if (bt_out)
         {
             if (cat  &&  cat !== bt_out.type)
@@ -363,6 +365,9 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             tmp[ typed_out_varname ] = typed_out_vartype;
             name_2_info_side.call( tmp, typed_out_varname );
         }
+
+        var asmjs_buffer_bytes = Math.ceil( count * cat_bytes / (1 << 24) ) << 24;
+        
 
         function name_2_info_side(name) 
         {
@@ -491,7 +496,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                     return name + '= +' + name + ';';
 
                 if (t === 'int')
-                    return name + '= ' + name + '|0';
+                    return name + '= ' + name + '|0;';
 
                 (null).unsupported;
             })
