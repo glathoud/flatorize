@@ -75,7 +75,7 @@ function asmjs_dftrealflat_check( /*integer, e.g. 16 or 1024*/dftsize )
     
     // 
 
-    (passed  ||  (passed = {}))[ checkname ] = true;
+    (passed  ||  (passed = {}))[ checkname ] = 'asmjs_dftrealflat_check';  // Name of the present file
 
     // --- Details
 

@@ -23,8 +23,10 @@ function expl_flatasmjs_scalar_from_matrix( /*integer*/nrow, /*integer*/ncol )
                 ?  0
                 :  flatorize.expr.apply( 
                     null
-                    , symbol_matrixrows( matname, nrow, ncol )
-                        .reduce( function (left, right) { return left.concat( left.length  ?  [ '+' ]  :  [] ).concat( [ symbol_sum( right ) ] ); }, [] )
+                    , symbol_sum(
+                        symbol_matrixrows( matname, nrow, ncol )
+                            .map( symbol_sum )
+                    )
                 )
             ;
         }
@@ -40,14 +42,13 @@ function expl_flatasmjs_scalar_from_matrix( /*integer*/nrow, /*integer*/ncol )
     //        ... 
     //      ]
     {
-        var ret = new Array( nrow );
-        for (var r = 0; r < nrow; r++)
-        {
-            var row = ret[ r ] = new Array( ncol );
-            for (var c = 0; c < ncol; c++)
-                row[ c ] = flatorize.part( flatorize.part( name, r ), c ); // e.g. m[r][c]
-        }
-        return ret;
+        return empty_array( nrow ).map( function ( tmp, r ) {
+
+            return empty_array( ncol ).map( function ( tmp, c ) {
+
+                return flatorize.part( flatorize.part( name, r ), c ); // e.g. m[r][c]
+            });
+        });
     }
 
     function symbol_sum( arr )
@@ -60,11 +61,15 @@ function expl_flatasmjs_scalar_from_matrix( /*integer*/nrow, /*integer*/ncol )
         }
     }
 
+    function empty_array( size )
+    {
+        return new Array( size ).join( ',' ).split( ',' );
+    }
     
     // --- Do they work?
 
-    var   input = new Array( nrow ).join(',').split(',').map( 
-        function () { return new Array( ncol ).join( ',' ).split( ',' ).map( Math.random ); }
+    var   input = empty_array( nrow ).map( 
+        function () { return empty_array( ncol ).map( Math.random ); }
     )
     ,  expected = input.reduce( function (a,b) { return a+b.reduce( function (x,y) { return x+y; } ); }
                                 , 0 

@@ -1,13 +1,13 @@
-/*global expl_scalar_from_vector flatorize ArrayBuffer window*/
+/*global expl_scalar_from_array flatorize ArrayBuffer window*/
 
-function expl_flatasmjs_scalar_from_vector( /*integer*/size )
+function expl_flatasmjs_scalar_from_array( /*integer*/size )
 // Probably not the most sumingful use(s) of flatorize (already flat)
 // BUT useful as a unit test for both flatorize and flatorize+asm.js
 {
     // Give external access, for example to display source code.
     // Example of use: ../index.html
 
-    var E = expl_flatasmjs_scalar_from_vector;
+    var E = expl_flatasmjs_scalar_from_array;
 
     //#BEGIN_BODY
     
@@ -17,25 +17,44 @@ function expl_flatasmjs_scalar_from_vector( /*integer*/size )
         'arr:[' + size + ' double]->sum:double'
         , function (arrname)
         {
-            return !(size > 0)  
-                ?  0
-                :  flatorize.expr.apply( 
-                    null
-                    , new Array( size ).join( ',' ).split( ',' )
-                        .map( function (tmp, i) { return flatorize.part( arrname, i ); } )
-                        .reduce( function (left, right) { return left.concat( left.length  ?  [ '+' ]  :  [] ).concat( [ right ] ); }, [] )
-                )
-            ;
+            return symbol_sum( symbol_array( arrname, size ) );
         }
     )
 
     , sumflat_asmjs_name = 'sumflat' + size + 'asmjs'
     , sumflat_asmjs_gen = flatorize.getAsmjsGen( { switcher : sumflat, name : sumflat_asmjs_name } )
     ;
-    
+
+    function symbol_array( arrname, size )
+    // arr := [ arr[0], arr[1], arr[2], ... ]
+    {
+        return empty_array( size )
+            .map( function ( tmp, i ) { return flatorize.part( arrname, i ); } )
+        ;
+    }
+
+    function empty_array( size )
+    {
+        return new Array( size ).join( ',' ).split( ',' );
+    }
+
+    function symbol_sum( arr )
+    // sum( arr ) := arr[0] + arr[1] + ...
+    {
+        return flatorize.expr.apply( 
+            null
+            , arr.reduce( symbol_sum_step, [] )
+        );
+
+        function symbol_sum_step( left, right ) 
+        {
+            return left.length  ?  left.concat( [ '+', right ] )  :  [ right ]; 
+        }
+    }
+
     // --- Do they work?
 
-    var   input = new Array( size ).join(',').split(',').map( Math.random )
+    var   input = empty_array( size ).map( Math.random )
     ,  expected = input.reduce( function (a,b) { return a+b; } )
     ;
     

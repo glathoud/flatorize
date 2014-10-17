@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8" /> 
-<title>Flatorize: Generate fast asm.js code</title>
+<title>Flatorize: Generate fast asm.js/TypedArray code</title>
 <link rel="stylesheet" type="text/css" href="prettify/prettify.css">
 <link rel="stylesheet" type="text/css" href="flatorize.css">
 <script type="text/javascript" src="log.js"></script>
@@ -14,6 +14,7 @@
 <script type="text/javascript" src="modifsplitradix.js"></script> <!-- xxx check whether really needed -->
 
 <script type="text/javascript" src="expl.js"></script>
+
 <script type="text/javascript" src="expl/matmulrows_zip_flatorize.js"></script>
 <script type="text/javascript" src="expl/dftreal_flatorize.js"></script>
 
@@ -22,15 +23,15 @@
 <script type="text/javascript" src="expl/asmjs_dftrealflat_check.js"></script>
 
 <script type="text/javascript" src="expl/flatasmjs_scalar_from_scalar.js"></script>
-<script type="text/javascript" src="expl/flatasmjs_scalar_from_vector.js"></script>
+<script type="text/javascript" src="expl/flatasmjs_scalar_from_array.js"></script>
 <script type="text/javascript" src="expl/flatasmjs_scalar_from_matrix.js"></script>
 
-<script type="text/javascript" src="expl/flatasmjs_vector_from_scalar.js"></script>
-<script type="text/javascript" src="expl/flatasmjs_vector_from_vector.js"></script>
-<script type="text/javascript" src="expl/flatasmjs_vector_from_matrix.js"></script>
+<script type="text/javascript" src="expl/flatasmjs_array_from_scalar.js"></script>
+<script type="text/javascript" src="expl/flatasmjs_array_from_array.js"></script>
+<script type="text/javascript" src="expl/flatasmjs_array_from_matrix.js"></script>
 
 <script type="text/javascript" src="expl/flatasmjs_matrix_from_scalar.js"></script>
-<script type="text/javascript" src="expl/flatasmjs_matrix_from_vector.js"></script>
+<script type="text/javascript" src="expl/flatasmjs_matrix_from_array.js"></script>
 <script type="text/javascript" src="expl/flatasmjs_matrix_from_matrix.js"></script>
 
 </head>
@@ -44,7 +45,7 @@
 
 <p><a href="index.html">Back to the main article</a></p>
 
-<h2><code>flatorize_asmjs</code>: Generate fast <code>asm.js</code> code</h2>
+<h2>Generate fast <code>asm.js</code>/<code>TypedArray</code> code</h2>
 
 <p style="text-align:right">by <a href="http://glat.info">Guillaume Lathoud</a><span class="print">&nbsp;[1]</span>, September 2014</p>
 
@@ -53,7 +54,7 @@
 
 <p>This page presents a plugin method <code>flatorize.getAsmjs()</code> (GitHub <a href="https://github.com/glathoud/flatorize/blob/master/flatorize_asmjs.js">source</a>) that goes on top of <code>flatorize</code> (see the <a href="index.html">main article</a>, GitHub <a href="https://github.com/glathoud/flatorize/blob/master/flatorize.js">source</a>).</p>
 
-<p>Examples describe how to use <code>flatorize.getAsmjs()</code> to generate <code>asm.js</code> implementations that run <strong>very fast in at least Firefox and Chrome</strong>. </p>
+<p>Examples describe how to use <code>flatorize.getAsmjs()</code> to generate <code>asm.js/TypedArray</code> code that runs <strong>very fast in at least Firefox &amp; Chrome</strong>. </p>
 
 <p>Each input or output can be a number or an array of numbers. All arrays are grouped into a single one (inputs and/or output), so they must have the same type: <code>double</code>, <code>float</code> or <code>int</code> in <code>flatorize</code> notation, i.e. respectively <code>Float64Array</code>, <code>Float32Array</code> or <code>Int32Array</code> in JavaScript notation.</p>
 
@@ -62,7 +63,7 @@
 
 <ul class="contents-ul"></ul>
 
-<p class="print-hidden"><span class="global-result"></span></p>
+<p class="print-hidden"><span class="global-result"></span>.</p>
 
 
 
@@ -579,7 +580,7 @@ var all_passed;
             return true;
   
         var pk = passed[ k ];
-        document.write( '\x3Cli\x3E' + k + ' \x3Cspan class="' + (pk  ?  'happy'  :  'sad') + '"\x3E' + (pk  ?  'passed'  :  'failed')+ '.\x3C/span\x3E' +  '\x3C/li\x3E' );
+        document.write( '\x3Cli\x3E\x3Ca href="expl/' + (typeof pk === 'string'  ?  pk  :  k.replace( /^expl_/, '' )) + '.js"\x3E' + k + '\x3C/a\x3E \x3Cspan class="' + (pk  ?  'happy'  :  'sad') + '"\x3E' + (pk  ?  'passed'  :  'failed')+ '.\x3C/span\x3E' +  '\x3C/li\x3E' );
     
         return pk;
     }).every( function (x) { return x; }); 

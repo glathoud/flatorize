@@ -34,11 +34,11 @@ function expl_matmulrows_zip_flatorize()
     function symbol_matmulrows_zip( a, b )
     {
         return a.map( function (ra) { 
-            return zip.apply( null, b ).map( function (cb) {
+            return transpose( b ).map( function (cb) {
                 return symbol_sum( 
                     zip( ra, cb )
                         .map( function (xy) { 
-                            return FZ.expr( xy[ 0 ], '*', xy[ 1 ] ); 
+                            return flatorize.expr( xy[ 0 ], '*', xy[ 1 ] ); 
                         } )
                 );
             } );
@@ -53,20 +53,24 @@ function expl_matmulrows_zip_flatorize()
     //        ... 
     //      ]
     {
-        var ret = new Array( nrow );
-        for (var r = 0; r < nrow; r++)
-        {
-            var row = ret[ r ] = new Array( ncol );
-            for (var c = 0; c < ncol; c++)
-                row[ c ] = FZ.part( FZ.part( name, r ), c ); // e.g. m[r][c]
-        }
-        return ret;
+        return empty_array( nrow ).map( function ( tmp, r ) {
+
+            return empty_array( ncol ).map( function ( tmp, c ) {
+
+                return flatorize.part( flatorize.part( name, r ), c ); // e.g. m[r][c]
+            });
+        });
+    }
+
+    function empty_array( size )
+    {
+        return new Array( size ).join( ',' ).split( ',' );
     }
 
     function symbol_sum( arr )
     // sum( arr ) := arr[0] + arr[1] + ...
     {
-        return FZ.expr.apply( null, arr.reduce( symbol_sum_step, [] ) );
+        return flatorize.expr.apply( null, arr.reduce( symbol_sum_step, [] ) );
         function symbol_sum_step( left, right ) 
         {
             return left.length  ?  left.concat( [ '+', right ] )  :  [ right ]; 
@@ -82,6 +86,11 @@ function expl_matmulrows_zip_flatorize()
     //#END_BODY
 
     // More tools
+
+    function transpose( mat )
+    {
+        return zip.apply( null, mat );
+    }
 
     function zip(/*...arguments...*/)
     {

@@ -37,17 +37,40 @@
 
 
 
+<p><code>flatorize</code> lets you write well-encapsulated math code - i.e. many small functions - and automatically generates flat, <strong>very fast</strong> JavaScript code.</p>
+
+
+<p>Speedups exceed +1000% in many cases, including matrix multiplication and the Discrete Fourier Transform (<a href="#push-all">full results</a>).</p>
+
+<p>External links:</p>
+<ul>
+<li><code>asm.js</code>/<code>TypedArray</code> <a href="asmjs.html">plugin</a> to generate even faster JavaScript.</li>
+<li>C <a href="c_code.html">plugin</a>.</li>
+<li>Source files on <a href="https://github.com/glathoud/flatorize">GitHub</a>.</li>
+<li>Budapest 2014 nodebp/bpjs meetup <a href="http://glat.info/bpjs2014/index.html">slides</a> &amp; <a href="http://www.youtube.com/watch?v=FxNNSvNDbW8">video</a>.</li>
+</ul>
 
 
 
 
 
-<p>[See also: <a href="http://glat.info/bpjs2014/index.html">slides</a> &amp; <a href="http://www.youtube.com/watch?v=FxNNSvNDbW8">video</a> from the Budapest 2014 nodebp/bpjs meetup]</p>
+
+
+
+
+
 
 
 <h3 class="anchorable" id="contents">Contents <a href="#contents" class="anchor">#</a></h3>
 
 <ul class="contents-ul"></ul>
+
+
+
+
+
+
+
 
 
 
@@ -94,19 +117,126 @@ function matmulrows_zip( a, b )
 
 <span id="tldr-generated-js"></span></pre>
 
-<p>Speedups exceed +1000% in many cases, including matrix multiplication and the Discrete Fourier Transform (<a href="#push-all">full results</a>).</p>
 
 
-<p>Extras:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h3 class="anchorable" id="details-howto">Details (HOWTO)<a href="#details-howto" class="anchor">#</a></h3>
+
+<p>The two core ideas are to <a href="#factorize">factorize</a> and to <a href="#flatten">flatten</a> the implementation of mathematical expressions, hence the name <code>flatorize</code>.</p>
+
+<p>Consider the function <code>f</code> of complex numbers <code class="prettyprint lang-js">a,b,c</code>:</p>
+
+<pre class="prettyprint lang-js">function f(a,b,c) { return csub( csub(a,cadd(b,c)), cadd(b,c) ); };</pre>
+
+
+<h4 class="anchorable" id="factorize">Factorize <a href="#factorize" class="anchor">#</a></h4>
+
+<p>To spare CPU, one can modify <code>f</code>
+  by evaluating <code class="prettyprint lang-js">add(b,c)</code>
+ only once:</p>
+<pre class="prettyprint lang-js"><code>function f(a,b,c) { 
+    var bc = add(b,c);
+    return sub( sub(a,bc), bc ); 
+}
+</code></pre>
+
+
+<h4 class="anchorable" id="flatten">Flatten <a href="#flatten" class="anchor">#</a></h4>
+
+<p>Small "building block" functions like <code class="prettyprint
+lang-js">add</code> or <code class="prettyprint
+lang-js">sub</code> are useful to <em>write</em> code, but <em>at runtime</em> the
+CPU spends more time in function overhead than just doing the simple operation(s) in them.<p>
+
+<p>In more complex cases like recursive expressions, the function overhead becomes even bigger.</p>
+
+<p>One can eliminate function overhead by inlining each small function, that&nbsp;is&nbsp;replacing each small function with its implementation:</p>
+<pre class="prettyprint lang-js"><code>function f(a,b,c) { 
+    var bc = b+c;
+    return (a - bc) - bc;
+}
+</code></pre>
+
+<p>The CPU performance should be pretty good at this point.</p>
+
+<p>One could try to further optimize,
+e.g. writing <code class="prettify lang-js">a-2*bc</code>, which
+amounts to mathematical expression simplification. This can be quite
+complicated, and it is not sure how much CPU speed can be gained this
+way -&nbsp;especially compared to function overhead elimination&nbsp;-
+so if we ever attempt simplification, we'll keep it very simple.
+</p>
+
+<h4 class="anchorable" id="usage">Usage: <code>expr</code>, <code>part</code> and <code>flatorize</code> <a href="#usage" class="anchor">#</a></h4>
+
+<p>
+<code class="prettyprint lang-js">flatorize('a,b,c', function f(a,b,c) { ... })</code> returns a new function, obtained by:
+  <ol>
+    <li>calling <code class="prettyprint lang-js">f('a','b','c')</code>, which returns an expression,</li>
+    <li>factorizing and flattening the expression,</li> 
+    <li>generating the new code for the expression.</li>
+  </ol>
+</p>
+
+<p><code class="prettyprint lang-js">f(a,b,c)</code> can use 3&nbsp;ways to build and return an expression:</p>
 <ul>
-<li><a href="asmjs.html">Plugin</a> to generate fast <code>
-    asm.js
-    </code>
-  code.</li>
-<li><a href="c_code.html">Plugin</a> to generate fast C code.</li>
+<li><code class="prettyprint lang-js">flatorize.expr(a,'+',b)</code> defines the code expression <code class="prettyprint lang-js">a+b</code>.</li>
+<li><code class="prettyprint lang-js">flatorize.part(arr,3)</code> or <code class="prettyprint lang-js">flatorize.part(obj,'prop')</code> describe the extraction of a property value from an object (array or not).</li>
+<li><code class="prettyprint lang-js">[ 'a', anExpr ]</code> is an array expression composed of 2 sub-expressions. Similary an object <code class="prettyprint lang-js">{ a : anExpr }</code> can be returned.
+</li>
 </ul>
 
-<p>All source files are available in their latest version on <a href="https://github.com/glathoud/flatorize">GitHub</a>.</p>
+<h4 class="anchorable" id="example">Example: complex numbers <a href="#example" class="anchor">#</a></h4>
+
+<p>We now work with complex numbers, which we represent as arrays of two numbers <code class="prettyprint lang-js">[re,im]</code>. Consider the function <code>f</code> of complex numbers <code class="prettyprint lang-js">a,b,c</code>:</p>
+
+<pre class="prettyprint lang-js"><code>f = <script type="text/javascript">document.write(f+'')</script>;</code></pre>
+
+<p>To produce an optimized implementation <code>f2</code> of the function <code>f</code>,
+we use <a href="flatorize.js">flatorize</a> and write the following code:</p>
+
+<pre class="prettyprint lang-js"><code>FZ    = flatorize;
+cadd  = FZ('a,b',   function (a,b)   { 
+    return cplx( FZ.expr( creal(a), '+', creal(b) ),
+                 FZ.expr( cimag(a), '+', cimag(b) ) 
+               ); 
+});
+csub  = FZ('a,b',   function (a,b)   { 
+    return cplx( FZ.expr( creal(a), '-', creal(b) ),
+                 FZ.expr( cimag(a), '-', cimag(b) ) 
+               ); 
+});
+creal = FZ('a',     function (a)     { return FZ.part( a, 0 ); });
+cimag = FZ('a',     function (a)     { return FZ.part( a, 1 ); });
+cplx  = FZ('re,im', function (re,im) { return [ re, im ]; });
+
+f  = <script type="text/javascript">document.write(f+'');</script>
+f2 = FZ('a,b,c',f);
+</code></pre>
+
+<p>All functions returned by <code class="prettyprint lang-js">flatorize</code>
+can be used to build further expressions: in the above example, <code>creal</code> is used to express <code>cadd</code>, which itself is used to expressed <code>f</code>. Definition order does not matter.
+</p>
+
+<p>All functions returned by <code class="prettyprint lang-js">flatorize</code>
+can also be called with values, for computation. For example, calling <code class="prettyprint lang-js">f2(a,b,c)</code> executes
+the flat, factorized:</p>
+
+<pre class="prettyprint lang-js" id="example-generated"><code><script type="text/javascript">document.write(f2.getDirect()+'')</script></code></pre>
+
+
 
 
 
@@ -440,125 +570,6 @@ with the original Cooley-Tukey:</p>
 <p>Rather, this simple, task-agnostic approach &ndash;&nbsp;factorizing and flattening&nbsp;&ndash; can give <em>huge enough</em> performance gains in many cases, which spares us the development and maintainance costs of  "going native".</p>
 
 <hr class="section-hr">
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h3 class="anchorable" id="details-howto">Details (HOWTO)<a href="#details-howto" class="anchor">#</a></h3>
-
-<p>The two core ideas are to <a href="#factorize">factorize</a> and to <a href="#flatten">flatten</a> the implementation of mathematical expressions, hence the name <code>flatorize</code>.</p>
-
-<p>Consider the function <code>f</code> of complex numbers <code class="prettyprint lang-js">a,b,c</code>:</p>
-
-<pre class="prettyprint lang-js">function f(a,b,c) { return csub( csub(a,cadd(b,c)), cadd(b,c) ); };</pre>
-
-
-<h4 class="anchorable" id="factorize">Factorize <a href="#factorize" class="anchor">#</a></h4>
-
-<p>To spare CPU, one can modify <code>f</code>
-  by evaluating <code class="prettyprint lang-js">add(b,c)</code>
- only once:</p>
-<pre class="prettyprint lang-js"><code>function f(a,b,c) { 
-    var bc = add(b,c);
-    return sub( sub(a,bc), bc ); 
-}
-</code></pre>
-
-
-<h4 class="anchorable" id="flatten">Flatten <a href="#flatten" class="anchor">#</a></h4>
-
-<p>Small "building block" functions like <code class="prettyprint
-lang-js">add</code> or <code class="prettyprint
-lang-js">sub</code> are useful to <em>write</em> code, but <em>at runtime</em> the
-CPU spends more time in function overhead than just doing the simple operation(s) in them.<p>
-
-<p>In more complex cases like recursive expressions, the function overhead becomes even bigger.</p>
-
-<p>One can eliminate function overhead by inlining each small function, that&nbsp;is&nbsp;replacing each small function with its implementation:</p>
-<pre class="prettyprint lang-js"><code>function f(a,b,c) { 
-    var bc = b+c;
-    return (a - bc) - bc;
-}
-</code></pre>
-
-<p>The CPU performance should be pretty good at this point.</p>
-
-<p>One could try to further optimize,
-e.g. writing <code class="prettify lang-js">a-2*bc</code>, which
-amounts to mathematical expression simplification. This can be quite
-complicated, and it is not sure how much CPU speed can be gained this
-way -&nbsp;especially compared to function overhead elimination&nbsp;-
-so if we ever attempt simplification, we'll keep it very simple.
-</p>
-
-<h4 class="anchorable" id="usage">Usage: <code>expr</code>, <code>part</code> and <code>flatorize</code> <a href="#usage" class="anchor">#</a></h4>
-
-<p>
-<code class="prettyprint lang-js">flatorize('a,b,c', function f(a,b,c) { ... })</code> returns a new function, obtained by:
-  <ol>
-    <li>calling <code class="prettyprint lang-js">f('a','b','c')</code>, which returns an expression,</li>
-    <li>factorizing and flattening the expression,</li> 
-    <li>generating the new code for the expression.</li>
-  </ol>
-</p>
-
-<p><code class="prettyprint lang-js">f(a,b,c)</code> can use 3&nbsp;ways to build and return an expression:</p>
-<ul>
-<li><code class="prettyprint lang-js">flatorize.expr(a,'+',b)</code> defines the code expression <code class="prettyprint lang-js">a+b</code>.</li>
-<li><code class="prettyprint lang-js">flatorize.part(arr,3)</code> or <code class="prettyprint lang-js">flatorize.part(obj,'prop')</code> describe the extraction of a property value from an object (array or not).</li>
-<li><code class="prettyprint lang-js">[ 'a', anExpr ]</code> is an array expression composed of 2 sub-expressions. Similary an object <code class="prettyprint lang-js">{ a : anExpr }</code> can be returned.
-</li>
-</ul>
-
-<h4 class="anchorable" id="example">Example: complex numbers <a href="#example" class="anchor">#</a></h4>
-
-<p>We now work with complex numbers, which we represent as arrays of two numbers <code class="prettyprint lang-js">[re,im]</code>. Consider the function <code>f</code> of complex numbers <code class="prettyprint lang-js">a,b,c</code>:</p>
-
-<pre class="prettyprint lang-js"><code>f = <script type="text/javascript">document.write(f+'')</script>;</code></pre>
-
-<p>To produce an optimized implementation <code>f2</code> of the function <code>f</code>,
-we use <a href="flatorize.js">flatorize</a> and write the following code:</p>
-
-<pre class="prettyprint lang-js"><code>FZ    = flatorize;
-cadd  = FZ('a,b',   function (a,b)   { 
-    return cplx( FZ.expr( creal(a), '+', creal(b) ),
-                 FZ.expr( cimag(a), '+', cimag(b) ) 
-               ); 
-});
-csub  = FZ('a,b',   function (a,b)   { 
-    return cplx( FZ.expr( creal(a), '-', creal(b) ),
-                 FZ.expr( cimag(a), '-', cimag(b) ) 
-               ); 
-});
-creal = FZ('a',     function (a)     { return FZ.part( a, 0 ); });
-cimag = FZ('a',     function (a)     { return FZ.part( a, 1 ); });
-cplx  = FZ('re,im', function (re,im) { return [ re, im ]; });
-
-f  = <script type="text/javascript">document.write(f+'');</script>
-f2 = FZ('a,b,c',f);
-</code></pre>
-
-<p>All functions returned by <code class="prettyprint lang-js">flatorize</code>
-can be used to build further expressions: in the above example, <code>creal</code> is used to express <code>cadd</code>, which itself is used to expressed <code>f</code>. Definition order does not matter.
-</p>
-
-<p>All functions returned by <code class="prettyprint lang-js">flatorize</code>
-can also be called with values, for computation. For example, calling <code class="prettyprint lang-js">f2(a,b,c)</code> executes
-the flat, factorized:</p>
-
-<pre class="prettyprint lang-js" id="example-generated"><code><script type="text/javascript">document.write(f2.getDirect()+'')</script></code></pre>
 
 
 

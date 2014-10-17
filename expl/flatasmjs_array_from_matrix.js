@@ -1,13 +1,13 @@
-/*global expl_flatasmjs_vector_from_matrix flatorize ArrayBuffer window*/
+/*global expl_flatasmjs_array_from_matrix flatorize ArrayBuffer window*/
 
-function expl_flatasmjs_vector_from_matrix( /*integer*/nrow, /*integer*/ncol )
+function expl_flatasmjs_array_from_matrix( /*integer*/nrow, /*integer*/ncol )
 // Probably not the most sumingful use(s) of flatorize (already flat)
 // BUT useful as a unit test for both flatorize and flatorize+asm.js
 {
     // Give external access, for example to display source code.
     // Example of use: ../index.html
 
-    var E = expl_flatasmjs_vector_from_matrix;
+    var E = expl_flatasmjs_array_from_matrix;
 
     //#BEGIN_BODY
 
@@ -37,16 +37,20 @@ function expl_flatasmjs_vector_from_matrix( /*integer*/nrow, /*integer*/ncol )
     //        ... 
     //      ]
     {
-        var ret = new Array( nrow );
-        for (var r = 0; r < nrow; r++)
-        {
-            var row = ret[ r ] = new Array( ncol );
-            for (var c = 0; c < ncol; c++)
-                row[ c ] = flatorize.part( flatorize.part( name, r ), c ); // e.g. m[r][c]
-        }
-        return ret;
+        return empty_array( nrow ).map( function ( tmp, r ) {
+
+            return empty_array( ncol ).map( function ( tmp, c ) {
+
+                return flatorize.part( flatorize.part( name, r ), c ); // e.g. m[r][c]
+            });
+        });
     }
-    
+
+    function empty_array( size )
+    {
+        return new Array( size ).join( ',' ).split( ',' );
+    }
+        
     // --- Do they work?
 
     var col_factor = Math.pow( 10, Math.ceil( Math.log( ncol ) / Math.log( 10 ) ) )

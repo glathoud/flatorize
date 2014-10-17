@@ -47,31 +47,35 @@ function expl_flatasmjs_matrix_from_matrix( /*integer*/nrow, /*integer*/ncol )
     //        ... 
     //      ]
     {
-        var ret = new Array( nrow );
-        for (var r = 0; r < nrow; r++)
-        {
-            var row = ret[ r ] = new Array( ncol );
-            for (var c = 0; c < ncol; c++)
-                row[ c ] = flatorize.part( flatorize.part( name, r ), c ); // e.g. m[r][c]
-        }
-        return ret;
+        return empty_array( nrow ).map( function ( tmp, r ) {
+
+            return empty_array( ncol ).map( function ( tmp, c ) {
+
+                return flatorize.part( flatorize.part( name, r ), c ); // e.g. m[r][c]
+            });
+        });
     }
-    
+
+    function empty_array( size )
+    {
+        return new Array( size ).join( ',' ).split( ',' );
+    }
+        
     // --- Do they work?
 
     var col_factor = Math.pow( 10, Math.ceil( Math.log( ncol ) / Math.log( 10 ) ) )
     
-    ,        input = new Array( nrow ).join(',').split(',').map( 
+    ,        input = empty_array( nrow ).map( 
         function ( tmp, irow ) { 
-            return new Array( ncol ).join( ',' ).split( ',' ).map( 
+            return empty_array( ncol ).map( 
                 function ( tmp, icol ) { return irow + icol / col_factor; } 
             );
         }
     )
 
-    ,     expected = new Array( ncol ).join(',').split(',').map( 
+    ,     expected = empty_array( ncol ).map( 
         function ( tmp, icol ) { 
-            return new Array( nrow ).join( ',' ).split( ',' ).map( 
+            return empty_array( nrow ).map( 
                 function ( tmp, irow ) { return irow + icol / col_factor; } 
             );
         }

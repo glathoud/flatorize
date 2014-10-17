@@ -1,13 +1,13 @@
-/*global expl_flatasmjs_vector_from_scalar flatorize ArrayBuffer window*/
+/*global expl_flatasmjs_array_from_scalar flatorize ArrayBuffer window*/
 
-function expl_flatasmjs_vector_from_scalar( /*integer*/size )
+function expl_flatasmjs_array_from_scalar( /*integer*/size )
 // Probably not the most sumingful use(s) of flatorize (already flat)
 // BUT useful as a unit test for both flatorize and flatorize+asm.js
 {
     // Give external access, for example to display source code.
     // Example of use: ../index.html
 
-    var E = expl_flatasmjs_vector_from_scalar;
+    var E = expl_flatasmjs_array_from_scalar;
 
     //#BEGIN_BODY
     
@@ -18,7 +18,7 @@ function expl_flatasmjs_vector_from_scalar( /*integer*/size )
         'n:int->v:[' + size + ' int]'
         , function ( n_name )
         {
-            return new Array( size ).join( ',' ).split( ',' )
+            return empty_array( size )
                 .map( function ( tmp, i ) { return flatorize.expr( n_name, '+', i ); } )
             ;
         }
@@ -35,7 +35,7 @@ function expl_flatasmjs_vector_from_scalar( /*integer*/size )
         'n:double->v:[' + size + ' double]'
         , function ( n_name )
         {
-            return new Array( size ).join( ',' ).split( ',' )
+            return empty_array( size )
                 .map( function ( tmp, i ) { return flatorize.expr( n_name, '+', i ); } )
             ;
         }
@@ -46,13 +46,18 @@ function expl_flatasmjs_vector_from_scalar( /*integer*/size )
 
     ;
     
+    function empty_array( size )
+    {
+        return new Array( size ).join( ',' ).split( ',' );
+    }
+
     // --- Do they work?
     
     var   input = 3
-    ,  expected = new Array( size ).join(',').split(',').map( function ( tmp, i ) { return input + i; } )
+    ,  expected = empty_array( size ).map( function ( tmp, i ) { return input + i; } )
 
     ,     input_double = 4.567
-    ,  expected_double = new Array( size ).join(',').split(',').map( function ( tmp, i ) { return input_double + i; } )
+    ,  expected_double = empty_array( size ).map( function ( tmp, i ) { return input_double + i; } )
     ;
     
     // flatorized version

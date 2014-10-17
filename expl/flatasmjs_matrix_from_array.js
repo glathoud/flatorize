@@ -1,13 +1,13 @@
-/*global expl_flatasmjs_matrix_from_vector flatorize ArrayBuffer window*/
+/*global expl_flatasmjs_matrix_from_array flatorize ArrayBuffer window*/
 
-function expl_flatasmjs_matrix_from_vector( /*integer*/size )
+function expl_flatasmjs_matrix_from_array( /*integer*/size )
 // Probably not the most sumingful use(s) of flatorize (already flat)
 // BUT useful as a unit test for both flatorize and flatorize+asm.js
 {
     // Give external access, for example to display source code.
     // Example of use: ../index.html
 
-    var E = expl_flatasmjs_matrix_from_vector;
+    var E = expl_flatasmjs_matrix_from_array;
 
     //#BEGIN_BODY
 
@@ -21,15 +21,14 @@ function expl_flatasmjs_matrix_from_vector( /*integer*/size )
         , function ( arrname )
         {
             return symbol_matmulrows_zip(
-                /*transpose:*/ zip.apply( 
-                    null
-                    , /*matrix:*/ [
-                        /*array:*/ symbol_row( arrname, size )
+                transpose(
+                    /*matrix:*/ [
+                        symbol_array( arrname, size )
                             .map( function ( x, i ) { return flatorize.expr( x, '*', i ) } )
                     ]
                 )
                 , /*matrix:*/ [
-                    /*array:*/ symbol_row( arrname, size )
+                    symbol_array( arrname, size )
                         .map( function ( x, i ) { return flatorize.expr( x, '+', i / col_factor ); } )
                 ]
             );
@@ -42,16 +41,14 @@ function expl_flatasmjs_matrix_from_vector( /*integer*/size )
 
     // --- Do they work?
 
-    var  input = new Array( size ).join( ',' ).split( ',' ).map( Math.random )
+    var  input = empty_array( size ).map( Math.random )
 
-    , expected = new Array( size ).join( ',' ).split( ',' ).map( 
-
-        function ( tmp, irow ) {
-
-            return new Array( size ).join( ',' ).split( ',' ).map( 
-
-                function ( tmp, icol ) {
-
+    , expected = empty_array( size ).map( 
+        function ( tmp, irow ) 
+        {
+            return empty_array( size ).map( 
+                function ( tmp, icol ) 
+                {
                     return (input[ irow ] * irow) * (input[ icol ] + icol / col_factor);
                 }
             );
@@ -87,7 +84,9 @@ function expl_flatasmjs_matrix_from_vector( /*integer*/size )
     function symbol_matmulrows_zip( a, b )
     {
         return a.map( function (ra) { 
-            return zip.apply( null, b ).map( function (cb) {
+
+            return transpose( b ).map( function (cb) {
+
                 return symbol_sum( 
                     zip( ra, cb )
                         .map( function (xy) { 
@@ -98,6 +97,11 @@ function expl_flatasmjs_matrix_from_vector( /*integer*/size )
         } );
     }
 
+    function transpose( mat )
+    {
+        return zip.apply( null, mat );
+    }
+    
     function zip(/*...arguments...*/)
     {
         var arg = [].slice.apply( arguments );
@@ -121,25 +125,29 @@ function expl_flatasmjs_matrix_from_vector( /*integer*/size )
     {
         var ret = new Array( nrow );
         for (var r = 0; r < nrow; r++)
-            ret[ r ] = symbol_row( flatorize.part( name, r ), ncol );  // e.g. m[r]
+            ret[ r ] = symbol_array( flatorize.part( name, r ), ncol );  // e.g. m[r]
 
         return ret;
     }
 
-    function symbol_row( /*string | expression*/what, ncol )
+    function symbol_array( arrname, size )
+    // arr := [ arr[0], arr[1], arr[2], ... ]
     {
-        var row = new Array( ncol );
-        for (var c = 0; c < ncol; c++)
-            row[ c ] = flatorize.part( what, c ); // e.g. row[c]
-        
-        return row;
+        return empty_array( size )
+            .map( function ( tmp, i ) { return flatorize.part( arrname, i ); } )
+        ;
     }
 
+    function empty_array( size )
+    {
+        return new Array( size ).join( ',' ).split( ',' );
+    }
     
     function symbol_sum( arr )
     // sum( arr ) := arr[0] + arr[1] + ...
     {
         return flatorize.expr.apply( null, arr.reduce( symbol_sum_step, [] ) );
+
         function symbol_sum_step( left, right ) 
         {
             return left.length  ?  left.concat( [ '+', right ] )  :  [ right ]; 

@@ -20,10 +20,10 @@ function expl_flatasmjs_matrix_from_scalar( /*integer*/nrow, /*integer*/ncol )
         'x:double->mat:[' + nrow + ' [' + ncol + ' double]]'
         , function ( x_name )
         {
-            return new Array( nrow ).join( ',' ).split( ',' ).map(
+            return empty_array( nrow ).map(
                 function ( tmp, irow )
                 {
-                    return new Array( ncol ).join( ',' ).split( ',' ).map(
+                    return empty_array( ncol ).map(
                         function ( tmp, icol )
                         {
                             return flatorize.expr( 
@@ -40,18 +40,21 @@ function expl_flatasmjs_matrix_from_scalar( /*integer*/nrow, /*integer*/ncol )
     ,   s2m_asmjs_gen  = flatorize.getAsmjsGen( { switcher : s2m, name : s2m_asmjs_name } )
     ;
 
+    function empty_array( size )
+    {
+        return new Array( size ).join( ',' ).split( ',' );
+    }
+
     // --- Do they work?
 
     var  input = 1234.56789
 
-    , expected = new Array( nrow ).join( ',' ).split( ',' ).map( 
-
-        function ( tmp, irow ) {
-
-            return new Array( ncol ).join( ',' ).split( ',' ).map( 
-
-                function ( tmp, icol ) {
-
+    , expected = empty_array( nrow ).map( 
+        function ( tmp, irow ) 
+        {
+            return empty_array( ncol ).map( 
+                function ( tmp, icol ) 
+                {
                     return input + (irow + icol / factor) / factor;
                 }
             );
