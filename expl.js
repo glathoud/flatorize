@@ -21,7 +21,7 @@ function expl_run( f, /*?object?*/opt )
     var opt_args   = opt  &&  opt.args
     ,   doc_silent = opt  &&  opt.doc_silent
 
-    try {
+// xxx    try {
         var r = f.apply( null, opt_args )
         ,   s_expected = JSON.stringify( r.expected )
         ,   s_obtained = JSON.stringify( r.obtained )
@@ -30,11 +30,11 @@ function expl_run( f, /*?object?*/opt )
         ;
         if (!doc_silent)
             document.write( f2body( f ) + '\n// ' + r.name + ': ' + s_obtained + (ok  ?  '   // Yes!'  :  '   // NOOOO!\n//\n// expected:\n// ' + r.name + ': ' + s_expected ) );
-    } catch (e) {
+/* xxx   } catch (e) {
         if (!doc_silent)
             document.write( '--- expl_run: FAILED! ---\n\ne:\n\n' + e );
         ok = false;
     }
-    
+  */  
     return ok;
 }

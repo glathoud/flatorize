@@ -36,6 +36,9 @@
     flatorize.expr = expr;    // To build and expression.
     flatorize.part = part;    // To extract a property of an array or object.
     
+    // Extra tools, mostly used by the asm.js and C plugins 
+
+    flatorize.isExpr = function (e) { return e  &&  e.__isExpr__; };
     flatorize.tryToGetArrayBasicTypeDescription = tryToGetArrayBasicTypeDescription;  // Mainly used by ./flatorize_asmjs.js
 
     // ---------- Public API implementation ----------
@@ -378,7 +381,7 @@
                 // Success
 
                 var dim      = 1 + sub.dim
-                ,   dim_step = [ sub.dim_step[ 0 ] * sub.n ].concat( sub.dim_step )
+                ,   dim_step = [ sub.dim_step[ 0 ] * sub.dim_n[ 0 ] ].concat( sub.dim_step )
                 ;
 
                 return { 
