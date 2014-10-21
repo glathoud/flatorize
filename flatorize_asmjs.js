@@ -232,6 +232,8 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             }
             else if (out_e_isArray = out_e instanceof Array)
             {
+                if (!(typed_out_vartype instanceof Array))
+                    throw new Error( 'Inconsistency: array expression <-> non-array type. They must be consistent.' );
             }
             else if (typeof out_e === 'number')
             {

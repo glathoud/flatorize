@@ -30,10 +30,13 @@
 <script type="text/javascript" src="expl/flatasmjs_array_from_scalar.js"></script>
 <script type="text/javascript" src="expl/flatasmjs_array_from_array.js"></script>
 <script type="text/javascript" src="expl/flatasmjs_array_from_matrix.js"></script>
+<script type="text/javascript" src="expl/flatasmjs_array_from_ndim.js"></script>
 
 <script type="text/javascript" src="expl/flatasmjs_matrix_from_scalar.js"></script>
 <script type="text/javascript" src="expl/flatasmjs_matrix_from_array.js"></script>
 <script type="text/javascript" src="expl/flatasmjs_matrix_from_matrix.js"></script>
+
+<script type="text/javascript" src="expl/flatasmjs_ndim_from_ndim.js"></script>
 
 </head>
 <body>
@@ -359,6 +362,19 @@ function genflatcode_asmjs_dftreal1024flat()
 
 <h3 class="anchorable" id="performance">Performance (under construction)<a href="#performance" class="anchor">#</a></h3>
 
+<p>Plan: make each item test runnable on a button click</p>
+<ul>
+  <li>Direct comparison: DFT1024, flatorize_asm: with "use asm"/ without it, FF / Chrome. Advantage / inconvenients, FF right away, Chrome faster but needs "heat up" period.</li>
+  <li>Direct comparison: Chrome: TypedArrays vs. normal arrays (direct comparison, only modify the generating code. FF not worth it because so slow without asm.js (see above).</li>
+  <li>Direct comparison (xxx after updating the C plugin): asm.js in Chrome vs. C on DFT1024 (make sure "double" in both cases).</li>
+</ul>
+
+<p>Performance: extra remarks</p>
+
+<ul>
+  <li>flatorize / flatorize_asm cannot be directly compared because of different inputs/outputs <-> array read/write costs, evaluate the costs in FF / Chrome, conclusion: try to keep flowing your data in-place for very high performance.</li>
+  <li>Comment on classical issue with FF and non-asm caller code: DFT16 with/without "use asm", not a problem for DFT1024 (overhead << main asm.js execution). Possibly link to http://192.168.80.147:8080/flatorize/explore/asmjs/explore_asmjs_dft1024.html</li>
+</ul>
 
 <script type="text/javascript">
 function xxxperf(dftsize)

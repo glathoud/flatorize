@@ -1,17 +1,17 @@
-/*global expl_flatasmjs_array_from_ndim flatorize ArrayBuffer window*/
+/*global expl_flatasmjs_matrix_from_ndim flatorize ArrayBuffer window*/
 
-function expl_flatasmjs_array_from_ndim( /*array of integer*/dim )
+function expl_flatasmjs_matrix_from_ndim( /*array of integer*/dim, /*array of integer*/outdim )
 // Maybe not the most meaningful use of flatorize, but a good unit
 // test for both flatorize and flatorize+asm.js
 {
     // Give external access, for example to display source code.
     // Example of use: ../index.html
 
-    var E = expl_flatasmjs_array_from_ndim;
+    var E = expl_flatasmjs_matrix_from_ndim;
 
     //#BEGIN_BODY
 
-    var ndimdiaglen = Math.min.apply( Math, dim )
+    var ndimdiagsize = Math.min.apply( Math, dim )
     
     ,  ndimdiagflat_name = 'ndimdiagflat' + dim.join( 'x' )
     ,  ndimdiagflat = flatorize(
