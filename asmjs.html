@@ -343,6 +343,82 @@ function genflatcode_asmjs_dftreal1024flat()
 
 <script type="text/javascript" src="asmjs_remaining_tests.js"></script>
 
+<script type="text/javascript" src="asmjs_perf_util.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h3 class="anchorable" id="use_asm">Performance: with/without <code>"use asm"</code><a href="#use_asm" class="anchor">#</a></h3>
+
+<script type="text/javascript" src="asmjs_perf_use_asm.js"></script>
+<p>We compare the speed with &amp; without <code>"use asm"</code> statement, on DFT1024. The only difference is whether or not the <code>"use asm"</code> statement appears, the rest of the code remains the same.</p>
+
+<p><button disabled="disabled" onclick="asmjs_perf_use_asm()">Measure the speed!</button> (Feel free to do it multiple times.)</p>
+
+<pre id="asmjs_perf_use_asm_output">(The speed measurement can last long in some browsers.)</pre>
+<p>Example of result:</p>
+<pre>
+__________
+Firefox 32:
+
+without "use asm": speed: 2.13e+3 iterations/second.
+with    "use asm": speed: 2.48e+4 iterations/second.
+-> speed ratio: 11.6
+
+without "use asm": speed: 2.15e+3 iterations/second.
+with    "use asm": speed: 2.40e+4 iterations/second.
+-> speed ratio: 11.2
+
+without "use asm": speed: 2.17e+3 iterations/second.
+with    "use asm": speed: 2.37e+4 iterations/second.
+-> speed ratio: 10.9
+
+__________
+Chrome 38:
+
+without "use asm": speed: 1.12e+4 iterations/second.
+with    "use asm": speed: 1.22e+4 iterations/second.
+-> speed ratio: 1.09
+
+without "use asm": speed: 3.50e+4 iterations/second.
+with    "use asm": speed: 3.49e+4 iterations/second.
+-> speed ratio: 0.998
+
+without "use asm": speed: 3.50e+4 iterations/second.
+with    "use asm": speed: 3.50e+4 iterations/second.
+-> speed ratio: 1.00
+</pre>
+
+<p><code>speed ratio:</code> as expected, Chrome does not care about <code>"use asm"</code>, whereas in Firefox having the <code>"use asm"</code> statement leads to a <strong>10-times speedup</strong>.</p>
+
+<p><code>speed:</code> at first, Chrome runs slower than Firefox, but afterwards, Chrome has the <strong>highest speed</strong>. Most likely the repeated use of the code triggers an extra optimization in Chrome after it <strong>"heats up"</strong>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h3 class="anchorable" id="typed_arrays">Performance: TypedArrays vs. normal arrays<a href="#typed_arrays" class="anchor">#</a></h3>
 
 
 
@@ -360,7 +436,30 @@ function genflatcode_asmjs_dftreal1024flat()
 
 
 
-<h3 class="anchorable" id="performance">Performance (under construction)<a href="#performance" class="anchor">#</a></h3>
+
+<h3 class="anchorable" id="js_c">Performance: JavaScript vs. C<a href="#js_c" class="anchor">#</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h3 class="anchorable" id="rest">Rest (under construction)<a href="#rest" class="anchor">#</a></h3>
 
 <p>Plan: make each item test runnable on a button click</p>
 <ul>
