@@ -373,40 +373,41 @@ function genflatcode_asmjs_dftreal1024flat()
 __________
 Firefox 32:
 
-without "use asm": speed: 2.13e+3 iterations/second.
-with    "use asm": speed: 2.48e+4 iterations/second.
--> speed ratio: 11.6
-
 without "use asm": speed: 2.15e+3 iterations/second.
-with    "use asm": speed: 2.40e+4 iterations/second.
--> speed ratio: 11.2
+with    "use asm": speed: 2.41e+4 iterations/second.
+-> speedup: +1018%
 
-without "use asm": speed: 2.17e+3 iterations/second.
-with    "use asm": speed: 2.37e+4 iterations/second.
--> speed ratio: 10.9
+without "use asm": speed: 2.13e+3 iterations/second.
+with    "use asm": speed: 2.41e+4 iterations/second.
+-> speedup: +1030%
+
+without "use asm": speed: 2.10e+3 iterations/second.
+with    "use asm": speed: 2.34e+4 iterations/second.
+-> speedup: +1013%
 
 __________
 Chrome 38:
 
 without "use asm": speed: 1.12e+4 iterations/second.
-with    "use asm": speed: 1.22e+4 iterations/second.
--> speed ratio: 1.09
+with    "use asm": speed: 1.23e+4 iterations/second.
+-> speedup: +10%
 
-without "use asm": speed: 3.50e+4 iterations/second.
-with    "use asm": speed: 3.49e+4 iterations/second.
--> speed ratio: 0.998
+without "use asm": speed: 3.48e+4 iterations/second.
+with    "use asm": speed: 3.45e+4 iterations/second.
+-> speedup: -1%
 
-without "use asm": speed: 3.50e+4 iterations/second.
-with    "use asm": speed: 3.50e+4 iterations/second.
--> speed ratio: 1.00
+without "use asm": speed: 3.47e+4 iterations/second.
+with    "use asm": speed: 3.52e+4 iterations/second.
+-> speedup: +1%
 </pre>
 
-<p><code>speed ratio:</code> as expected, Chrome does not care about <code>"use asm"</code>, whereas in Firefox having the <code>"use asm"</code> statement leads to a <strong>10-times speedup</strong>.</p>
+<p><code>speedup:</code> as expected, Chrome does not care about <code>"use asm"</code>, whereas in Firefox having the <code>"use asm"</code> statement leads to a <strong>+1000% speedup</strong>.</p>
 
-<p><code>speed:</code> at first, Chrome runs slower than Firefox, but afterwards, Chrome has the <strong>highest speed</strong>. Most likely the repeated use of the code triggers an extra optimization in Chrome after it <strong>"heats up"</strong>.</p>
+<p><code>speed:</code> at first, Chrome runs slower than Firefox, but afterwards, Chrome has the <strong>highest speed</strong>. Most likely the repeated use of the code triggers an extra optimization in Chrome after it <strong>"warms up"</strong>.</p>
 
-
-
+<p>Conclusion:
+<blockquote>Use <code>asm.js</code> for a dramatic speedup in Firefox (+1000%).</blockquote>
+</p>
 
 
 
@@ -419,6 +420,91 @@ with    "use asm": speed: 3.50e+4 iterations/second.
 
 
 <h3 class="anchorable" id="typed_arrays">Performance: TypedArrays vs. normal arrays<a href="#typed_arrays" class="anchor">#</a></h3>
+
+
+<script type="text/javascript" src="asmjs_perf_typed_array.js"></script>
+<p>We compare the speed with &amp; with Typed Arrays and with normal arrays, on DFT1024. We replace:
+<pre class="prettyprint lang-js"><code>// Using Typed Arrays
+
+var float64 = new stdlib.Float64Array( heap );
+
+...
+
+dftrealflat_buffer = 
+    new ArrayBuffer( dftrealflat_asmjsGen.buffer_bytes )
+</code></pre>
+<p>with:</p>
+<pre class="prettyprint lang-js"><code>// Using normal arrays
+
+var float64 = heap;
+
+...
+
+dftrealflat_buffer = 
+    new Array( dftrealflat_asmjsGen.count )
+</code></pre>
+
+<p>To have a meaningful comparison, we remove <code>"use asm"</code> in <em>both</em> cases, because the "normal array" version cannot be compiled anyway.</p>
+
+<p><button disabled="disabled" onclick="asmjs_perf_typed_array()">Measure the speed!</button> (Feel free to do it multiple times.)</p>
+
+<pre id="asmjs_perf_typed_array_output">(The speed measurement can last long in some browsers.)</pre>
+<p>Example of result:</p>
+<pre>
+__________
+Firefox 32:
+
+with normal array: speed: 2.00e+3 iterations/second.
+with  Typed Array: speed: 2.14e+3 iterations/second.
+-> speedup: +7%
+
+with normal array: speed: 2.08e+3 iterations/second.
+with  Typed Array: speed: 2.14e+3 iterations/second.
+-> speedup: +3%
+
+with normal array: speed: 2.11e+3 iterations/second.
+with  Typed Array: speed: 2.12e+3 iterations/second.
+-> speedup: +1%
+
+__________
+Chrome 38:
+
+with normal array: speed: 1.06e+4 iterations/second.
+with  Typed Array: speed: 1.13e+4 iterations/second.
+-> speedup: +6%
+
+with normal array: speed: 2.95e+4 iterations/second.
+with  Typed Array: speed: 3.42e+4 iterations/second.
+-> speedup: +16%
+
+with normal array: speed: 2.95e+4 iterations/second.
+with  Typed Array: speed: 3.48e+4 iterations/second.
+-> speedup: +18%
+</pre>
+
+<p><code>speedup:</code> almost none in Firefox, and about +15% to +20% in Chrome.</p>
+
+<p><code>speed:</code> Since <code>"use asm"</code> was removed for this comparison, Firefox runs slower than <a href="use_asm">previously</a>. Chrome exhibits the same "warm up" behaviour.</p>
+
+<p>Conclusion:
+<blockquote>Use Typed Arrays for a speedup in Chrome (+15% to +20%).<br>Coding for <code>asm.js</code> brings you this speedup as a side-product.</blockquote>
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h3 class="anchorable" id="in_place_output">Performance: in-place output vs. new output array<a href="#in_place_output" class="anchor">#</a></h3>
 
 
 

@@ -36,8 +36,8 @@
         }
         else
         {
-            a.innerHTML = '';
-            a.textContent = copy.textContent;
+            copy.removeChild( a );
+            a.innerHTML = copy.innerHTML;
             return '<li>' + a.outerHTML + '</li>';
         }
     }

@@ -20,21 +20,41 @@ function expl_run( f, /*?object?*/opt )
 {
     var opt_args   = opt  &&  opt.args
     ,   doc_silent = opt  &&  opt.doc_silent
+    ,   PRECISION  = 10
+    ;
 
-// xxx    try {
+    try {
         var r = f.apply( null, opt_args )
-        ,   s_expected = JSON.stringify( r.expected )
-        ,   s_obtained = JSON.stringify( r.obtained )
+        ,   s_expected = JSON.stringify( cut_precision( r.expected ) )
+        ,   s_obtained = JSON.stringify( cut_precision( r.obtained ) )
 
         ,  ok = s_expected === s_obtained
         ;
         if (!doc_silent)
             document.write( f2body( f ) + '\n// ' + r.name + ': ' + s_obtained + (ok  ?  '   // Yes!'  :  '   // NOOOO!\n//\n// expected:\n// ' + r.name + ': ' + s_expected ) );
-/* xxx   } catch (e) {
+    } catch (e) {
         if (!doc_silent)
             document.write( '--- expl_run: FAILED! ---\n\ne:\n\n' + e );
         ok = false;
     }
-  */  
     return ok;
+
+    function cut_precision( x )
+    {
+        var tof_x = typeof x;
+        
+        if ('number' === tof_x)
+            return '<number:' + x.toPrecision( PRECISION ) + '>';
+
+        if ('object' === tof_x)
+        {
+            var ret = x instanceof Array  ?  []  :  {};
+            for (var k in x) { if (!(k in ret)) {   // More flexible than hasOwnProperty
+                ret[ k ] = cut_precision( x[ k ] );
+            }}
+            return ret;
+        }
+        
+        return x;
+    }
 }

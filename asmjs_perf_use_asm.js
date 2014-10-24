@@ -26,7 +26,8 @@ function asmjs_perf_use_asm()
     
     outnode.innerHTML += asmjs_perf_format_one_result( 'without "use asm"', result.without_use_asm_gen ) + '\n'
         + asmjs_perf_format_one_result( 'with    "use asm"', result.with_use_asm_gen ) + '\n'
-        + '-> speed ratio: ' + (result.with_use_asm_gen.speed_iter_per_sec / result.without_use_asm_gen.speed_iter_per_sec).toPrecision( 3 ) + '\n'
+        + '-> speedup: ' 
+        + asmjs_perf_prop_2_percent_string( result.with_use_asm_gen.speed_iter_per_sec / result.without_use_asm_gen.speed_iter_per_sec ) + '\n'
         +'\n'
     ;
 }
