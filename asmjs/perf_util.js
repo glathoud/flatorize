@@ -1,4 +1,4 @@
-/*global window ArrayBuffer console asmjs_perf_compare_gen_dft asmjs_remove_use_asm_from_gen asmjs_perf_format_one_result asmjs_perf_prop_2_percent_string*/
+/*global window ArrayBuffer console asmjs_perf_compare_gen_dft asmjs_remove_use_asm_from_gen asmjs_perf_format_one_result asmjs_perf_prop_2_percent_string asmjs_remove_typed_array_from_gen */
 
 function asmjs_perf_format_one_result( /*string*/name, /*object*/r )
 {
@@ -31,37 +31,57 @@ function asmjs_perf_compare_gen_dft( /*integer*/dftsize, /*object*/candidates )
         var        x = candidates[ name ]
         ,       cand = 'function' === typeof x  ?  { normal_array : false, gen : x }  :  x
 
-        , use_typed_array = !cand.normal_array
-        ,             gen = cand.gen
-        
-        ,        n2i = gen.array_name2info
-        
-        ,     buffer = use_typed_array  ?  new ArrayBuffer( gen.buffer_bytes )  :  new Array( gen.count )
-        ,   compiled = gen( window, {}, buffer )
-
-        , info_arr  = n2i.arr
-        , info_freq = n2i.freq
-
-        ,  input_view = use_typed_array  &&  new gen.TypedArray( buffer, info_arr.begin_bytes,  info_arr.n  )
-        , output_view = use_typed_array  &&  new gen.TypedArray( buffer, info_freq.begin_bytes, info_freq.n )
-
-        ,        impl = compiled[ 'dftreal' + dftsize + 'flat' ]
+        , duration_sec
         ;
-        
-        if (input.length !== info_arr.n)
-            null.bug;
 
-        if (use_typed_array)
-            input_view.set( input );
+        // Direct functional call (typical `flatorize` implementation.)
+
+        if (cand.fun)
+        {
+            var start = Date.now();
+
+            for (var i = N; i--;)
+                var output = cand.fun( input );
+            
+            duration_sec = (Date.now() - start) / 1000;
+        }
         else
-            buffer.splice.apply( buffer, [ info_arr.begin, info_arr.n ].concat( input ) );
-        
-        var start = Date.now();
+        {
+            // Implementation generator, typed array, in-place implementation 
+            // (typical `flatorize.getAsmjsGen()` implementation.)
 
-        for (var i = N; i--;)
-            impl();
+            var use_typed_array = !cand.normal_array
+            ,               gen = cand.gen
+            
+            ,        n2i = gen.array_name2info
+            
+            ,     buffer = use_typed_array  ?  new ArrayBuffer( gen.buffer_bytes )  :  new Array( gen.count )
+            ,   compiled = gen( window, {}, buffer )
 
-        var duration_sec = (Date.now() - start) / 1000;
+            , info_arr  = n2i.arr
+            , info_freq = n2i.freq
+
+            ,  input_view = use_typed_array  &&  new gen.TypedArray( buffer, info_arr.begin_bytes,  info_arr.n  )
+            , output_view = use_typed_array  &&  new gen.TypedArray( buffer, info_freq.begin_bytes, info_freq.n )
+
+            ,        impl = compiled[ 'dftreal' + dftsize + 'flat' ]
+            ;
+            
+            if (input.length !== info_arr.n)
+                null.bug;
+
+            if (use_typed_array)
+                input_view.set( input );
+            else
+                buffer.splice.apply( buffer, [ info_arr.begin, info_arr.n ].concat( input ) );
+            
+            var start = Date.now();
+
+            for (var i = N; i--;)
+                impl();
+
+            duration_sec = (Date.now() - start) / 1000;
+        }
         
         result[ name ] = { 
             n_iter               : N 
