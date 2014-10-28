@@ -31,9 +31,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
 (function (global) {
 
-    // First variant: optimize through post-processing (reordering)
-
-    var INSERT_OUTPUT_EARLY = true;
+    var INSERT_OUTPUT_EARLY = true;  // variant: optimize through post-processing (reordering)
     
     // ---------- Public API
 
@@ -91,7 +89,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         
         var common_array_btd = checkType( typed_in_var, typed_out_vartype );
 
-        var idnum2type  = propagateType( js_direct );
+        var idnum2type  = flatorize.propagateType( js_direct );
         
         return generateAsmjsGen( js_direct, idnum2type, topFunName, common_array_btd );
     }
@@ -173,111 +171,6 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
     ,   _EXPR_ISEXPR = '__isExpr__'
     ;
     
-    function propagateType( /*object e.g. `js_direct`*/info )
-    {
-        // Input
-
-        var typed_in_var      = info.typed_in_var
-        
-        ,   exprCache         = info.exprCache
-
-        // Output
-
-        , idnum2type = {}
-        
-        // Flatten the "info" object for better performance when doing
-        // the recursive walk (create less objects).
-
-        ,             out_e = info.e
-        , typed_out_vartype = info.typed_out_vartype
-        ;
-
-        // Check
-
-        if (!out_e[ _EXPR_ISEXPR ]  &&  out_e instanceof Array  &&  !(typed_out_vartype instanceof Array))
-            throw new Error( '(top: array case) `out_e` and `typed_out_vartype` must be consistent!' );
-        
-        // Recursive walk, updating `idnum2type`
-        
-        propagateType_impl( out_e, typed_out_vartype );
-
-        // Done
-
-        return idnum2type;
-
-        // --- Details
-
-        function propagateType_impl( out_e, typed_out_vartype )
-        {
-            var out_e_isExpr 
-            ,   out_e_isArray
-            ,   out_e_isNumber
-            ;
-            
-            // Check
-            
-            (typed_out_vartype.substring  ||  typed_out_vartype.concat).call.a;   // must be a string or an array
-            
-            // Determine the type of `out_e`
-            
-            if (out_e_isExpr = out_e.__isExpr__)
-            {
-                var idnum = out_e[ _EXPR_IDNUM ];
-                idnum.toPrecision.call.a;  // Must be a number
-                
-                if (idnum in idnum2type)
-                    return;
-
-                idnum2type[ idnum ] = typed_out_vartype;
-            }
-            else if (out_e_isArray = out_e instanceof Array)
-            {
-                if (!(typed_out_vartype instanceof Array))
-                    throw new Error( 'Inconsistency: array expression <-> non-array type. They must be consistent.' );
-            }
-            else if (typeof out_e === 'number')
-            {
-                return;
-            }
-            else
-            {
-                out_e.substring.call.a;  // Must be a string
-                return;
-            }
-            
-            // Recurse
-            
-            if (out_e_isExpr  ||  out_e_isArray)
-            {
-                for (var n = out_e.length, i = 0; i < n; i++)
-                {
-                    var i_out_e = out_e[ i ]
-                    ,   i_toe   = typeof i_out_e
-                    ;
-                    if (i_toe === 'string'  ||  i_toe === 'number')
-                        continue;
-                    
-                    var i_idnum = i_out_e[ _EXPR_IDNUM ]
-                    ,   i_typed_out_vartype = out_e_isExpr  ?  typed_out_vartype
-                        :  out_e_isArray  ?  typed_out_vartype[ i ]
-                        :  null.error
-                    ;
-
-                    if (i_idnum != null  &&  i_idnum in idnum2type)
-                    {
-                        if (idnum2type[ i_idnum ] !== i_typed_out_vartype)
-                            null.error_or_bug;
-
-                        continue;
-                    }
-                    
-                    propagateType_impl( i_out_e, i_typed_out_vartype );
-                }
-            }
-        }
-    }
-
-
     var _JS_CODE = '__code2str_cache_cfgSTAT';
 
     function generateAsmjsGen( /*object*/info, /*object*/idnum2type, /*string*/topFunName, /*?object?*/common_array_btd )
@@ -299,10 +192,6 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
     // 
     // glathoud@yahoo.fr
     {
-        if (topFunName === 'count_a_few10')
-            'xxx';
-
-
         // Some of the `info` fields are only required at the top
         // level (`topFunName` given, i.e. `isTop === true`).
 

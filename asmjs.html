@@ -360,7 +360,7 @@ function genflatcode_asmjs_dftreal1024flat()
 
 
 
-<h3 class="anchorable" id="use_asm">Performance: with/without <code>"use asm"</code><a href="#use_asm" class="anchor">#</a></h3>
+<h3 class="anchorable" id="use_asm">Performance&nbsp;(1): with/without <code>"use asm"</code><a href="#use_asm" class="anchor">#</a></h3>
 
 <script type="text/javascript" src="asmjs/perf_use_asm.js"></script>
 <p>We compare the speed with &amp; without <code>"use asm"</code> statement, on DFT1024. The only difference is whether or not the <code>"use asm"</code> statement appears, the rest of the code remains the same.</p>
@@ -419,7 +419,7 @@ with    "use asm": speed: 3.52e+4 iterations/second.
 
 
 
-<h3 class="anchorable" id="typed_arrays">Performance: Typed Arrays vs. normal arrays<a href="#typed_arrays" class="anchor">#</a></h3>
+<h3 class="anchorable" id="typed_arrays">Performance&nbsp;(2): Typed Arrays vs. normal arrays<a href="#typed_arrays" class="anchor">#</a></h3>
 
 
 <script type="text/javascript" src="asmjs/perf_typed_array.js"></script>
@@ -504,7 +504,7 @@ with  Typed Array: speed: 3.48e+4 iterations/second.
 
 
 
-<h3 class="anchorable" id="in_place_output">Performance: in-place output vs. new output array<a href="#in_place_output" class="anchor">#</a></h3>
+<h3 class="anchorable" id="in_place_output">Performance&nbsp;(3): in-place output vs. new output array<a href="#in_place_output" class="anchor">#</a></h3>
 
 <script type="text/javascript" src="asmjs/perf_in_place.js"></script>
 <p>We compare the speed of <code>flatorize</code>, which outputs a new array at each call,</p>
@@ -571,14 +571,61 @@ with   in-place array: speed: 3.01e+4 iterations/second.
 
 
 
+<h3 class="anchorable" id="perf_all">Performance: all together<a href="#perf_all" class="anchor">#</a></h3>
+
+<script type="text/javascript" src="asmjs/perf_all_together.js"></script>
+<p>We compare the speed of <code>flatorize</code> with the speed of <code>flatorize.getAsmjsGen()</code>, with all improvements activated (<code>"use asm"</code>, Typed Arrays, in-place output).</p>
+
+<p><button disabled="disabled" onclick="asmjs_perf_all_together()">Measure the speed!</button> (Feel free to do it multiple times.)</p>
+
+<pre id="asmjs_perf_all_together_output">(The speed measurement can last long in some browsers.)</pre>
+<p>Example of result:</p>
+<pre>
+__________
+Firefox 32:
+
+flatorize              : speed: 2.12e+3 iterations/second.
+flatorize.getAsmjsGen(): speed: 2.49e+4 iterations/second.
+-> speedup: +1075%
+
+flatorize              : speed: 2.12e+3 iterations/second.
+flatorize.getAsmjsGen(): speed: 2.42e+4 iterations/second.
+-> speedup: +1045%
+
+flatorize              : speed: 2.12e+3 iterations/second.
+flatorize.getAsmjsGen(): speed: 2.39e+4 iterations/second.
+-> speedup: +1028%
+
+__________
+Chrome 38:
+
+flatorize              : speed: 3.55e+3 iterations/second.
+flatorize.getAsmjsGen(): speed: 6.05e+3 iterations/second.
+-> speedup: +70%
+
+flatorize              : speed: 1.23e+4 iterations/second.
+flatorize.getAsmjsGen(): speed: 3.51e+4 iterations/second.
+-> speedup: +186%
+
+flatorize              : speed: 1.14e+4 iterations/second.
+flatorize.getAsmjsGen(): speed: 1.33e+4 iterations/second.
+-> speedup: +17%
+
+flatorize              : speed: 1.23e+4 iterations/second.
+flatorize.getAsmjsGen(): speed: 3.47e+4 iterations/second.
+-> speedup: +183%
+
+flatorize              : speed: 1.25e+4 iterations/second.
+flatorize.getAsmjsGen(): speed: 3.54e+4 iterations/second.
+-> speedup: +183%
+</pre>
+
+<p>Not much left to say: huge speedups everywhere.</p>
 
 
 
 
 
-<h3 class="anchorable" id="js_c">Performance: JavaScript vs. C<a href="#js_c" class="anchor">#</a></h3>
-
-xxx need to update the C plugin first, with the improvements developed for the asm.js plugin
 
 
 
@@ -593,20 +640,26 @@ xxx need to update the C plugin first, with the improvements developed for the a
 
 
 
-
-<h3 class="anchorable" id="conclusion">Conclusion (under construction)<a href="#conclusion" class="anchor">#</a></h3>
-
-<p>While in both Firefox and Chrome, using Typed Arrays and in-place
-output bring speedups for computationally intensive calculations,
-Firefox requires you to write <code>"use asm"</code> code
-that <code>asm.js</code> successfully compiles, whereas Chrome
-optimizes any code.
-</p>
+<h3 class="anchorable" id="conclusion">Conclusion<a href="#conclusion" class="anchor">#</a></h3>
 
 <blockquote class="important">Writing <code>asm.js</code> code brings high speedups in Firefox <em>and</em> Chrome. <code>flatorize.getAsmjsGen()</code>&nbsp;conveniently generates such code for you.
 </blockquote>
 
 
+
+
+
+
+
+
+
+
+<h3 class="anchorable" id="flatorize_vs_flatorize_asmjs">Additional remark: <code>flatorize</code> vs. <code>flatorize.getAsmjsGen()</code><a href="#flatorize_vs_flatorize_asmjs" class="anchor">#</a></h3>
+
+
+<p><code>flatorize</code> already generates very fast code (see the <a href="index.html">main article</a>), and <code>flatorize.getAsmjsGen()</code> generates even faster code.</p>
+
+<p>Usage trade-off: while <code>flatorize</code> always creates a new output array, <code>flatorize.getAsmjsGen()</code> uses side effects &mdash;&nbsp;in-place output&nbsp;&mdash; which requires slightly more care, but provides an extra speedup.</p>
 
 
 
@@ -623,6 +676,30 @@ optimizes any code.
 <p>All the above showed an excellent extra speedup brought by <code>flatorize.getAsmjsGen()</code> compared to <code>flatorize</code> on a computationally intensive task like DFT1024.</p>
 
 <p>However, on a smaller task like DFT16, in the Firefox case, you would get such a speedup <em>only</em> when called from <code>asm.js</code> client code, and not when called from non-<code>asm.js</code> client code. See also this <a href="http://stackoverflow.com/questions/17951449/firefox-does-not-seem-to-be-faster-using-the-asm-js-profile-yet-chrome-is">stackoverflow page</a>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h3 class="anchorable" id="js_c">Additional remark: JavaScript vs. C<a href="#js_c" class="anchor">#</a></h3>
+
+xxx need to update the C plugin first, with the improvements developed for the asm.js plugin
+
+
+
+
+
+
 
 
 
