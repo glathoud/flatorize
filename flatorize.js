@@ -480,7 +480,11 @@
                 var dim      = 1
                 ,   dim_step = [ 1 ]
                 ;
-                return { n : n, type : t0, dim : dim, dim_n : [ n ], dim_step : dim_step, flatIndFun : flatIndFun }; // Success
+                // Success
+                return {
+                    n : n, type : t0, dim : dim, dim_n : [ n ], dim_step : dim_step, flatIndFun : flatIndFun 
+                    , type_bytes : 'double' === t0  ?  8  :  'float' === t0  ||  'int' === t0  ?  4  :  null.unsupported
+                }; 
             }
             
             var sub = tryToGetArrayBasicTypeDescription( t[ 0 ] );
@@ -495,6 +499,7 @@
                 return { 
                     n       : n * sub.n
                     , type  : sub.type 
+                    , type_bytes : sub.type_bytes
                     , dim   : dim
                     , dim_n : [ n ].concat( sub.dim_n )
                     , dim_step   : dim_step

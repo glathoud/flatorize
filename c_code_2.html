@@ -61,12 +61,12 @@ f2 = flatorize('a:[2 float],b:[2 float],c:[2 float]->d:[2 float]',f);
 <script type="text/javascript">document.write(f2.getDirect()+"");</script></code></pre>
 
 <p>Then, a call to <code>flatorize.getCodeC()</code>:</p>
-<script type="text/javascript" id="script-gen-f2_c_code">var f2_c_code = flatorize.getCodeC( { switcher: f2, name: "f2" } );</script>
+<script type="text/javascript" id="script-gen-f2_c_code">var f2_c = flatorize.getCodeC( { switcher: f2, name: "f2" } );</script>
 <pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(document.getElementById("script-gen-f2_c_code").textContent);</script></code></pre>
 
 <p>...generates flatorized C code:</p>
 <pre class="prettyprint lang-js"><code>// f2_c_code:
-<script type="text/javascript">document.write(f2_c_code);</script></code></pre>
+<script type="text/javascript">document.write(f2_c.code);</script></code></pre>
 <p class="small">(This code, as a few others below, was produced and inserted as you loaded the page.)</p>
 
 <p>Implementation note: JavaScript and C share pretty much the same syntax for mathematical operations, so a good share of the generated JavaScript code is reused here. Only C types, function declarations, casts, and in-place array output have to be dealt with.</p>
@@ -87,14 +87,14 @@ matmul342 = flatorize('a:[12 float],b:[8 float]->c:[6 float]',
 <p>...generates flatorized JavaScript code  (<a href="index.html#matmul">details</a>).</p>
 
 <p>Then, a call to <code>flatorize.getCodeC()</code>:</p>
-<script type="text/javascript" id="script-gen-matmul342_c_code">var matmul342_c_code = flatorize.getCodeC( { switcher: matmul342,
+<script type="text/javascript" id="script-gen-matmul342_c_code">var matmul342_c = flatorize.getCodeC( { switcher: matmul342,
                                              name: "matmul342" } );</script>
 <pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(document.getElementById("script-gen-matmul342_c_code").textContent);</script></code></pre>
 
 <p>...generates flatorized C code:</p>
 
 <pre class="prettyprint lang-js"><code>// matmul342_c_code
-<script type="text/javascript">document.write(matmul342_c_code);</script></code></pre>
+<script type="text/javascript">document.write(matmul342_c.code);</script></code></pre>
 
 <p>...which brings a <a href="https://github.com/glathoud/flatorize/blob/master/explore/C/cAll_matmul.results.txt#L48">+78% speedup</a> over the <a href="https://github.com/glathoud/flatorize/blob/master/explore/C/c_matmul_classic.c#L50">original C code</a>.</p>
 
@@ -117,7 +117,7 @@ dftreal16flat_hh = flatorize('arr:[16 double]->X:[9 [2 double]]',
 <p>...generates flatorized JavaScript code  (<a href="index.html#dft">details</a>).</p>
 
 <p>Then, a call to <code>flatorize.getCodeC()</code>:</p>
-<script type="text/javascript" id="script-gen-dftreal16flat_hh_c_code">var dftreal16flat_hh_c_code = flatorize.getCodeC( 
+<script type="text/javascript" id="script-gen-dftreal16flat_hh_c_code">var dftreal16flat_hh_c = flatorize.getCodeC( 
     { switcher: dftreal16flat_hh,
       name: "dftreal16flat_hh" });</script>
 <pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(document.getElementById("script-gen-dftreal16flat_hh_c_code").textContent);</script></code></pre>
@@ -125,7 +125,7 @@ dftreal16flat_hh = flatorize('arr:[16 double]->X:[9 [2 double]]',
 <p>...generates flatorized C code:</p>
 
 <pre class="prettyprint lang-js pre-scroll"><code>// dftreal16flat_hh_c_code
-<script type="text/javascript">document.write(dftreal16flat_hh_c_code);</script></code></pre>
+<script type="text/javascript">document.write(dftreal16flat_hh_c.code);</script></code></pre>
 
 <p>...which, although not fully optimized yet (still duplicates the Hermitian output), yields only a <a href="https://github.com/glathoud/flatorize/blob/master/explore/C/cAll_dftreal16.results.txt#L55">-11% slowdown</a> over the highly optimized <a href="http://www.fftw.org/fftw-3.3.3.tar.gz">FFTW&nbsp;3.3.3</a>.</p>
 
@@ -146,16 +146,16 @@ dftreal1024flat_hh = flatorize('arr:[1024 double]->X:[513 [2 double]]',
 
 
 <p>Then, a call to <code>flatorize.getCodeC()</code>: <button onclick="generate_c_dftreal1024flat_hh_now()">Now!</button></p>
-<script type="text/javascript" id="script-gen-dftreal1024flat_hh_c_code">var dftreal1024flat_hh_c_code;
+<script type="text/javascript" id="script-gen-dftreal1024flat_hh_c_code">var dftreal1024flat_hh_c;
 function generate_c_dftreal1024flat_hh_now() 
 {
-  dftreal1024flat_hh_c_code = flatorize.getCodeC
+  dftreal1024flat_hh_c = flatorize.getCodeC
   ( 
     { switcher: dftreal1024flat_hh
       , name: "dftreal1024flat_hh" 
     }
   );
-  document.getElementById( "dftreal1024flat_hh_c_code" ).textContent = "// dftreal1024flat_hh_c_code\n" + dftreal1024flat_hh_c_code;
+  document.getElementById( "dftreal1024flat_hh_c_code" ).textContent = "// dftreal1024flat_hh_c_code\n" + dftreal1024flat_hh_c.code;
 }</script>
 <pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(document.getElementById("script-gen-dftreal1024flat_hh_c_code").textContent);</script></code></pre>
 
@@ -186,7 +186,7 @@ dftreal16flat_sr_hh = flatorize('arr:[16 double]->X:[9 [2 double]]',
 <pre class="prettyprint lang-js pre-scroll"><code><script type="text/javascript">document.write(dftreal16flat_sr_hh.getDirect())</script></code></pre>
 
 <p>Then, a call to <code>flatorize.getCodeC()</code>:</p>
-<script type="text/javascript" id="script-gen-dftreal16flat_sr_hh_c_code">var dftreal16flat_sr_hh_c_code = flatorize.getCodeC( 
+<script type="text/javascript" id="script-gen-dftreal16flat_sr_hh_c_code">var dftreal16flat_sr_hh_c = flatorize.getCodeC( 
     { switcher: dftreal16flat_sr_hh,
       name: "dftreal16flat_sr_hh" });</script>
 <pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(document.getElementById("script-gen-dftreal16flat_sr_hh_c_code").textContent);</script></code></pre>
@@ -194,7 +194,7 @@ dftreal16flat_sr_hh = flatorize('arr:[16 double]->X:[9 [2 double]]',
 <p>...generates flatorized C code:</p>
 
 <pre class="prettyprint lang-js pre-scroll"><code>// dftreal16flat_sr_hh_c_code
-<script type="text/javascript">document.write(dftreal16flat_sr_hh_c_code);</script></code></pre>
+<script type="text/javascript">document.write(dftreal16flat_sr_hh_c.code);</script></code></pre>
 
 
 
@@ -219,16 +219,16 @@ dftreal1024flat_sr_hh = flatorize('arr:[1024 double]->X:[513 [2 double]]',
 
 
 <p>Then, a call to <code>flatorize.getCodeC()</code>: <button onclick="generate_c_dftreal1024flat_sr_hh_now()">Now!</button></p>
-<script type="text/javascript" id="script-gen-dftreal1024flat_sr_hh_c_code">var dftreal1024flat_sr_hh_c_code;
+<script type="text/javascript" id="script-gen-dftreal1024flat_sr_hh_c_code">var dftreal1024flat_sr_hh_c;
 function generate_c_dftreal1024flat_sr_hh_now() 
 {
-  dftreal1024flat_sr_hh_c_code = flatorize.getCodeC
+  dftreal1024flat_sr_hh_c = flatorize.getCodeC
   ( 
     { switcher: dftreal1024flat_sr_hh
       , name: "dftreal1024flat_sr_hh" 
     }
   );
-  document.getElementById( "dftreal1024flat_sr_hh_c_code" ).textContent = "// dftreal1024flat_sr_hh_c_code\n" + dftreal1024flat_sr_hh_c_code;
+  document.getElementById( "dftreal1024flat_sr_hh_c_code" ).textContent = "// dftreal1024flat_sr_hh_c_code\n" + dftreal1024flat_sr_hh_c.code;
 }</script>
 <pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(document.getElementById("script-gen-dftreal1024flat_sr_hh_c_code").textContent);</script></code></pre>
 
@@ -259,7 +259,7 @@ dftreal16flat_msr_hh = flatorize('arr:[16 double]->X:[9 [2 double]]',
 <pre class="prettyprint lang-js pre-scroll"><code><script type="text/javascript">document.write(dftreal16flat_msr_hh.getDirect())</script></code></pre>
 
 <p>Then, a call to <code>flatorize.getCodeC()</code>:</p>
-<script type="text/javascript" id="script-gen-dftreal16flat_msr_hh_c_code">var dftreal16flat_msr_hh_c_code = flatorize.getCodeC( 
+<script type="text/javascript" id="script-gen-dftreal16flat_msr_hh_c_code">var dftreal16flat_msr_hh_c = flatorize.getCodeC( 
     { switcher: dftreal16flat_msr_hh,
       name: "dftreal16flat_msr_hh" });</script>
 <pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(document.getElementById("script-gen-dftreal16flat_msr_hh_c_code").textContent);</script></code></pre>
@@ -267,7 +267,7 @@ dftreal16flat_msr_hh = flatorize('arr:[16 double]->X:[9 [2 double]]',
 <p>...generates flatorized C code:</p>
 
 <pre class="prettyprint lang-js pre-scroll"><code>// dftreal16flat_msr_hh_c_code
-<script type="text/javascript">document.write(dftreal16flat_msr_hh_c_code);</script></code></pre>
+<script type="text/javascript">document.write(dftreal16flat_msr_hh_c.code);</script></code></pre>
 
 
 
@@ -292,16 +292,16 @@ dftreal128flat_msr_hh = flatorize('arr:[128 double]->X:[65 [2 double]]',
 
 
 <p>Then, a call to <code>flatorize.getCodeC()</code>: <button onclick="generate_c_dftreal128flat_msr_hh_now()">Now!</button></p>
-<script type="text/javascript" id="script-gen-dftreal128flat_msr_hh_c_code">var dftreal128flat_msr_hh_c_code;
+<script type="text/javascript" id="script-gen-dftreal128flat_msr_hh_c_code">var dftreal128flat_msr_hh_c;
 function generate_c_dftreal128flat_msr_hh_now() 
 {
-  dftreal128flat_msr_hh_c_code = flatorize.getCodeC
+  dftreal128flat_msr_hh_c = flatorize.getCodeC
   ( 
     { switcher: dftreal128flat_msr_hh
       , name: "dftreal128flat_msr_hh" 
     }
   );
-  document.getElementById( "dftreal128flat_msr_hh_c_code" ).textContent = "// dftreal128flat_msr_hh_c_code\n" + dftreal128flat_msr_hh_c_code;
+  document.getElementById( "dftreal128flat_msr_hh_c_code" ).textContent = "// dftreal128flat_msr_hh_c_code\n" + dftreal128flat_msr_hh_c.code;
 }</script>
 <pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(document.getElementById("script-gen-dftreal128flat_msr_hh_c_code").textContent);</script></code></pre>
 
@@ -335,16 +335,16 @@ dftreal1024flat_msr_hh = flatorize('arr:[1024 double]->X:[513 [2 double]]',
 
 
 <p>Then, a call to <code>flatorize.getCodeC()</code>: <button onclick="generate_c_dftreal1024flat_msr_hh_now()">Now!</button></p>
-<script type="text/javascript" id="script-gen-dftreal1024flat_msr_hh_c_code">var dftreal1024flat_msr_hh_c_code;
+<script type="text/javascript" id="script-gen-dftreal1024flat_msr_hh_c_code">var dftreal1024flat_msr_hh_c;
 function generate_c_dftreal1024flat_msr_hh_now() 
 {
-  dftreal1024flat_msr_hh_c_code = flatorize.getCodeC
+  dftreal1024flat_msr_hh_c = flatorize.getCodeC
   ( 
     { switcher: dftreal1024flat_msr_hh
       , name: "dftreal1024flat_msr_hh" 
     }
   );
-  document.getElementById( "dftreal1024flat_msr_hh_c_code" ).textContent = "// dftreal1024flat_msr_hh_c_code\n" + dftreal1024flat_msr_hh_c_code;
+  document.getElementById( "dftreal1024flat_msr_hh_c_code" ).textContent = "// dftreal1024flat_msr_hh_c_code\n" + dftreal1024flat_msr_hh_c.code;
 }</script>
 <pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(document.getElementById("script-gen-dftreal1024flat_msr_hh_c_code").textContent);</script></code></pre>
 
