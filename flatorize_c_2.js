@@ -2,7 +2,7 @@
   ECMAScript implementation of "flatorize": Generate fast, flat,
   factorized ** C code ** for mathematical expressions.
 
-  Requires: ./flatorize.js
+  Requires: ./flatorize.js and ./flatorize_type_util.js
   
   Copyright 2013, 2014 Guillaume Lathoud
   
@@ -29,10 +29,15 @@
 if ('undefined' === typeof flatorize  &&  'function' === typeof load)
     load( 'flatorize.js' );  // e.g. V8
 
+if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
+    load( 'flatorize_type_util.js' );  // e.g. V8
+
 (function () {
 
-    var INSERT_OUTPUT_EARLY = true; // optimize through post-processing (reordering)
-    
+    var INSERT_OUTPUT_EARLY = true // optimize through post-processing (reordering)
+    ,   FTU = flatorize.type_util
+    ;
+
     // ---------- Public API
 
     flatorize.getCodeC = flatorize_getCodeC;
@@ -76,34 +81,23 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         ,   varnameset  = js_direct.varnameset
         ;
 
-        console.log( 'xxx flatorize_c js_direct:' );
-        console.dir( js_direct );
+        // Difference with the asm.js plugin: we allow heterogenous
+        // types.  See also ./flatorize_asm.js
 
-        var idnum2type  = flatorize.propagateType( js_direct );
-        
-        console.log( 'xxx flatorize_c idnum2type:' );
-        console.dir( idnum2type );
+        var idnum2type  = FTU.propagateType( js_direct );
         
         return generateCodeC( js_direct, idnum2type, topFunName );
     }
 
     // ---------- Private details ----------
 
-    var CODE2STR_CFG_ID  = '__code2str_cfg_id' // xxx link to flatorize.js in a more principled way
-    ,   CODE2STR_CACHE   = 'STAT'              // xxx link to flatorize.js in a more principled way
+    var _JS_CODE     = '__code2str_cache_cfgSTAT'
+    ,   _EXPR_IDNUM  = '__exprIdnum__'
+    ,   _EXPR_ISEXPR = '__isExpr__'
+
     ,   _emptyObj = {}
     ;
     
-    function typeIsArraySametype( typedecl )
-    {
-        return typedecl instanceof Array  &&  typedecl.sametype;
-    }
-
-    var _EXPR_IDNUM  = '__exprIdnum__'
-    ,   _EXPR_ISEXPR = '__isExpr__'
-    ;
-    
-    var _JS_CODE = '__code2str_cache_cfgSTAT';
 
     function generateCodeC( /*object*/info, /*object*/idnum2type, /*string*/topFunName )
     // Returns an array of strings (code lines)
@@ -135,20 +129,33 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         ,   simple_in_vararr = untyped_vararr.filter( function (name) { return 'string' === typeof this[ name ]; }, typed_in_var )
         ,   array_in_vararr  = untyped_vararr.filter( function (name) { return 'string' !== typeof this[ name ]; }, typed_in_var )
 
-        ,   array_name2info   = {}
-        ,   array_in_vararr_info = array_in_vararr.map( name_2_info_side, typed_in_var )
-
-        ,   bt_out = flatorize.tryToGetArrayBasicTypeDescription( typed_out_vartype )
+        ,   arraynametype    = array_in_vararr.map( function ( name ) { 
+            return { 
+                name   : name
+                , type : typed_in_var[ name ] 
+            }; 
+        } )
+        
+        ,   bt_out = FTU.tryToGetArrayBasicTypeDescription( typed_out_vartype )
         ;
-
         if (bt_out)
         {
-            var tmp = {};
-            tmp[ typed_out_varname ] = typed_out_vartype;
-            name_2_info_side.call( tmp, typed_out_varname );
+            // Difference with the asm.js plugin: (in the array case)
+            // input array and output array types CAN have different
+            // basic types.
+
+            arraynametype.push( { 
+                name   : typed_out_varname
+                , type : typed_out_vartype 
+            } );
         }
 
-    
+
+        var state = { count : false, array_name2info : {} };
+        
+        arraynametype.forEach( FTU.name_2_info_side, state )
+        
+        var array_name2info = state.array_name2info;
 
         before = [ 
             funDeclCodeC( untyped_vararr, typed_in_var, topFunName, typed_out_varname, typed_out_vartype, array_name2info )
@@ -166,68 +173,6 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             code              : code
             , array_name2info : array_name2info
         };
-        
-        // --- Details
-        
-        function name_2_info_side(name) 
-        {
-            var bt = flatorize.tryToGetArrayBasicTypeDescription( this[ name ] )
-            ,  ret = Object.create( bt )
-            ;
-            (ret.n           ||  null).toPrecision.call.a;
-            (ret.type_bytes  ||  null).toPrecision.call.a;
-
-            ret.name  = name;
-            ret.bytes = ret.n * ret.type_bytes;
-            
-            ret.matchFun = matchFun;
-
-            array_name2info[ name ] = ret;
-            
-            return ret;
-
-            function matchFun( e )
-            {
-                if (e instanceof Object  &&  e.part)
-                {
-                    var ind_arr = [];
-                    
-                    for (var d = bt.dim; d--;)
-                    {
-                        if (e.part)
-                        {
-                            var ind = e.part.where;
-                            if (!(ind.toPrecision  &&  ind.toPrecision.call))
-                                null.unsupported; // Must be a number
-                            
-                            ind_arr.unshift( ind );
-                            
-                            var epx = e.part.x;
-
-                            if (epx === name)
-                            {
-                                var partial = d > 0
-                                ,   ret = { 
-                                    partial     : partial
-                                    , missing_d : d
-                                }
-                                ;
-                                if (!partial)
-                                    ret.flat_ind = bt.flatIndFun( ind_arr );
-                                    
-                                return ret;
-                            }
-                            else if (epx instanceof Object)
-                            {
-                                e = epx;
-                                continue;
-                            }
-                        }
-                    }
-                }
-                return false;
-            }
-        }
     }
 
 
@@ -289,7 +234,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
         if (array_name2info)
         {
-            var o = flatten_duplicates( duplicates, idnum2expr, array_name2info );
+            var o = FTU.flatten_duplicates( duplicates, idnum2expr, array_name2info, castwrap );
             
             duplicates = o.duplicates;
             idnum2expr = o.idnum2expr;
@@ -559,9 +504,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                 }
             }
 
-            return outtype === 'float'  ||  outtype === 'double'  ||  outtype === 'int'  ?  '(' + outtype + ')(' + jscode + ')'
-                :  null.unsupported
-            ;
+            return FTU.castwrap_spare( castwrap, outtype, jscode );
 
             function modify_input_access( one )
             {
@@ -597,9 +540,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
                         var s = name + '[' + ind + ']';
 
-                        return outtype === 'float'  ||  outtype === 'double'  ||  outtype === 'int'  ?  '(' + outtype + ')(' + s + ')'
-                            :  null.unsupported
-                        ;
+                        return FTU.castwrap_spare( castwrap, outtype, s );
                     }}
                 }
                 
@@ -636,6 +577,13 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
     
     
+    function castwrap( /*string*/type, /*string*/code)
+    {
+        return type === 'double'  ||  type === 'float'  ||  type === 'int'  ?  '(' + type + ')(' + code + ')'
+            : null.unsupported
+        ;
+    }
+
     
     function arr2set( arr )
     {
@@ -646,80 +594,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
     }
 
 
-    function flatten_duplicates( duplicates, idnum2expr, array_name2info )
-    // ---- support for multidimensional arrays: flatten the access
-    // i.e. assuming `a` is a 3x4 matrix, `a[1][2]` becomes e.g. `a[1*3+2]`
-    //
-    // Example:
-    // {{{
-    // var o = duplicates( duplicates, idnum2expr, array_name2info )
-    //
-    // duplicates = o.duplicates;
-    // idnum2expr = o.idnum2expr;
-    // }}}
-    {
-        var new_duplicates = []
-        ,   new_idnum2expr = {}
-        ;
-        duploop: for (var ndup = duplicates.length, i = 0; i < ndup; i++) 
-        {
-            var idnum = duplicates[ i ];
-            idnum.toPrecision.call.a;
-            
-            var e = idnum2expr[ idnum ];
-
-            if (e  &&  e.part)
-            {
-                for (var name in array_name2info) { if (!(name in _emptyObj)) {   // More flexible than hasOwnProperty
-                    
-                    var info = array_name2info[ name ]
-                    ,   m    = info.matchFun( e )
-                    ;
-                    if (!m)
-                        continue;
-                    
-                    // Found a matching `part` expression.
-                    
-                    if (m.partial)
-                        continue duploop;  // Things like C's pointer `float*` don't go in asm.js -> flatten multidimensional arrays completely
-                    
-                    var ind = m.flat_ind;
-                    if (isNaN( ind )  ||  !(ind.toPrecision))
-                        null.bug;
-                    
-                    e.length = 1;
-                    
-                    var  s = name + '[' + ind + ']'
-                    , info_type = info.type
-                    ;
-                    e[ 0 ] = info_type === 'double'  ||  info_type === 'float'  ?  '+' + s
-                        : info_type === 'int'  ?  '(' + s + '|0)'
-                        : null.unsupported
-                    ;
-                    e.part = { x : name, where : ind };
-                    
-                    new_duplicates.push( idnum );
-                    new_idnum2expr[ idnum ] = e;
-                    continue duploop;
-                }}
-                null.bug;  // Must find a match!
-            }
-            else
-            {
-                // Not a `part` expression
-                // -> keep it as is
-                new_duplicates.push( idnum );
-                new_idnum2expr[ idnum ] = e;
-            }
-        }
-        
-        return {
-            duplicates   : new_duplicates
-            , idnum2expr : new_idnum2expr
-        };
-    }
-
-
+    
 
     function get_idnum2needArrObj( idnum2expr, idnum2codeline )
     {

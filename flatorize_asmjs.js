@@ -2,7 +2,7 @@
   ECMAScript implementation of "flatorize": Generate fast, flat,
   factorized ** ASM.JS code ** for mathematical expressions.
 
-  Requires: ./flatorize.js
+  Requires: ./flatorize.js and ./flatorize_type_util.js
   
   Copyright 2014 Guillaume Lathoud
   
@@ -29,10 +29,15 @@
 if ('undefined' === typeof flatorize  &&  'function' === typeof load)
     load( 'flatorize.js' );  // e.g. V8
 
+if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
+    load( 'flatorize_type_util.js' );  // e.g. V8
+
 (function (global) {
 
-    var INSERT_OUTPUT_EARLY = true;  // variant: optimize through post-processing (reordering)
-    
+    var INSERT_OUTPUT_EARLY = true  // variant: optimize through post-processing (reordering)
+    ,   FTU = flatorize.type_util
+    ;
+
     // ---------- Public API
 
     flatorize.getAsmjsGen      = flatorize_getAsmjsGen;
@@ -87,9 +92,12 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         ,   varnameset  = js_direct.varnameset
         ;
         
+        // Difference with the C plugin: we do NOT allow heterogenous
+        // types.  See also ./flatorize_c.js
+
         var common_array_btd = checkType( typed_in_var, typed_out_vartype );
 
-        var idnum2type  = flatorize.propagateType( js_direct );
+        var idnum2type  = FTU.propagateType( js_direct );
         
         return generateAsmjsGen( js_direct, idnum2type, topFunName, common_array_btd );
     }
@@ -143,7 +151,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             }
             else if (t instanceof Array)
             {
-                var bt = flatorize.tryToGetArrayBasicTypeDescription( t );
+                var bt = FTU.tryToGetArrayBasicTypeDescription( t );
                 if (!bt)
                     throw new Error( 'Unsupported!' );
 
@@ -237,89 +245,41 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         }
         
 
-        var simple_in_vararr = untyped_vararr.filter( function (name) { return 'string' === typeof this[ name ]; }, typed_in_var )
-        ,   array_in_vararr  = untyped_vararr.filter( function (name) { return 'string' !== typeof this[ name ]; }, typed_in_var )
+        var simple_in_vararr = untyped_vararr.filter( function ( name ) { return 'string' === typeof this[ name ]; }, typed_in_var )
+        ,   array_in_vararr  = untyped_vararr.filter( function ( name ) { return 'string' !== typeof this[ name ]; }, typed_in_var )
 
-        ,   count = 0
-        ,   array_name2info   = {}
-        ,   array_in_vararr_info = array_in_vararr.map( name_2_info_side, typed_in_var )
-
-        ,   bt_out = flatorize.tryToGetArrayBasicTypeDescription( typed_out_vartype )
+        ,   arraynametype    = array_in_vararr.map( function ( name ) { 
+            return { 
+                name   : name
+                , type : typed_in_var[ name ] 
+            }; 
+        } )
+        
+        ,   bt_out = FTU.tryToGetArrayBasicTypeDescription( typed_out_vartype )
         ;
-
         if (bt_out)
         {
+            // Difference with the C plugin: (in the array case) input
+            // array and output array types must all share the same
+            // basic type.
             if (cat  &&  cat !== bt_out.type)
                 throw new Error('input & output basic types must be identical (e.g. all "double").')
-
-            var tmp = {};
-            tmp[ typed_out_varname ] = typed_out_vartype;
-            name_2_info_side.call( tmp, typed_out_varname );
-        }
-
-        var asmjs_buffer_bytes = Math.ceil( count * cat_bytes / (1 << 24) ) << 24;
-        
-
-        function name_2_info_side(name) 
-        {
-            var bt = flatorize.tryToGetArrayBasicTypeDescription( this[ name ] )
-            ,  ret = Object.create( bt )
-            ;
-            ret.name  = name;
-            ret.begin = count;
-            ret.begin_bytes = ret.begin * cat_bytes;
-            count += ret.n;
-            ret.end   = count;
-
-            ret.matchFun = matchFun;
-
-            array_name2info[ name ] = ret;
             
-            return ret;
-
-            function matchFun( e )
-            {
-                if (e instanceof Object  &&  e.part)
-                {
-                    var ind_arr = [];
-                    
-                    for (var d = bt.dim; d--;)
-                    {
-                        if (e.part)
-                        {
-                            var ind = e.part.where;
-                            if (!(ind.toPrecision  &&  ind.toPrecision.call))
-                                null.unsupported; // Must be a number
-                            
-                            ind_arr.unshift( ind );
-                            
-                            var epx = e.part.x;
-
-                            if (epx === name)
-                            {
-                                var partial = d > 0
-                                ,   ret = { 
-                                    partial     : partial
-                                    , missing_d : d
-                                }
-                                ;
-                                if (!partial)
-                                    ret.flat_ind = bt.flatIndFun( ind_arr );
-                                    
-                                return ret;
-                            }
-                            else if (epx instanceof Object)
-                            {
-                                e = epx;
-                                continue;
-                            }
-                        }
-                    }
-                }
-                return false;
-            }
+            arraynametype.push( { 
+                name   : typed_out_varname
+                , type : typed_out_vartype 
+            } );
         }
 
+        var state = { count : 0, array_name2info : {} };
+        
+        arraynametype.forEach( FTU.name_2_info_side, state )
+        
+        var count              = state.count
+        ,   array_name2info    = state.array_name2info
+
+        ,   asmjs_buffer_bytes = Math.ceil( count * cat_bytes / (1 << 24) ) << 24
+        ;
         
         if (isTop)
         {
@@ -410,13 +370,17 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
         if (cat_varname)
         {
-            var o = flatten_duplicates( duplicates, idnum2expr, array_name2info, common_array_btd  &&  common_array_btd.type, cat_varname );
+            var single_common_array = common_array_btd  &&  {
+                name   : cat_varname
+                , type : common_array_btd.type
+            }
+            ,   o = FTU.flatten_duplicates( duplicates, idnum2expr, array_name2info, castwrap, single_common_array )
+            ;
             
             duplicates = o.duplicates;
             idnum2expr = o.idnum2expr;
         }
         
-
         // ---- asm.js "type" declarations
 
         var n = duplicates.length;
@@ -689,10 +653,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                 }
             }
 
-            return outtype === 'float'  ||  outtype === 'double'  ?  '+(' + jscode + ')'
-                :  outtype === 'int'  ? '(' + jscode + ')|0'
-                :  null.unsupported
-            ;
+            return FTU.castwrap_spare( castwrap, outtype, jscode );
 
             function modify_input_access( one )
             {
@@ -728,10 +689,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
                         var s = cat_varname + '[' + ind + ']';
 
-                        return outtype === 'float'  ||  outtype === 'double'  ?  '+' + s 
-                            :  outtype === 'int'  ?  '(' + s + ')|0'
-                            :  null.unsupported
-                        ;
+                        return FTU.castwrap_spare( castwrap, outtype, s );
                     }}
                 }
                 
@@ -750,15 +708,8 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                     return one.__toStr__.call( one.map( modify_input_access ), opt, topopt );
 
                 if (tof_one === 'number')
-                {
-                    var s_one = '' + one;
-                    
-                    return outtype === 'float'  ||  outtype === 'double'  ?  (/\./.test( s_one )  ?  s_one  :  '+(' + s_one + ')')
-                    :  outtype === 'int'  ? (/^[+-]?\d+$/.test( s_one )  ?  s_one  :  '(' + one + ')|0')
-                    :  null.unsupported
-                    ;
-                }
-
+                    return FTU.castwrap_spare( castwrap, outtype, '' + one );
+                
                 return one;
             }
         }
@@ -771,93 +722,20 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
     }
 
 
-
-
-
-
-
-    
+    function castwrap( /*string*/type, /*string*/code)
+    {
+        return type === 'double'  ||  type === 'float'  ?  '+(' + code + ')'
+            : type === 'int'  ?  '((' + code + ')|0)'
+            : null.unsupported
+        ;
+    }
+   
     function arr2set( arr )
     {
         for (var ret = {}, i = arr.length; i--;)
             ret[arr[ i ]] = 1;
         
         return ret;
-    }
-
-
-
-    function flatten_duplicates( duplicates, idnum2expr, array_name2info, bt_type, cat_varname )
-    // ---- asm.js support for multidimensional arrays: flatten the access
-    // i.e. assuming `a` is a 3x4 matrix, `a[1][2]` becomes e.g. `float64[1*3+2]`
-    //
-    // Example:
-    // {{{
-    // var o = duplicates( duplicates, idnum2expr, array_name2info, bt_type, cat_varname )
-    //
-    // duplicates = o.duplicates;
-    // idnum2expr = o.idnum2expr;
-    // }}}
-    {
-        (cat_varname || 0).substring.call.a;
-
-        var new_duplicates = []
-        ,   new_idnum2expr = {}
-        ;
-        duploop: for (var ndup = duplicates.length, i = 0; i < ndup; i++) 
-        {
-            var idnum = duplicates[ i ];
-            idnum.toPrecision.call.a;
-            
-            var e = idnum2expr[ idnum ];
-
-            if (e  &&  e.part)
-            {
-                for (var name in array_name2info) { if (!(name in _emptyObj)) {   // More flexible than hasOwnProperty
-                    
-                    var info = array_name2info[ name ]
-                    ,   m    = info.matchFun( e )
-                    ;
-                    if (!m)
-                        continue;
-                    
-                    // Found a matching `part` expression.
-                    
-                    if (m.partial)
-                        continue duploop;  // Things like C's pointer `float*` don't go in asm.js -> flatten multidimensional arrays completely
-                    
-                    var ind = info.begin + m.flat_ind;
-                    if (isNaN( ind )  ||  !(ind.toPrecision))
-                        null.bug;
-                    
-                    e.length = 1;
-
-                    var s = cat_varname + '[' + ind + ']';
-                    e[ 0 ] = bt_type === 'double'  ||  bt_type === 'float'  ?  '+' + s
-                        : bt_type === 'int'  ?  '(' + s + '|0)'
-                        : null.unsupported
-                    ;
-                    e.part = { x : cat_varname, where : ind };
-                    
-                    new_duplicates.push( idnum );
-                    new_idnum2expr[ idnum ] = e;
-                    continue duploop;
-                }}
-                null.bug;  // Must find a match!
-            }
-            else
-            {
-                // Not a `part` expression
-                // -> keep it as is
-                new_duplicates.push( idnum );
-                new_idnum2expr[ idnum ] = e;
-            }
-        }
-        
-        return {
-            duplicates   : new_duplicates
-            , idnum2expr : new_idnum2expr
-        };
     }
 
 
