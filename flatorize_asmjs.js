@@ -161,21 +161,19 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
     {
         (topFunName  ||  null).substring.call.a;
 
-        var out_e             = fixed.e
+        var fixed2 = Object.create( fixed ) // we will augment it a little bit with derived values, e.g. with `array_name2info`
 
-        ,   fixed2 = Object.create( fixed ) // we will augment it a little bit with derived values, e.g. with `array_name2info`
-        
         ,   before = []
         ,   body   = []
         ,   after  = []
         ,   wrap   = []
         ;
 
-        if (fixed.single_common_array_btd)
+        if (fixed2.single_common_array_btd)
         {
             // Dealing with arrays
 
-            var cat = fixed.single_common_array_btd.type
+            var cat = fixed2.single_common_array_btd.type
 
             ,   cat_js = cat === 'int'  ?  'Int32'
                 :  cat === 'float'  ?  'Float32'
