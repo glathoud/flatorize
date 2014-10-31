@@ -92,7 +92,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
         console.log( 'xxx flatorize_c js_direct:' );
         console.dir( js_direct );
 
-        var idnum2type  = propagateType( js_direct );
+        var idnum2type  = FTU.propagateType( js_direct );
         
         console.log( 'xxx flatorize_c idnum2type:' );
         console.dir( idnum2type );
