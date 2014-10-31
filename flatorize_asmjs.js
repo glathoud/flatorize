@@ -94,7 +94,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
         
         // Difference with the C plugin: we do NOT allow heterogenous
         // types.  See also ./flatorize_c.js
-        var single_common_array_btd = checkType( typed_in_var, typed_out_vartype )
+        var single_common_array_btd = FTU.check_single_common_array_type( typed_in_var, typed_out_vartype )
 
         ,   idnum2type  = FTU.propagateType( js_direct )
         
@@ -139,58 +139,6 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
     // ---------- Private details ----------
 
     var _emptyObj = {};
-
-    function checkType( typed_in_var, typed_out_vartype )
-    {
-        var array_basictype_set = {}
-        ,   array_basictype_n   = 0
-
-        ,   ret
-        ;
-
-        for (var k in typed_in_var)  {  if(!(k in _emptyObj)) {  // More flexible than hasOwnProperty
-            check_one_type( typed_in_var[ k ] );
-        }}
-
-        check_one_type( typed_out_vartype );
-
-        return ret;
-
-        function check_one_type( t )
-        {
-            if ('string' === typeof t)
-                return;
-
-            if (!t)
-            {
-                throw new Error( 'Type information is required to generate asm.js code!' );
-            }
-            else if (t instanceof Array)
-            {
-                var bt = FTU.tryToGetArrayBasicTypeDescription( t );
-                if (!bt)
-                    throw new Error( 'Unsupported!' );
-
-                if (bt.type in array_basictype_set)
-                    return;
-
-                if (array_basictype_n)
-                    throw new Error( 'Only one basic type permitted!' );
-
-                array_basictype_set[ bt.type ] = 1;
-                array_basictype_n++;
-
-                ret = bt;
-            }
-            else
-            {
-                throw new Error( 'Unsupported!' );
-            }
-            
-        }
-    }
-
-
     
     function generateAsmjsGen( /*object*/fixed, /*string*/topFunName )
     // Returns a `gen` function that can be called to compile the
@@ -245,46 +193,21 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
         {
             // Dealing with scalars only
         }
+
         
+        FTU.extract_arraynametype( fixed2 );
 
-        var simple_in_vararr = fixed2.untyped_vararr.filter( function ( name ) { return 'string' === typeof this[ name ]; }, fixed2.typed_in_var )
-        ,   array_in_vararr  = fixed2.untyped_vararr.filter( function ( name ) { return 'string' !== typeof this[ name ]; }, fixed2.typed_in_var )
-
-        ,   arraynametype    = array_in_vararr.map( function ( name ) { 
-            return { 
-                name   : name
-                , type : fixed2.typed_in_var[ name ] 
-            }; 
-        } )
-        ;
-
-        fixed2.bt_out = FTU.tryToGetArrayBasicTypeDescription( fixed2.typed_out_vartype );
         
-        if (fixed2.bt_out)
-        {
-            // Difference with the C plugin: (in the array case) input
-            // array and output array types must all share the same
-            // basic type.
-            if (cat  &&  cat !== fixed2.bt_out.type)
-                throw new Error('input & output basic types must be identical (e.g. all "double").')
-            
-            arraynametype.push( { 
-                name   : fixed2.typed_out_varname
-                , type : fixed2.typed_out_vartype 
-            } );
-        }
-
         var tmp = { count : 0, array_name2info : {} };
         
-        arraynametype.forEach( FTU.name_2_info_side, tmp )
+        fixed2.arraynametype.forEach( FTU.name_2_info_side, tmp )
         
-        var count              = fixed2.count           = tmp.count
-        ,   array_name2info    = fixed2.array_name2info = tmp.array_name2info
+        fixed2.count           = tmp.count;
+        fixed2.array_name2info = tmp.array_name2info;
         
-        ,   asmjs_buffer_bytes = Math.ceil( count * cat_bytes / (1 << 24) ) << 24
-        ;
+        var asmjs_buffer_bytes = Math.ceil( fixed2.count * cat_bytes / (1 << 24) ) << 24;
         
-        before = funDeclCodeAsmjs( simple_in_vararr, fixed2.typed_in_var, topFunName );
+        before = funDeclCodeAsmjs( fixed2.simple_in_vararr, fixed2.typed_in_var, topFunName );
         
         body = FTU.fun_body_imperative_code( fixed2 );
         

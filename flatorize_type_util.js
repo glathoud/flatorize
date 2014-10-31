@@ -38,10 +38,12 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
     var FTU = flatorize.type_util = {
         castwrap_spare                         : castwrap_spare
+        , check_single_common_array_type       : check_single_common_array_type
         , code_and_expr_2_object_with_dep_info : code_and_expr_2_object_with_dep_info
         , complete_with_dependency_information : complete_with_dependency_information
         , declare_variables                    : declare_variables
         , expcode_cast_if_needed               : expcode_cast_if_needed
+        , extract_arraynametype                : extract_arraynametype
         , flatten_duplicates                   : flatten_duplicates
 
         , fun_body_imperative_code             : fun_body_imperative_code
@@ -100,6 +102,63 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         function rxesc( s )
         {
             return s.replace(/\W/g,function(c){return '\\'+c;});
+        }
+    }
+
+
+    function check_single_common_array_type( typed_in_var, typed_out_vartype )
+    // Extract and return the common array type information.
+    // 
+    // All arrays are supposed to have the same basic type. Throw an
+    // error if it is not the case.
+    //
+    // Example of use: asm.js plugin.
+    {
+        var array_basictype_set = {}
+        ,   array_basictype_n   = 0
+
+        ,   ret
+        ;
+
+        for (var k in typed_in_var)  {  if(!(k in _emptyObj)) {  // More flexible than hasOwnProperty
+            check_one_type( typed_in_var[ k ] );
+        }}
+
+        check_one_type( typed_out_vartype );
+
+        return ret;
+
+        function check_one_type( t )
+        {
+            if ('string' === typeof t)
+                return;
+
+            if (!t)
+            {
+                throw new Error( 'Type information is required to generate asm.js code!' );
+            }
+            else if (t instanceof Array)
+            {
+                var bt = tryToGetArrayBasicTypeDescription( t );
+                if (!bt)
+                    throw new Error( 'Unsupported!' );
+
+                if (bt.type in array_basictype_set)
+                    return;
+
+                if (array_basictype_n)
+                    throw new Error( 'Only one basic type permitted!' );
+
+                array_basictype_set[ bt.type ] = 1;
+                array_basictype_n++;
+
+                ret = bt;
+            }
+            else
+            {
+                throw new Error( 'Unsupported!' );
+            }
+            
         }
     }
 
@@ -286,6 +345,34 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         }
     }
 
+
+    function extract_arraynametype( fixed )
+    {
+        fixed.simple_in_vararr = fixed.untyped_vararr.filter( function ( name ) { return 'string' === typeof this[ name ]; }, fixed.typed_in_var );
+        fixed.array_in_vararr  = fixed.untyped_vararr.filter( function ( name ) { return 'string' !== typeof this[ name ]; }, fixed.typed_in_var )
+
+        fixed.arraynametype    = fixed.array_in_vararr.map( function ( name ) { 
+            return { 
+                name   : name
+                , type : fixed.typed_in_var[ name ] 
+            }; 
+        } )
+        ;
+
+        fixed.bt_out = tryToGetArrayBasicTypeDescription( fixed.typed_out_vartype );
+        
+        if (fixed.bt_out)
+        {
+            var cat = fixed.single_common_array_btd.type;
+            if (cat  &&  cat !== fixed.bt_out.type)  // Check used by e.g. the asm.js plugin
+                throw new Error('input & output basic types must be identical (e.g. all "double").')
+            
+            fixed.arraynametype.push( { 
+                name   : fixed.typed_out_varname
+                , type : fixed.typed_out_vartype 
+            } );
+        }
+    }
 
     function flatten_duplicates( fixed, state )
     // ---- asm.js support for multidimensional arrays: flatten the access
