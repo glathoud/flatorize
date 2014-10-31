@@ -215,7 +215,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
 
         var out_e             = fixed.e
 
-        ,   fixed2 = Object.create( fixed ) // we will augment it a little bit, e.g. with `array_name2info`
+        ,   fixed2 = Object.create( fixed ) // we will augment it a little bit with derived values, e.g. with `array_name2info`
         
         ,   before = []
         ,   body   = []
