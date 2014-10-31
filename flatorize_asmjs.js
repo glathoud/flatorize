@@ -353,16 +353,15 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
     {
         var is_out_type_simple = 'string' === typeof fixed.typed_out_vartype
 
-        , duplicates              = fixed.duplicates
-        , dupliidnum2varname      = fixed.dupliidnum2varname
-        , idnum2expr              = fixed.exprCache.idnum2expr
-        , idnum2type              = fixed.idnum2type
         , array_name2info         = fixed.array_name2info
         , single_common_array_btd = fixed.single_common_array_btd  ||  null  // optional
         
         ,   state = { 
 
-            ret            : []
+            duplicates     : fixed.duplicates
+            , idnum2expr   : fixed.exprCache.idnum2expr
+
+            , ret          : []
             , ret_idnumSet : {}
             , ret_idnumMax : -Infinity
             , idnum2max_in_ret_subset : {}  // cache for speedup
@@ -373,44 +372,19 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
         // i.e. assuming `a` is a 3x4 matrix, `a[1][2]` becomes e.g. `float64[1*3+2]`
 
         if (single_common_array_btd)
-        {
-            var o = FTU.flatten_duplicates( duplicates, idnum2expr, array_name2info, castwrap, fixed.sca_name, fixed.sca_type );
-            
-            duplicates = o.duplicates;
-            idnum2expr = o.idnum2expr;
-        }
+            FTU.flatten_duplicates( fixed, state );
         
         // ---- asm.js "type" declarations
 
-        FTU.declare_variables( fixed, state, duplicates, idnum2expr, asmjs_typed_variable_declaration_statement_code );
+        FTU.declare_variables( fixed, state, asmjs_typed_variable_declaration_statement_code );
 
         // ---- Intermediary calculations
 
         if (!INSERT_OUTPUT_EARLY)
             state.ret.push( '/* Intermediary calculations: implementation */' );
 
-        for (var n = duplicates.length, i = 0; i < n; i++)
-        {
-            var idnum  = duplicates[ i ]
-            ,   d_e    = idnum2expr[ idnum ]
-            ,   d_type = idnum2type[ idnum ]
-            ,   d_name = dupliidnum2varname[ idnum ]
-            ;
-            (d_type  ||  null).substring.call.a;  // Must be a simple type
+        FTU.intermediary_calculations( fixed, state, assign_statement_code );
 
-             FTU.push_nonString
-            (
-                state
-                , idnum
-                , FTU.code_and_expr_2_object_with_dep_info( 
-                    dupliidnum2varname
-                    , idnum
-                    , d_name + ' = ' + FTU.expcode_cast_if_needed( fixed, state, d_type, d_e, d_name ) + ';'
-                    , d_e
-                )
-            );
-        }
-                
         // Return
 
         if (!INSERT_OUTPUT_EARLY)
@@ -439,14 +413,20 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
     }
 
 
+    function assign_statement_code( /*string*/name, /*string*/code )
+    {
+        return name + ' = ' + code + ';';
+    }
+    
+
     function asmjs_typed_variable_declaration_statement_code( /*string*/name, /*string*/type )
     {
-        return 'var ' + name + ' = ' + (
-            type === 'float'  ||  type === 'double'   ?  '0.0'
+        return 'var ' + assign_statement_code(
+            name
+            , type === 'float'  ||  type === 'double'   ?  '0.0'
                 : type === 'int'  ?  '0'
                 : (null).unsupported
-        ) + ';'
-        ;
+        );
     }
 
 

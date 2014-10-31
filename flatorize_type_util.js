@@ -45,6 +45,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         , flatten_duplicates                   : flatten_duplicates
         , get_depSortedArr                     : get_depSortedArr
         , insert_output_early                  : insert_output_early
+        , intermediary_calculations            : intermediary_calculations
         , max_in_ret_subset                    : max_in_ret_subset
         , name_2_info_side                     : name_2_info_side
         , outarray_code_push_recursive         : outarray_code_push_recursive
@@ -121,15 +122,17 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         return ret;
     }
 
-    function declare_variables( fixed, state, idnum_arr, /*?object?*/idnum2expr, /*function*/declaration_statement_code )
+    function declare_variables( fixed, state, /*function*/declaration_statement_code )
     {
-        idnum2expr  ||  (idnum2expr = fixed.idnum2expr);
+        var idnum_arr  = state.duplicates
+        ,   idnum2expr = state.idnum2expr
+
+        ,   ret        = state.ret
+        ;
 
         var n = idnum_arr.length;
         if (n)
         {
-            var ret = state.ret;
-
             ret.push( '/* Intermediary calculations: type declarations */' );
             
             for (var i = 0; i < n; i++)
@@ -279,7 +282,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
     }
 
 
-    function flatten_duplicates( duplicates, idnum2expr, array_name2info, /*function*/castwrap, /*?string?*/sca_name, /*?string?*/sca_type )
+    function flatten_duplicates( fixed, state )
     // ---- asm.js support for multidimensional arrays: flatten the access
     // i.e. assuming `a` is a 3x4 matrix, `a[1][2]` becomes e.g. `float64[1*3+2]`
     //
@@ -291,10 +294,19 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
     // idnum2expr = o.idnum2expr;
     // }}}
     {
-        var sca = sca_name  ||  sca_type;
+        var array_name2info = fixed.array_name2info
+        ,   castwrap        = fixed.castwrap
+
+        ,   sca_name        = fixed.sca_name  ||  null
+        ,   sca_type        = fixed.sca_type  ||  null
+        ,   sca             = sca_name  ||  sca_type
+
+        ,   duplicates = state.duplicates
+        ,   idnum2expr = state.idnum2expr
+        ;
         
-        var new_duplicates = []
-        ,   new_idnum2expr = {}
+        var new_duplicates = state.duplicates = []
+        ,   new_idnum2expr = state.idnum2expr = {}
         ;
         duploop: for (var ndup = duplicates.length, i = 0; i < ndup; i++) 
         {
@@ -351,11 +363,6 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                 new_idnum2expr[ idnum ] = e;
             }
         }
-        
-        return {
-            duplicates   : new_duplicates
-            , idnum2expr : new_idnum2expr
-        };
     }
 
 
@@ -408,6 +415,43 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         ret.push( code );
     }
 
+
+    function intermediary_calculations( fixed, state, asmjs_assign_statement_code )
+    {
+        var idnum2type         = fixed.idnum2type
+        ,   dupliidnum2varname = fixed.dupliidnum2varname
+
+        ,   duplicates = state.duplicates
+        ,   idnum2expr = state.idnum2expr
+        ;
+        
+        for (var n = duplicates.length, i = 0; i < n; i++)
+        {
+            var idnum  = duplicates[ i ]
+            ,   d_e    = idnum2expr[ idnum ]
+            ,   d_type = idnum2type[ idnum ]
+            ,   d_name = dupliidnum2varname[ idnum ]
+            ;
+            (d_type  ||  null).substring.call.a;  // Must be a simple type
+
+            push_nonString
+            (
+                state
+                , idnum
+                , code_and_expr_2_object_with_dep_info
+                ( 
+                    dupliidnum2varname
+                    , idnum
+                    , asmjs_assign_statement_code
+                    (
+                        d_name
+                        , expcode_cast_if_needed( fixed, state, d_type, d_e, d_name ) 
+                    )
+                    , d_e
+                )
+            );
+        }              
+    }
 
     function max_in_ret_subset( e, ret_idnumSet, idnum2max_in_ret_subset )
     // Recursive deep evaluation of the maximum expression id used
