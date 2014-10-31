@@ -103,8 +103,14 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
 
         fixed.single_common_array_btd = single_common_array_btd;
         fixed.idnum2type        = idnum2type;
+
         fixed.castwrap          = castwrap;      
+
+        fixed.assign_statement_code            = assign_statement_code;
+        fixed.declaration_statement_code       = asmjs_typed_variable_declaration_statement_code;
+        fixed.line_comment_code                = line_comment_code;
         fixed.read_array_value_expression_code = read_array_value_expression_code;
+        fixed.return_statement_code            = return_statement_code;
         fixed.write_array_value_statement_code = write_array_value_statement_code;
 
         return generateAsmjsGen( fixed, topFunName );
@@ -279,7 +285,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
         {
             before = funDeclCodeAsmjs( simple_in_vararr, fixed2.typed_in_var, topFunName );
          
-            body = funBodyCodeAsmjs( fixed2 );
+            body = FTU.fun_body_imperative_code( fixed2 );
             
             after = [ '}' ];
 
@@ -351,12 +357,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
     function funBodyCodeAsmjs( fixed )
     // Returns an array of codeline strings.
     {
-        var is_out_type_simple = 'string' === typeof fixed.typed_out_vartype
-
-        , array_name2info         = fixed.array_name2info
-        , single_common_array_btd = fixed.single_common_array_btd  ||  null  // optional
-        
-        ,   state = { 
+        var state = { 
 
             duplicates     : fixed.duplicates
             , idnum2expr   : fixed.exprCache.idnum2expr
@@ -371,7 +372,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
         // ---- asm.js support for multidimensional arrays: flatten the access
         // i.e. assuming `a` is a 3x4 matrix, `a[1][2]` becomes e.g. `float64[1*3+2]`
 
-        if (single_common_array_btd)
+        if (fixed.array_name2info)
             FTU.flatten_duplicates( fixed, state );
         
         // ---- asm.js "type" declarations
@@ -381,7 +382,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
         // ---- Intermediary calculations
 
         if (!INSERT_OUTPUT_EARLY)
-            state.ret.push( '/* Intermediary calculations: implementation */' );
+            state.ret.push( '', '/* Intermediary calculations: implementation */' );
 
         FTU.intermediary_calculations( fixed, state, assign_statement_code );
 
@@ -390,7 +391,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
         if (!INSERT_OUTPUT_EARLY)
             state.ret.push( '', '/* output */' );
 
-        if (is_out_type_simple)
+        if (!fixed.bt_out)
         {
             // Use return
 
@@ -429,6 +430,11 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
         );
     }
 
+    function line_comment_code( s )
+    {
+        return '// ' + s;
+    }
+
 
     function read_array_value_expression_code( /*string*/array_name, /*integer*/ind )
     {
@@ -444,6 +450,11 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
             : type === 'int'  ?  '((' + code + ')|0)'
             : null.unsupported
         ;
+    }
+
+    function return_statement_code( /*string*/code )
+    {
+        return 'return ' + code + ';';
     }
 
 

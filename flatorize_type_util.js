@@ -43,6 +43,9 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         , declare_variables                    : declare_variables
         , expcode_cast_if_needed               : expcode_cast_if_needed
         , flatten_duplicates                   : flatten_duplicates
+
+        , fun_body_imperative_code             : fun_body_imperative_code
+
         , get_depSortedArr                     : get_depSortedArr
         , insert_output_early                  : insert_output_early
         , intermediary_calculations            : intermediary_calculations
@@ -122,9 +125,11 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         return ret;
     }
 
-    function declare_variables( fixed, state, /*function*/declaration_statement_code )
+    function declare_variables( fixed, state )
     {
-        var idnum_arr  = state.duplicates
+        var declaration_statement_code = fixed.declaration_statement_code  // function
+
+        ,   idnum_arr  = state.duplicates
         ,   idnum2expr = state.idnum2expr
 
         ,   ret        = state.ret
@@ -366,6 +371,62 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
     }
 
 
+
+    function fun_body_imperative_code( fixed )
+    // Returns an array of codeline strings.
+    {
+        var state = { 
+
+            duplicates     : fixed.duplicates
+            , idnum2expr   : fixed.exprCache.idnum2expr
+
+            , ret          : []
+            , ret_idnumSet : {}
+            , ret_idnumMax : -Infinity
+            , idnum2max_in_ret_subset : {}  // cache for speedup
+        }
+        ;
+        
+        // ---- asm.js support for multidimensional arrays: flatten the access
+        // i.e. assuming `a` is a 3x4 matrix, `a[1][2]` becomes e.g. `float64[1*3+2]`
+
+        if (fixed.array_name2info)
+            flatten_duplicates( fixed, state );
+        
+        // ---- asm.js "type" declarations
+
+        declare_variables( fixed, state );
+
+        // ---- Intermediary calculations
+
+        if (!fixed.do_insert_output_early)
+            state.ret.push( '', fixed.line_comment_code( 'Intermediary calculations: implementation' ) );
+
+        intermediary_calculations( fixed, state );
+
+        // Return
+
+        if (!fixed.do_insert_output_early)
+            state.ret.push( '', fixed.line_comment_code( 'output' ) );
+
+        if (!fixed.bt_out)
+        {
+            // Use return
+
+            state.ret.push( fixed.return_statement_code( expcode_cast_if_needed( fixed, state, fixed.typed_out_vartype, fixed.e ) ) );
+        }
+        else
+        {
+            // Arrays: Do not use return
+
+            outarray_code_push_recursive( fixed, state, fixed.e );
+        }
+        
+        return fixed.indent  ?  state.ret.map( fixed.indent )  :  state.ret;
+    }
+
+
+
     function get_depSortedArr( dupliidnum2varname, e )
     {
         var depSortedArr = [];
@@ -396,7 +457,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
     // as soon as possible == write the related output lines as
     // early as possible.
     {
-        var max = FTU.max_in_ret_subset( e, state.ret_idnumSet, state.idnum2max_in_ret_subset )
+        var max = max_in_ret_subset( e, state.ret_idnumSet, state.idnum2max_in_ret_subset )
         ,   ret = state.ret
         ;
         
@@ -416,10 +477,11 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
     }
 
 
-    function intermediary_calculations( fixed, state, asmjs_assign_statement_code )
+    function intermediary_calculations( fixed, state )
     {
         var idnum2type         = fixed.idnum2type
         ,   dupliidnum2varname = fixed.dupliidnum2varname
+        ,   assign_statement_code = fixed.assign_statement_code
 
         ,   duplicates = state.duplicates
         ,   idnum2expr = state.idnum2expr
@@ -442,7 +504,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                 ( 
                     dupliidnum2varname
                     , idnum
-                    , asmjs_assign_statement_code
+                    , assign_statement_code
                     (
                         d_name
                         , expcode_cast_if_needed( fixed, state, d_type, d_e, d_name ) 
@@ -511,7 +573,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         var array_name2info = this.array_name2info  // Mandatory
         ,   has_count       = this.count != null  &&  'number' === typeof this.count  // Optional
         
-        ,  bt  = FTU.tryToGetArrayBasicTypeDescription( type )
+        ,  bt  = tryToGetArrayBasicTypeDescription( type )
         
         ,  bt2 = array_name2info[ name ] = Object.create( bt )
         ;
