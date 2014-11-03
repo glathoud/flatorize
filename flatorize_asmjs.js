@@ -104,6 +104,8 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
         fixed.single_common_array_btd = single_common_array_btd;
         fixed.idnum2type        = idnum2type;
 
+        fixed.do_insert_output_early = INSERT_OUTPUT_EARLY;
+
         fixed.castwrap          = castwrap;      
 
         fixed.assign_statement_code            = assign_statement_code;

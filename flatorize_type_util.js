@@ -197,7 +197,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         var n = idnum_arr.length;
         if (n)
         {
-            ret.push( '/* Intermediary calculations: type declarations */' );
+            ret.push( fixed.line_comment_code( 'Intermediary calculations: type declarations' ) );
             
             for (var i = 0; i < n; i++)
             {
@@ -486,8 +486,10 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
         // ---- Intermediary calculations
 
-        if (!fixed.do_insert_output_early)
-            state.ret.push( '', fixed.line_comment_code( 'Intermediary calculations: implementation' ) );
+        state.ret.push( fixed.line_comment_code(
+            !fixed.do_insert_output_early  ?  'Intermediary calculations: implementation'
+                :  'Intermediary calculations, and output(s) as early as possible'
+        ) );
 
         intermediary_calculations( fixed, state );
 
@@ -718,9 +720,9 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         }
     }
 
-    function outarray_code_push_recursive( fixed, state, e, /*?boolean?*/do_insert_output_early )
+    function outarray_code_push_recursive( fixed, state, e )
     {
-        do_insert_output_early != null  ||  (do_insert_output_early = true);
+        var do_insert_output_early = fixed.do_insert_output_early;
         
         //
         
