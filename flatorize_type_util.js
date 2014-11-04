@@ -41,6 +41,9 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         , check_single_common_array_type       : check_single_common_array_type
         , code_and_expr_2_object_with_dep_info : code_and_expr_2_object_with_dep_info
         , complete_with_dependency_information : complete_with_dependency_information
+
+        , create_fixed_info                    : create_fixed_info
+
         , declare_variables                    : declare_variables
         , expcode_cast_if_needed               : expcode_cast_if_needed
         , extract_arraynametype                : extract_arraynametype
@@ -131,7 +134,10 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         function check_one_type( t )
         {
             if ('string' === typeof t)
+            {
+                check_mark_one_type( t );           
                 return;
+            }
 
             if (!t)
             {
@@ -143,14 +149,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                 if (!bt)
                     throw new Error( 'Unsupported!' );
 
-                if (bt.type in array_basictype_set)
-                    return;
-
-                if (array_basictype_n)
-                    throw new Error( 'Only one basic type permitted!' );
-
-                array_basictype_set[ bt.type ] = 1;
-                array_basictype_n++;
+                check_mark_one_type( bt.type );
 
                 ret = bt;
             }
@@ -160,6 +159,20 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             }
             
         }
+
+        function check_mark_one_type( t )
+        {
+            (t  ||  null).substring.call.a;
+            
+            if (t in array_basictype_set)
+                return;
+            
+            if (array_basictype_n)
+                throw new Error( 'Only one basic type permitted!' );
+            
+            array_basictype_set[ t ] = 1;
+            array_basictype_n++;
+        }        
     }
 
     
@@ -184,6 +197,21 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         return ret;
     }
 
+    function create_fixed_info( js_direct )
+    {
+        var fixed = Object.create( js_direct );
+        
+        // We do NOT allow heterogenous types.  This makes type
+        // propagation much simpler, among others.
+        fixed.single_common_array_btd = check_single_common_array_type( fixed.typed_in_var, fixed.typed_out_vartype );
+
+        // By default, try to reduce register spill by freeing
+        // intermediate variables as soon as possible.
+        fixed.do_insert_output_early = true;
+
+        return fixed;
+    }
+
     function declare_variables( fixed, state )
     {
         var declaration_statement_code = fixed.declaration_statement_code  // function
@@ -203,7 +231,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             {
                 var idnum  = idnum_arr[ i ]
                 ,   d_e    = idnum2expr[ idnum ]
-                ,   d_type = fixed.idnum2type[ idnum ]
+                ,   d_type = state.idnum2type[ idnum ]
                 ,   d_name = fixed.dupliidnum2varname[ idnum ]
                 ;
                 d_type.substring.call.a;  // Must be a simple type
@@ -218,7 +246,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
     {
         // Mandatory stuff, unless specified otherwise
         
-        var idnum2type         = fixed.idnum2type
+        var idnum2type         = state.idnum2type
         ,   dupliidnum2varname = fixed.dupliidnum2varname
         ,   duplicates         = fixed.duplicates
         ,   array_name2info    = fixed.array_name2info
@@ -289,7 +317,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             if (one.__isExpr__  &&  (idnum = one.__exprIdnum__) != null  &&  idnum in ret_idnumSet)
             {
                 var dupli_varname = dupliidnum2varname[ idnum ];
-                (dupli_varname  ||  0).substring.call.a;
+                (dupli_varname  ||  null).substring.call.a;
                 return dupli_varname;
             }
             
@@ -386,6 +414,8 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
     // idnum2expr = o.idnum2expr;
     // }}}
     {
+        state.flatten_duplicates_called = true;
+
         var array_name2info = fixed.array_name2info
         ,   castwrap        = fixed.castwrap
 
@@ -397,8 +427,8 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         ,   idnum2expr = state.idnum2expr
         ;
         
-        var new_duplicates = state.duplicates = []
-        ,   new_idnum2expr = state.idnum2expr = {}
+        var new_duplicates    = state.duplicates = []
+        ,   new_idnum2expr    = state.idnum2expr = {}
         ;
         duploop: for (var ndup = duplicates.length, i = 0; i < ndup; i++) 
         {
@@ -440,9 +470,10 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                                            );
                     
                     e.part = { x : varname, where : ind };
-                    
+
                     new_duplicates.push( idnum );
                     new_idnum2expr[ idnum ] = e;
+
                     continue duploop;
                 }}
                 null.bug;  // Must find a match!
@@ -464,9 +495,9 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
     {
         var state = { 
 
-            duplicates     : fixed.duplicates
-            , idnum2expr   : fixed.exprCache.idnum2expr
-
+            duplicates          : fixed.duplicates
+            , idnum2expr        : fixed.exprCache.idnum2expr
+            
             , ret          : []
             , ret_idnumSet : {}
             , ret_idnumMax : -Infinity
@@ -479,6 +510,10 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
         if (fixed.array_name2info)
             flatten_duplicates( fixed, state );
+        
+        // --- Now we can propagate the types
+
+        propagateType( fixed, state );
         
         // ---- asm.js "type" declarations
 
@@ -568,7 +603,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
     function intermediary_calculations( fixed, state )
     {
-        var idnum2type         = fixed.idnum2type
+        var idnum2type         = state.idnum2type
         ,   dupliidnum2varname = fixed.dupliidnum2varname
         ,   assign_statement_code = fixed.assign_statement_code
 
@@ -792,13 +827,13 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
     }
 
 
-    function propagateType( /*object e.g. `js_direct`*/info )
+    function propagateType( /*object e.g. `js_direct`*/info, /*object*/state )
     {
         // Input
 
-        var typed_in_var      = info.typed_in_var
-        
-        ,   exprCache         = info.exprCache
+        var array_name2info = info.array_name2info
+
+        ,   exprCache = info.exprCache
 
         // Output
 
@@ -809,6 +844,8 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
         ,             out_e = info.e
         , typed_out_vartype = info.typed_out_vartype
+
+        , flatten_duplicates_called = state.flatten_duplicates_called
         ;
 
         // Check
@@ -822,7 +859,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
         // Done
 
-        return idnum2type;
+        state.idnum2type = idnum2type;
 
         // --- Details
 

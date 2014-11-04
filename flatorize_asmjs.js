@@ -34,9 +34,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
 
 (function (global) {
 
-    var FTU = flatorize.type_util
-    ,   INSERT_OUTPUT_EARLY = true
-    ;
+    var FTU = flatorize.type_util;
 
     // ---------- Public API
 
@@ -83,29 +81,9 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
         js_switcher.call.a;  // Cheap assert: Must be a function
         
         var js_direct   = js_switcher.getDirect  ?  js_switcher.getDirect()  :  js_switcher
-        
-        ,  typed_in_var = js_direct.typed_in_var
-        , typed_out_vartype = js_direct.typed_out_vartype
-        
-        ,   e           = js_direct.e
-        ,   exprCache   = js_direct.exprCache
-        ,   varnameset  = js_direct.varnameset
+        ,   fixed       = FTU.create_fixed_info( js_direct )
         ;
         
-        // Difference with the C plugin: we do NOT allow heterogenous
-        // types.  See also ./flatorize_c.js
-        var single_common_array_btd = FTU.check_single_common_array_type( typed_in_var, typed_out_vartype )
-
-        ,   idnum2type  = FTU.propagateType( js_direct )
-        
-        ,    fixed = Object.create( js_direct )
-        ;
-
-        fixed.single_common_array_btd = single_common_array_btd;
-        fixed.idnum2type        = idnum2type;
-
-        fixed.do_insert_output_early = INSERT_OUTPUT_EARLY;
-
         fixed.castwrap          = castwrap;      
 
         fixed.assign_statement_code            = assign_statement_code;

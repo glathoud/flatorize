@@ -49,4 +49,8 @@
 
     passed.expl_flatasmjs_ndim_4_from_ndim_3 = expl_run( expl_flatasmjs_ndim_from_ndim, { doc_silent : true, args : [ [ 5, 4, 3, 2 ], [ 5, 12, 2 ] ] } );
 
+    // Cast tests
+
+    passed.expl_flatasmjs_scalarint_from_scalardouble = expl_run( expl_flatasmjs_scalarint_from_scalardouble, { doc_silent : true, args : [ ] } );
+
 })();
