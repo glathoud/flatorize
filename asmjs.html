@@ -20,6 +20,7 @@
 <script type="text/javascript" src="expl/dftreal_flatorize.js"></script>
 
 <script type="text/javascript" src="expl/asmjs_complex_numbers_check.js"></script>
+<script type="text/javascript" src="expl/asmjs_complex_numbers_check_direct.js"></script>
 <script type="text/javascript" src="expl/asmjs_matmulrows_zip_342_check.js"></script>
 <script type="text/javascript" src="expl/asmjs_dftrealflat_check.js"></script>
 
@@ -83,7 +84,7 @@
 <script type="text/javascript">document.write(f2.exprgen+"");</script></code></pre>
 
 <p>A call to <code>flatorize()</code>:</p>
-<pre class="prettyprint lang-js"><code>// note the type declarations, ignored by JavaScript but used later for asm.js
+<pre class="prettyprint lang-js"><code>// note the type declarations, ignored by flatorize but used later for asm.js
 f2 = flatorize('a:[2 float],b:[2 float],c:[2 float]->d:[2 float]',f);
 </code></pre>
 
@@ -104,13 +105,44 @@ f2 = flatorize('a:[2 float],b:[2 float],c:[2 float]->d:[2 float]',f);
 
 <p>The generator can be used as follows to compile and use the <code>asm.js</code> code:</p>
 <pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(asmjs_complex_numbers_check);</script></code></pre>
-<script type="text/javascript">asmjs_complex_numbers_check();</script>
 <p class="small">(This check, as a few others below, ran as you loaded the page.)</p>
 
 
+<h4>Summary:</h4>
+
+<p>We used two&nbsp;steps to create the <code>asm.js</code> generator <code>f2_asmjsGen</code>. First, we called <code>flatorize</code>, then we called <code>flatorize.getAsmjsGen()</code>:</p>
+<pre class="prettyprint lang-js"><code>// Note the type declarations, ignored by flatorize but used later for asm.js
+f2 = flatorize('a:[2 float],b:[2 float],c:[2 float]->d:[2 float]',f);
+
+// Now the type declarations will matter
+<script type="text/javascript">document.write(document.getElementById("script-gen-f2_asmjs").textContent);</script></code></pre>
+
+<p>Having the intermediate <code>flatorize</code>d implementation <code>f2</code> can be useful to build other <code>flatorize</code>d implementations, i.e. to write well-encapsulated, maintainable code using many small functions.</p><p>We only need the second step &mdash;&nbsp;a faster <code>asm.js</code> implementation&nbsp;&mdash; for the functions actually used in massive computations.</p>
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h3 class="anchorable" id="f2-shortcut">Shortcut: in 1 step (HOWTO example)<a href="#f2-shortcut" class="anchor">#</a></h3>
+
+<p>If an intermediate <code>flatorize</code>d implementation is not needed, one can directly create the <code>asm.js</code> generator in one step:</p>
+<script type="text/javascript" id="script-gen-f2_asmjs_direct">var f2_asmjsGen_direct = flatorize.getAsmjsGen( { 
+  name      : 'f2'
+  , varstr  : 'a:[2 float],b:[2 float],c:[2 float]->d:[2 float]'
+  , exprgen : f2.exprgen 
+} );</script>
+<pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(document.getElementById("script-gen-f2_asmjs_direct").textContent.replace("f2.exprgen",""+f2.exprgen));</script></code></pre>
 
 
 
@@ -154,7 +186,7 @@ document.write(matmulrows_zip_342.getDirect()+"");</script></code></pre>
 
 <p>The generator can be used as follows to compile and use the <code>asm.js</code> code:</p>
 <pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(asmjs_matmulrows_zip_342_check);</script></code></pre>
-<script type="text/javascript">asmjs_matmulrows_zip_342_check();</script>
+
 
 
 
@@ -196,7 +228,7 @@ document.write(dftreal16flat.getDirect()+"");</script></code></pre>
 
 
 <p>The generator can be used as follows to compile and use the <code>asm.js</code> code:</p>
-<pre class="prettyprint lang-js"><code><script type="text/javascript" id="asmjs_dftrealflat_check_script">asmjs_dftrealflat_check( 16 );</script><script type="text/javascript">document.write(document.getElementById("asmjs_dftrealflat_check_script").textContent)</script>
+<pre class="prettyprint lang-js"><code>asmjs_dftrealflat_check( 16 );
 
 <script type="text/javascript">document.write(asmjs_dftrealflat_check);</script></code></pre>
 
@@ -344,7 +376,7 @@ function genflatcode_asmjs_dftreal1024flat()
 
 
 
-<script type="text/javascript" src="asmjs/remaining_tests.js"></script>
+<script type="text/javascript" src="asmjs/tests.js"></script>
 
 <script type="text/javascript" src="asmjs/perf_util.js"></script>
 
@@ -736,7 +768,7 @@ var all_passed;
 (function ()
 {
     var empty = {};
-    all_passed = passed  &&  Object.keys( passed ).map( function (k) { 
+    all_passed = passed  &&  Object.keys( passed ).sort().map( function (k) { 
         if (k in empty)
             return true;
   

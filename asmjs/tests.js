@@ -1,5 +1,11 @@
 (function () {
 
+    asmjs_complex_numbers_check();
+    asmjs_complex_numbers_check_direct();
+    asmjs_matmulrows_zip_342_check();
+
+    asmjs_dftrealflat_check( 16 );
+
     var vsize = 10;
 
     passed.expl_flatasmjs_scalar_from_scalar = expl_run( expl_flatasmjs_scalar_from_scalar, { doc_silent : true, args : [ ] } );

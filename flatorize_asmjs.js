@@ -84,6 +84,10 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
         ,   fixed       = FTU.create_fixed_info( js_direct )
         ;
         
+        fixed.topFunName        = topFunName;
+
+        // Syntax definitions
+
         fixed.castwrap          = castwrap;      
 
         fixed.assign_statement_code            = assign_statement_code;
@@ -95,7 +99,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
 
         fixed.indent = indent;
 
-        return generateAsmjsGen( fixed, topFunName );
+        return generateAsmjsGen( fixed );
     }
 
     function flatorize_getAsmjsImplCode( /*object*/cfg )
@@ -118,9 +122,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
     
     // ---------- Private details ----------
 
-    var _emptyObj = {};
-    
-    function generateAsmjsGen( /*object*/fixed, /*string*/topFunName )
+    function generateAsmjsGen( /*object*/fixed )
     // Returns a `gen` function that can be called to compile the
     // asm.js code, e.g.
     // 
@@ -128,10 +130,10 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
     // var o = gen( window, {}, heap );  // compile the asm.js code
     // 
     // // Use it:
-    // var result = o[ topFunName ]( some, input, parameters );
+    // var result = o[ fixed.topFunName ]( some, input, parameters );
     // }}}
     //
-    // `o[ topFunName ]` may also modify the heap in-place,
+    // `o[ fixed.topFunName ]` may also modify the heap in-place,
     // in which case you have to write inputs and read outputs
     // through the heap.
     //
@@ -139,7 +141,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
     // 
     // glathoud@yahoo.fr
     {
-        (topFunName  ||  null).substring.call.a;
+        (fixed.topFunName  ||  null).substring.call.a;
 
         var fixed2 = Object.create( fixed ) // we will augment it a little bit with derived values, e.g. with `array_name2info`
 
@@ -164,7 +166,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
             ,   cat_bytes = cat_bits >> 3
             ;
 
-            fixed2.sca_name = cat_js.toLowerCase()  // xxx make sure not in duplicates, else change cat_varname's value a bit (impl: use flatorize.xxx())
+            fixed2.sca_name = FTU.get_new_varname( fixed2, cat_js.toLowerCase() )
             fixed2.sca_type = cat;
         }
         else
@@ -173,25 +175,17 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
         }
 
         
-        FTU.extract_arraynametype( fixed2 );
+        FTU.extract_array_info_and_count( fixed2 );
 
-        
-        var tmp = { count : 0, array_name2info : {} };
-        
-        fixed2.arraynametype.forEach( FTU.name_2_info_side, tmp )
-        
-        fixed2.count           = tmp.count;
-        fixed2.array_name2info = tmp.array_name2info;
-        
         var asmjs_buffer_bytes = Math.ceil( fixed2.count * cat_bytes / (1 << 24) ) << 24;
         
-        before = funDeclCodeAsmjs( fixed2.simple_in_vararr, fixed2.typed_in_var, topFunName );
+        before = funDeclCodeAsmjs( fixed2 );
         
         body = FTU.fun_body_imperative_code( fixed2 );
         
         after = [ '}' ];
         
-        wrap = [ '', return_statement_code( '{ ' + topFunName + ' : ' + topFunName + ' }' ) ];
+        wrap = [ '', return_statement_code( '{ ' + fixed2.topFunName + ' : ' + fixed2.topFunName + ' }' ) ];
         
         // ---------- asm.js wrapper generator ----------
 
@@ -231,16 +225,16 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
     }
     
 
-    function funDeclCodeAsmjs( simple_in_vararr, typed_in_var, topFunName )
+    function funDeclCodeAsmjs( fixed )
     // Returns an array of codeline strings.
     {
         return [
-            'function ' + topFunName + '( ' + simple_in_vararr.join( ', ' ) + ' )'
+            'function ' + fixed.topFunName + '( ' + fixed.simple_in_vararr.join( ', ' ) + ' )'
             , '{'
         ].concat(
-            simple_in_vararr.map( function (name) {
+            fixed.simple_in_vararr.map( function (name) {
 
-                var t = typed_in_var[ name ];
+                var t = fixed.typed_in_var[ name ];
 
                 if (t === 'float'  ||  t === 'double')
                     return name + '= +' + name + ';';
@@ -253,6 +247,8 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
         );
     }
 
+    // Syntax definitions
+    
     function assign_statement_code( /*string*/name, /*string*/code )
     {
         return name + ' = ' + code + ';';

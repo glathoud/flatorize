@@ -46,12 +46,13 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
         , declare_variables                    : declare_variables
         , expcode_cast_if_needed               : expcode_cast_if_needed
-        , extract_arraynametype                : extract_arraynametype
+        , extract_array_info_and_count         : extract_array_info_and_count
         , flatten_duplicates                   : flatten_duplicates
 
         , fun_body_imperative_code             : fun_body_imperative_code
 
         , get_depSortedArr                     : get_depSortedArr
+        , get_new_varname                      : get_new_varname
         , insert_output_early                  : insert_output_early
         , intermediary_calculations            : intermediary_calculations
         , max_in_ret_subset                    : max_in_ret_subset
@@ -71,7 +72,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
     ;
 
 
-    function castwrap_spare( /*function*/castwrap, /*string*/type, /*string*/code )
+    function castwrap_spare( /*?function?*/castwrap, /*string*/type, /*string*/code )
     // Call castwrap only if necessary.
     // 
     // E.g. in asm.js if we already have `code === "+a[2]"` we don't
@@ -80,6 +81,11 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
     // E.g. in C if we already have `code === "(double)(a[2])"` we don't
     // need to wrap it again `(double)((double)(a[2]))`
     {
+        if (!castwrap)
+            return code;  // e.g. C plugin
+            
+        // e.g. asm.js plugin        
+
         var _type2rx = castwrap._type2rx  ||  (castwrap._type2rx = {});
         if (!(type in _type2rx))
         {
@@ -209,6 +215,15 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         // intermediate variables as soon as possible.
         fixed.do_insert_output_early = true;
 
+        // Convenience access to the list of duplicate variable names
+        var dvn_set = fixed.duplivarname2idnum = {};
+        for (var i = fixed.duplicates; i--;)
+        {
+            var idnum = fixed.duplicates[ i ];
+            dvn_set[ fixed.dupliidnum2varname[ idnum ] ] = idnum;
+        }
+        
+        
         return fixed;
     }
 
@@ -374,7 +389,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
     }
 
 
-    function extract_arraynametype( fixed )
+    function extract_array_info_and_count( fixed )
     {
         fixed.simple_in_vararr = fixed.untyped_vararr.filter( function ( name ) { return 'string' === typeof this[ name ]; }, fixed.typed_in_var );
         fixed.array_in_vararr  = fixed.untyped_vararr.filter( function ( name ) { return 'string' !== typeof this[ name ]; }, fixed.typed_in_var )
@@ -400,7 +415,16 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                 , type : fixed.typed_out_vartype 
             } );
         }
+
+        
+        var tmp = { count : 0, array_name2info : {} };
+        
+        fixed.arraynametype.forEach( name_2_info_side, tmp );
+        
+        fixed.count           = tmp.count;
+        fixed.array_name2info = tmp.array_name2info;
     }
+
 
     function flatten_duplicates( fixed, state )
     // ---- asm.js support for multidimensional arrays: flatten the access
@@ -571,6 +595,24 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         depSortedArr.sort( function (a,b) { return a < b  ?  -1  :  +1; } );
         return depSortedArr;
     }
+
+    
+    function get_new_varname( fixed, candidate )
+    // Create a new variable name, and make sure it has not been used
+    // yet.
+    // 
+    // Returns a string, either `candidate` unchanged,
+    // or with a tail.
+    {
+        var tail = null
+        ,   ret
+        ;
+        while ((ret = candidate + (tail == null  ?  ''  :  '_' + tail)) in fixed.typed_in_var  ||  ret in fixed.duplivarname2idnum)
+            tail = tail == null  ?  0  :  tail+1;
+        
+        return ret;
+    }
+    
 
     function insert_output_early( state, e, code )
     // Assumption: expr id num increases bottom-up with the
