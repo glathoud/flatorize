@@ -398,6 +398,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             return { 
                 name   : name
                 , type : fixed.typed_in_var[ name ] 
+                , is_input : true
             }; 
         } )
         ;
@@ -413,6 +414,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             fixed.arraynametype.push( { 
                 name   : fixed.typed_out_varname
                 , type : fixed.typed_out_vartype 
+                , is_output : true
             } );
         }
 
@@ -421,6 +423,8 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         
         fixed.arraynametype.forEach( name_2_info_side, tmp );
         
+        fixed.arrayname_arr   = fixed.arraynametype.map( function ( x ) { return x.name; } );
+
         fixed.count           = tmp.count;
         fixed.array_name2info = tmp.array_name2info;
     }
@@ -754,6 +758,9 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             bt2.begin_bytes = bt2.begin * bt2.type_bytes;
         }
         
+        if (o.is_input)  bt2.is_input  = o.is_input;
+        if (o.is_output) bt2.is_output = o.is_output;
+
         function matchFun( e )
         {
             if (e instanceof Object  &&  e.part)

@@ -53,7 +53,9 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
     // ---------- Public API implementation
 
     function flatorize_getCodeC( /*object*/cfg )
-    // Returns a C code string.
+    // Returns an object with property `obj.code`, a C code string,
+    // and a few helper methods `obj.helper_*` to generate boilerplate
+    // code, especially useful to manage array inputs/output.
     //
     // Two usages:  
     // 

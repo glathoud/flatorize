@@ -67,6 +67,16 @@
 <p>Each input or output can be a number or an array of numbers. All arrays are grouped into a single one (inputs and/or output), so they must have the same type: <code>double</code>, <code>float</code> or <code>int</code> in <code>flatorize</code> notation, i.e. respectively <code>Float64Array</code>, <code>Float32Array</code> or <code>Int32Array</code> in JavaScript notation.</p>
 
 
+
+
+
+
+
+
+
+
+
+
 <h3 class="anchorable" id="contents">Contents <a href="#contents" class="anchor">#</a></h3>
 
 <ul class="contents-ul"></ul>
@@ -77,9 +87,20 @@
 
 
 
-<h3 class="anchorable" id="f2">Complex numbers (HOWTO example)<a href="#f2" class="anchor">#</a></h3>
 
-<p>Expression definition  (details in the <a href="index.html#example">main article</a>):</p>
+
+
+
+
+
+
+
+
+
+
+<h3 class="anchorable" id="f2">HOWTO: 2-step example<a href="#f2" class="anchor">#</a></h3>
+
+<p>Here is an expression definition that uses complex numbers (details in the <a href="index.html#example">main article</a>):</p>
 <pre class="prettyprint lang-js"><code>// f:
 <script type="text/javascript">document.write(f2.exprgen+"");</script></code></pre>
 
@@ -117,7 +138,9 @@ f2 = flatorize('a:[2 float],b:[2 float],c:[2 float]->d:[2 float]',f);
 // Now the type declarations will matter
 <script type="text/javascript">document.write(document.getElementById("script-gen-f2_asmjs").textContent);</script></code></pre>
 
-<p>Having the intermediate <code>flatorize</code>d implementation <code>f2</code> can be useful to build other <code>flatorize</code>d implementations, i.e. to write well-encapsulated, maintainable code using many small functions.</p><p>We only need the second step &mdash;&nbsp;a faster <code>asm.js</code> implementation&nbsp;&mdash; for the functions actually used in massive computations.</p>
+<p>Having the intermediate <code>flatorize</code>d implementation <code>f2</code> can be useful to build other <code>flatorize</code>d implementations, i.e. to write well-encapsulated, maintainable code using many small functions.</p>
+
+<p>We only need the second step &mdash;&nbsp;a faster <code>asm.js</code> implementation&nbsp;&mdash; for the functions actually used in massive computations.</p>
 
 
 
@@ -134,9 +157,9 @@ f2 = flatorize('a:[2 float],b:[2 float],c:[2 float]->d:[2 float]',f);
 
 
 
-<h3 class="anchorable" id="f2-shortcut">Shortcut: in 1 step (HOWTO example)<a href="#f2-shortcut" class="anchor">#</a></h3>
+<h3 class="anchorable" id="f2-shortcut">HOWTO: 1-step shortcut<a href="#f2-shortcut" class="anchor">#</a></h3>
 
-<p>If an intermediate <code>flatorize</code>d implementation is not needed, one can directly create the <code>asm.js</code> generator in one step:</p>
+<p>If an intermediate <code>flatorize</code>d implementation is not needed, one can directly create the <code>asm.js</code> generator in a single step:</p>
 <script type="text/javascript" id="script-gen-f2_asmjs_direct">var f2_asmjsGen_direct = flatorize.getAsmjsGen( { 
   name      : 'f2'
   , varstr  : 'a:[2 float],b:[2 float],c:[2 float]->d:[2 float]'
@@ -802,7 +825,6 @@ var all_passed;
 
 
 <script type="text/javascript" src="contents_ul.js"></script>
-
 <script type="text/javascript" src="prettify/prettify.js"></script>
 <script type="text/javascript">setTimeout( prettyPrint );</script>
 <script type="text/javascript" src="btn_anchor.js"></script>

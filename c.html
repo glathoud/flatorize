@@ -26,29 +26,45 @@
 
 <h2><code>flatorize-c</code>: Generate fast C code</h2>
 
-<p style="text-align:right">by <a href="http://glat.info">Guillaume Lathoud</a><span class="print">&nbsp;[1]</span>, April 2013</p>
+<p style="text-align:right">by <a href="http://glat.info">Guillaume Lathoud</a><span class="print">&nbsp;[1]</span>, April 2013, November 2014</p>
+
+<div class="fixed-br print-hidden"><a href="#top">Back to the top</a></div>
+
+
 
 <p>This page presents a plugin method <code>flatorize.getCodeC()</code> (GitHub <a href="https://github.com/glathoud/flatorize/blob/master/flatorize_c.js">source</a>) that goes on top of <code>flatorize</code> (see the <a href="index.html">main article</a>, GitHub <a href="https://github.com/glathoud/flatorize/blob/master/flatorize.js">source</a>).</p>
 
-<p>Several examples describe how to use <code>flatorize.getCodeC()</code> to speedup C code for mathematical expressions.</p>
-<ul class="small">
-  <li><a href="#c-f2">complex numbers (how-to example)</a></li>
-  <li><a href="#c-matmul">matrix multiplication (speedup example)</a><br>
-...<code>flatorize-c</code> brings a <a href="https://github.com/glathoud/flatorize/blob/master/explore/C/cAll_matmul.results.txt#L48">+78% speedup</a> over the <a href="https://github.com/glathoud/flatorize/blob/master/explore/C/c_matmul_classic.c#L50">original C code</a>.</li>
-  <li><a href="#c-dft">Discrete Fourier Transform (speedup example)</a><br>
-...<code>flatorize-c</code>, not fully optimized yet (still duplicates the Hermitian output), yields only a <a href="https://github.com/glathoud/flatorize/blob/master/explore/C/cAll_dftreal16.results.txt#L55">-11% slowdown</a> over the highly optimized <a href="http://www.fftw.org/fftw-3.3.3.tar.gz">FFTW&nbsp;3.3.3</a>.
-</li>
-</ul>
-  
-<p>Application: You can use your browser &ndash; or a V8 engine &ndash; to  quickly generate optimized C code, which you then insert into your C application. Example: the C performance tests conducted here (<a href="https://github.com/glathoud/flatorize/tree/master/explore/C">GitHub source</a>).</p>
 
 
 
 
 
-<h3 class="anchorable" id="c-f2"><code>f2:</code> complex numbers (how-to example)<a href="#c-f2" class="anchor">#</a></h3>
 
-<p>Expression definition  (details in the <a href="index.html#example">main article</a>):</p>
+
+
+
+<h3 class="anchorable" id="contents">Contents <a href="#contents" class="anchor">#</a></h3>
+
+<ul class="contents-ul"></ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h3 class="anchorable" id="c-f2">HOWTO: 2-step example <a href="#c-f2" class="anchor">#</a></h3>
+
+<p>Here is an expression definition that uses complex numbers (details in the <a href="index.html#example">main article</a>):</p>
 <pre class="prettyprint lang-js"><code>// f:
 <script type="text/javascript">document.write(f2.exprgen+"");</script></code></pre>
 
@@ -62,17 +78,78 @@ f2 = flatorize('a:[2 float],b:[2 float],c:[2 float]->d:[2 float]',f);
 <script type="text/javascript">document.write(f2.getDirect()+"");</script></code></pre>
 
 <p>Then, a call to <code>flatorize.getCodeC()</code>:</p>
-<script type="text/javascript" id="script-gen-f2_c_code">var f2_c = flatorize.getCodeC( { switcher: f2, name: "f2" } );</script>
+<script type="text/javascript" id="script-gen-f2_c_code">var f2_obj = flatorize.getCodeC( { switcher: f2, name: "f2" } );</script>
 <pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(document.getElementById("script-gen-f2_c_code").textContent);</script></code></pre>
 
-<p>...generates flatorized C code:</p>
-<pre class="prettyprint lang-js"><code>// f2_c_code:
-<script type="text/javascript">document.write(f2_c.code);</script></code></pre>
+<p>...generates <code>f2_obj.code</code>, a JavaScript string containing the C code below:</p>
+<pre class="prettyprint lang-c"><code><script type="text/javascript">document.write(f2_obj.code);</script></code></pre>
 <p class="small">(This code, as a few others below, was produced and inserted as you loaded the page.)</p>
 
-<p>Implementation note: JavaScript and C share pretty much the same syntax for mathematical operations, so a good share of the generated JavaScript code is reused here. Only C types, function declarations, casts, and in-place array output have to be dealt with.</p>
+<p>Having the intermediate <code>flatorize</code>d implementation <code>f2</code> can be useful to build other <code>flatorize</code>d implementations, i.e. to write well-encapsulated, maintainable code using many small functions.</p>
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h3 class="anchorable" id="f2-shortcut">HOWTO: 1-step shortcut <a href="#f2-shortcut" class="anchor">#</a></h3>
+
+<p>If an intermediate <code>flatorize</code>d implementation is not needed, one can directly create C code in a single step:</p>
+<script type="text/javascript" id="script-gen-f2_c_direct">var f2_obj_direct = flatorize.getCodeC( { 
+  name      : 'f2'
+  , varstr  : 'a:[2 float],b:[2 float],c:[2 float]->d:[2 float]'
+  , exprgen : f2.exprgen 
+} );</script>
+<pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(document.getElementById("script-gen-f2_c_direct").textContent.replace("f2.exprgen",""+f2.exprgen));</script></code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h3 class="anchorable" id="helper-code">HOWTO: generate boilerplate code<a href="#helper-code" class="anchor">#</a></h3>
+
+<p>Helper methods <code>f2_obj.helper_*()</code> generate boilerplate code, especially useful to manage array inputs/output:</p>
+
+<p><code>f2_obj.helper_h()</code> returns a JavaScript string containing this C code:</p>
+<pre class="prettyprint lang-c"><code><script type="text/javascript">document.write(f2_obj.helper_h());</script></code></pre>
+
+
+
+<p><code>f2_obj.helper_c()</code> returns a JavaScript string containing this C code:</p>
+<pre class="prettyprint lang-c"><code><script type="text/javascript">document.write(f2_obj.helper_c());</script></code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!--
 
 
 <h3 class="anchorable" id="c-matmul"><code>matmul342:</code> matrix multiplication (speedup example)<a href="#c-matmul" class="anchor">#</a></h3>
@@ -353,6 +430,7 @@ function generate_c_dftreal1024flat_msr_hh_now()
 
 <pre class="prettyprint lang-js pre-scroll"><code id="dftreal1024flat_msr_hh_c_code"></code></pre>
 
+-->
 
 
 
@@ -374,32 +452,12 @@ function generate_c_dftreal1024flat_msr_hh_now()
 
 
 
-
-
-<script type="text/javascript" src="c_code_sanity_check.js"></script>
-
-
-
-
-
+<script type="text/javascript" src="contents_ul.js"></script>
 <script type="text/javascript" src="prettify/prettify.js"></script>
 <script type="text/javascript">setTimeout( prettyPrint );</script>
-<script type="text/javascript">
-/* xxx
-[ 
-    'tryit_speed_matmul342', 'tryit_flatorize_dft16', 'tryit_speed_dft16', 'tryit_flatorize_dft1024', 'tryit_speed_dft1024', 'tryit_all'
-].forEach(
-    function (id) { document.getElementById(id).removeAttribute('disabled'); }
-);
-*/
-window.ontouchstart = function () { Array.prototype.forEach.call( document.getElementsByClassName( "anchor" ), function (node) { node.className = node.className.replace( /\banchor\b/g, '' ); } ); };
-</script>
+<script type="text/javascript" src="btn_anchor.js"></script>
 <script type="text/javascript" src="../MathJax/MathJax.js?config=default"></script>
-<script type="text/javascript">
-setTimeout( function () {
-var _gaq = _gaq || [];  _gaq.push(['_setAccount', 'UA-5516483-1']);  _gaq.push(['_trackPageview']);  (function() {    var ga = document.createElement('script');    ga.src = ('https:' == document.location.protocol ? 'https://ssl' :         'http://www') + '.google-analytics.com/ga.js';    ga.setAttribute('async', 'true');    document.documentElement.firstChild.appendChild(ga);  })();
-}, 0 );
-</script>
+<script type="text/javascript" src="ga.js"></script>
 
 </body>
 </html>
