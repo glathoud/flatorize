@@ -126,15 +126,16 @@ f2 = flatorize('a:[2 float],b:[2 float],c:[2 float]->d:[2 float]',f);
 
 <h3 class="anchorable" id="helper-code">HOWTO: generate boilerplate code<a href="#helper-code" class="anchor">#</a></h3>
 
-<p>Helper methods <code>f2_obj.helper_*()</code> generate boilerplate code, especially useful to manage array inputs/output:</p>
+<p>JavaScript helper methods <code>f2_obj.helper_*()</code> generate boilerplate C code, especially useful to manage array inputs/output:</p>
 
 <p><code>f2_obj.helper_h()</code> returns a JavaScript string containing this C code:</p>
 <pre class="prettyprint lang-c"><code><script type="text/javascript">document.write(f2_obj.helper_h());</script></code></pre>
 
 
 
-<p><code>f2_obj.helper_c()</code> returns a JavaScript string containing this C code:</p>
-<pre class="prettyprint lang-c"><code><script type="text/javascript">document.write(f2_obj.helper_c());</script></code></pre>
+<p><code>f2_obj.helper_c()</code> returns a JavaScript string containing the C code below. Instead of the default file name <code>"helper.h"</code> you can optionally specify another file name using <code>f2_obj.helper_c({ helper_h_name : "another_name.h" })</code></p>
+<pre class="prettyprint lang-c"><code id="helper_c"></code></pre>
+<script type="text/javascript">document.getElementById("helper_c").textContent = f2_obj.helper_c();</script>
 
 
 
