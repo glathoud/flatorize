@@ -89,7 +89,7 @@ function expl_flatasmjs_matrix_from_matrix( /*integer*/nrow, /*integer*/ncol )
     // flatorized+asm.js version
     
     var transpose_asmjs_buffer = new ArrayBuffer( transpose_asmjs_gen.buffer_bytes )
-    ,   transpose_asmjs_O      = transpose_asmjs_gen( window, {}, transpose_asmjs_buffer )  // compile
+    ,   transpose_asmjs_O      = transpose_asmjs_gen( this, {}, transpose_asmjs_buffer )  // compile
     ,   transpose_asmjs        = transpose_asmjs_O[ transpose_asmjs_name ]
 
     ,   n2i        = transpose_asmjs_gen.array_name2info

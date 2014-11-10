@@ -70,7 +70,7 @@ function expl_flatasmjs_array_from_scalar( /*integer*/size )
     // flatorized+asm.js version
     
     var count_a_few_asmjs_buffer = new ArrayBuffer( count_a_few_asmjs_gen.buffer_bytes )
-    ,   count_a_few_asmjs_O      = count_a_few_asmjs_gen( window, {}, count_a_few_asmjs_buffer )  // compile
+    ,   count_a_few_asmjs_O      = count_a_few_asmjs_gen( this, {}, count_a_few_asmjs_buffer )  // compile
     ,   count_a_few_asmjs        = count_a_few_asmjs_O[ count_a_few_asmjs_name ]
 
     ,   n2i        = count_a_few_asmjs_gen.array_name2info
@@ -86,7 +86,7 @@ function expl_flatasmjs_array_from_scalar( /*integer*/size )
  
 
     var count_a_few_double_asmjs_buffer = new ArrayBuffer( count_a_few_double_asmjs_gen.buffer_bytes )
-    ,   count_a_few_double_asmjs_O      = count_a_few_double_asmjs_gen( window, {}, count_a_few_double_asmjs_buffer )  // compile
+    ,   count_a_few_double_asmjs_O      = count_a_few_double_asmjs_gen( this, {}, count_a_few_double_asmjs_buffer )  // compile
     ,   count_a_few_double_asmjs        = count_a_few_double_asmjs_O[ count_a_few_double_asmjs_name ]
 
     ,   n2i        = count_a_few_double_asmjs_gen.array_name2info

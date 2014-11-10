@@ -51,7 +51,7 @@ function expl_flatasmjs_array_from_array( /*integer*/size )
     // flatorized+asm.js version
     
     var flip_asmjs_buffer = new ArrayBuffer( flip_asmjs_gen.buffer_bytes )
-    ,   flip_asmjs_O      = flip_asmjs_gen( window, {}, flip_asmjs_buffer )  // compile
+    ,   flip_asmjs_O      = flip_asmjs_gen( this, {}, flip_asmjs_buffer )  // compile
     ,   flip_asmjs        = flip_asmjs_O[ flip_asmjs_name ]
 
     ,   n2i        = flip_asmjs_gen.array_name2info

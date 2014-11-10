@@ -1,5 +1,5 @@
 function expl_matmulrows_zip_flatorize()
-{
+{  
     // Give external access, for example to display source code.
     // Example of use: ../index.html
 

@@ -204,7 +204,7 @@ function expl_flatasmjs_ndim_from_ndim( /*array of integer*/dim, /*array of inte
     // flatorized+asm.js version
     
     var flipreshapeflat_asmjs_buffer = new ArrayBuffer( flipreshapeflat_asmjs_gen.buffer_bytes )
-    ,   flipreshapeflat_asmjs_O      = flipreshapeflat_asmjs_gen( window, {}, flipreshapeflat_asmjs_buffer )  // compile
+    ,   flipreshapeflat_asmjs_O      = flipreshapeflat_asmjs_gen( this, {}, flipreshapeflat_asmjs_buffer )  // compile
     ,   flipreshapeflat_asmjs        = flipreshapeflat_asmjs_O[ flipreshapeflat_asmjs_name ]
 
     ,   n2i        = flipreshapeflat_asmjs_gen.array_name2info

@@ -122,7 +122,7 @@ function expl_flatasmjs_matrix_from_ndim( /*array of integer*/dim, /*array of in
     // flatorized+asm.js version
     
     var ndimdiagflat_asmjs_buffer = new ArrayBuffer( ndimdiagflat_asmjs_gen.buffer_bytes )
-    ,   ndimdiagflat_asmjs_O      = ndimdiagflat_asmjs_gen( window, {}, ndimdiagflat_asmjs_buffer )  // compile
+    ,   ndimdiagflat_asmjs_O      = ndimdiagflat_asmjs_gen( this, {}, ndimdiagflat_asmjs_buffer )  // compile
     ,   ndimdiagflat_asmjs        = ndimdiagflat_asmjs_O[ ndimdiagflat_asmjs_name ]
 
     ,   n2i        = ndimdiagflat_asmjs_gen.array_name2info

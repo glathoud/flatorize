@@ -7,13 +7,29 @@ function asmjs_matmulrows_zip_342_check()
 
     // "Matrix multiplication" example
 
+    var matmulrows_zip_342        = this.matmulrows_zip_342
+    , matmulrows_zip_342_asmjsGen = this.matmulrows_zip_342_asmjsGen
+    ;
+    if (typeof matmulrows_zip_342 === 'undefined')
+    {
+        expl_matmulrows_zip_flatorize()
+        matmulrows_zip_342 = expl_matmulrows_zip_flatorize.matmulrows_zip_342;
+    }
+
+    if (typeof matmulrows_zip_342_asmjsGen === 'undefined')
+    {
+        matmulrows_zip_342_asmjsGen = flatorize.getAsmjsGen( 
+            { switcher: matmulrows_zip_342, name: "matmulrows_zip_342" } 
+        );
+    }
+     
     // --- Inputs and output
     var matmulrows_zip_342_buffer =
         new ArrayBuffer( matmulrows_zip_342_asmjsGen.buffer_bytes );
 
     // --- Compile the asm.js code
     var matmulrows_zip_342_asmjsO = matmulrows_zip_342_asmjsGen( 
-        window, {}, matmulrows_zip_342_buffer 
+        this, {}, matmulrows_zip_342_buffer 
     );
 
     // --- Example of use

@@ -83,7 +83,7 @@ function expl_flatasmjs_scalar_from_matrix( /*integer*/nrow, /*integer*/ncol )
     // flatorized+asm.js version
     
     var matsumflat_asmjs_buffer = new ArrayBuffer( matsumflat_asmjs_gen.buffer_bytes )
-    ,   matsumflat_asmjs_O      = matsumflat_asmjs_gen( window, {}, matsumflat_asmjs_buffer )  // compile
+    ,   matsumflat_asmjs_O      = matsumflat_asmjs_gen( this, {}, matsumflat_asmjs_buffer )  // compile
     ,   matsumflat_asmjs        = matsumflat_asmjs_O[ matsumflat_asmjs_name ]
 
     ,   n2i        = matsumflat_asmjs_gen.array_name2info

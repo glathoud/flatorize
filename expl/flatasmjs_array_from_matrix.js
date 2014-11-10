@@ -72,7 +72,7 @@ function expl_flatasmjs_array_from_matrix( /*integer*/nrow, /*integer*/ncol )
     // flatorized+asm.js version
     
     var diagflat_asmjs_buffer = new ArrayBuffer( diagflat_asmjs_gen.buffer_bytes )
-    ,   diagflat_asmjs_O      = diagflat_asmjs_gen( window, {}, diagflat_asmjs_buffer )  // compile
+    ,   diagflat_asmjs_O      = diagflat_asmjs_gen( this, {}, diagflat_asmjs_buffer )  // compile
     ,   diagflat_asmjs        = diagflat_asmjs_O[ diagflat_asmjs_name ]
 
     ,   n2i        = diagflat_asmjs_gen.array_name2info

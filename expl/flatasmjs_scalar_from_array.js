@@ -65,7 +65,7 @@ function expl_flatasmjs_scalar_from_array( /*integer*/size )
     // flatorized+asm.js version
     
     var sumflat_asmjs_buffer = new ArrayBuffer( sumflat_asmjs_gen.buffer_bytes )
-    ,   sumflat_asmjs_O      = sumflat_asmjs_gen( window, {}, sumflat_asmjs_buffer )  // compile
+    ,   sumflat_asmjs_O      = sumflat_asmjs_gen( this, {}, sumflat_asmjs_buffer )  // compile
     ,   sumflat_asmjs        = sumflat_asmjs_O[ sumflat_asmjs_name ]
 
     ,   n2i        = sumflat_asmjs_gen.array_name2info

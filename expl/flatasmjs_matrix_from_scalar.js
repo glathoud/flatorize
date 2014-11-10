@@ -69,7 +69,7 @@ function expl_flatasmjs_matrix_from_scalar( /*integer*/nrow, /*integer*/ncol )
     // flatorized+asm.js version
     
     var s2m_asmjs_buffer = new ArrayBuffer( s2m_asmjs_gen.buffer_bytes )
-    ,   s2m_asmjs_O      = s2m_asmjs_gen( window, {}, s2m_asmjs_buffer )  // compile
+    ,   s2m_asmjs_O      = s2m_asmjs_gen( this, {}, s2m_asmjs_buffer )  // compile
     ,   s2m_asmjs        = s2m_asmjs_O[ s2m_asmjs_name ]
 
     ,   n2i        = s2m_asmjs_gen.array_name2info

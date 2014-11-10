@@ -63,7 +63,7 @@ function expl_flatasmjs_matrix_from_array( /*integer*/size )
     // flatorized+asm.js version
     
     var v2m_asmjs_buffer = new ArrayBuffer( v2m_asmjs_gen.buffer_bytes )
-    ,   v2m_asmjs_O      = v2m_asmjs_gen( window, {}, v2m_asmjs_buffer )  // compile
+    ,   v2m_asmjs_O      = v2m_asmjs_gen( this, {}, v2m_asmjs_buffer )  // compile
     ,   v2m_asmjs        = v2m_asmjs_O[ v2m_asmjs_name ]
 
     ,   n2i        = v2m_asmjs_gen.array_name2info

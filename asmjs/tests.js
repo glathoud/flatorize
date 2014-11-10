@@ -1,3 +1,38 @@
+/*global load generate_small_functions ...*/
+
+if (typeof 'load' !== 'undefined') // For non-browser environment like V8
+{
+    if (typeof log === 'undefined')        var log = function () {};
+    if (typeof flatorize === 'undefined')  load( 'flatorize.js' );
+    if (typeof generate_small_functions === 'undefined' )  load( 'examples.js' );
+    if (typeof flatorize.type_util      === 'undefined' )  load( 'flatorize_type_util.js' );
+    if (typeof flatorize.getAsmjsGen    === 'undefined' )  load( 'flatorize_asmjs.js' );
+
+    if (typeof expl_run                 === 'undefined' )  load( 'expl.js' );
+
+    if (typeof expl_matmulrows_zip_flatorize           === 'undefined')  load( 'expl/matmulrows_zip_flatorize.js' );
+    if (typeof expl_dftreal_flatorize                  === 'undefined')  load( 'expl/dftreal_flatorize.js' );
+    if (typeof asmjs_complex_numbers_check             === 'undefined')  load( 'expl/asmjs_complex_numbers_check.js' );
+    if (typeof asmjs_complex_numbers_check_direct      === 'undefined')  load( 'expl/asmjs_complex_numbers_check_direct.js' );
+    if (typeof asmjs_matmulrows_zip_342_check          === 'undefined')  load( 'expl/asmjs_matmulrows_zip_342_check.js' );
+    if (typeof asmjs_dftrealflat_check                 === 'undefined')  load( 'expl/asmjs_dftrealflat_check.js' );
+    if (typeof expl_flatasmjs_scalar_from_scalar       === 'undefined')  load( 'expl/flatasmjs_scalar_from_scalar.js' );
+    if (typeof expl_flatasmjs_scalar_from_array        === 'undefined')  load( 'expl/flatasmjs_scalar_from_array.js' );
+    if (typeof expl_flatasmjs_scalar_from_matrix       === 'undefined')  load( 'expl/flatasmjs_scalar_from_matrix.js' );
+    if (typeof expl_flatasmjs_scalar_from_ndim         === 'undefined')  load( 'expl/flatasmjs_scalar_from_ndim.js' );
+    if (typeof expl_flatasmjs_array_from_scalar        === 'undefined')  load( 'expl/flatasmjs_array_from_scalar.js' );
+    if (typeof expl_flatasmjs_array_from_array         === 'undefined')  load( 'expl/flatasmjs_array_from_array.js' );
+    if (typeof expl_flatasmjs_array_from_matrix        === 'undefined')  load( 'expl/flatasmjs_array_from_matrix.js' );
+    if (typeof expl_flatasmjs_array_from_ndim          === 'undefined')  load( 'expl/flatasmjs_array_from_ndim.js' );
+    if (typeof expl_flatasmjs_matrix_from_scalar       === 'undefined')  load( 'expl/flatasmjs_matrix_from_scalar.js' );
+    if (typeof expl_flatasmjs_matrix_from_array        === 'undefined')  load( 'expl/flatasmjs_matrix_from_array.js' );
+    if (typeof expl_flatasmjs_matrix_from_matrix       === 'undefined')  load( 'expl/flatasmjs_matrix_from_matrix.js' );
+    if (typeof expl_flatasmjs_ndim_from_ndim           === 'undefined')  load( 'expl/flatasmjs_ndim_from_ndim.js' );
+    if (typeof expl_flatasmjs_scalarint_from_scalardouble === 'undefined')  load( 'expl/flatasmjs_scalarint_from_scalardouble.js' );
+}
+
+generate_small_functions();
+
 (function () {
 
     asmjs_complex_numbers_check();

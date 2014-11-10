@@ -112,7 +112,7 @@ function expl_flatasmjs_scalar_from_ndim( /*array of integer*/dim )
     // flatorized+asm.js version
     
     var ndimsumflat_asmjs_buffer = new ArrayBuffer( ndimsumflat_asmjs_gen.buffer_bytes )
-    ,   ndimsumflat_asmjs_O      = ndimsumflat_asmjs_gen( window, {}, ndimsumflat_asmjs_buffer )  // compile
+    ,   ndimsumflat_asmjs_O      = ndimsumflat_asmjs_gen( this, {}, ndimsumflat_asmjs_buffer )  // compile
     ,   ndimsumflat_asmjs        = ndimsumflat_asmjs_O[ ndimsumflat_asmjs_name ]
 
     ,   n2i        = ndimsumflat_asmjs_gen.array_name2info

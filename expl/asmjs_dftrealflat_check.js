@@ -8,18 +8,36 @@ function asmjs_dftrealflat_check( /*integer, e.g. 16 or 1024*/dftsize )
 
     // "DFT REAL" example
 
+    var NAME_FLAT     = 'dftreal' + dftsize + 'flat'
+    ,   NAME_ASMJSGEN = NAME_FLAT + '_asmjsGen'
+
+    ,   dftrealflat          = this[ NAME_FLAT ]
+    ,   dftrealflat_asmjsGen = this[ NAME_ASMJSGEN ]
+    ;
+    if (typeof dftrealflat === 'undefined')
+    {
+        expl_dftreal_flatorize( 16 );       
+        dftrealflat = expl_dftreal_flatorize[ NAME_FLAT ];
+    }
+    if (typeof dftrealflat_asmjsGen === 'undefined')
+    {
+        var dftrealflat_asmjsGen = flatorize.getAsmjsGen( 
+            { 
+                switcher: dftrealflat
+                , name: "dftreal" + dftsize + "flat" 
+            } 
+        );
+    }
+    
     // --- Inputs and output
     
-    var dftrealflat_asmjsGen = 
-        this[ 'dftreal' + dftsize + 'flat_asmjsGen' ]
-
-    ,    dftrealflat_buffer = 
+    var dftrealflat_buffer = 
         new ArrayBuffer( dftrealflat_asmjsGen.buffer_bytes )
     ;
 
     // --- Compile the asm.js code
     var dftrealflat_asmjsO = dftrealflat_asmjsGen( 
-        window, {}, dftrealflat_buffer 
+        this, {}, dftrealflat_buffer 
     );
 
     // --- Example of use
@@ -56,9 +74,7 @@ function asmjs_dftrealflat_check( /*integer, e.g. 16 or 1024*/dftsize )
     
     // Sanity check: original flatorized implementation
     
-    var original_flat = this[ 'dftreal' + dftsize + 'flat' ]
-    ,   original_freq = original_flat( io.input )
-    ;
+    var original_freq = dftrealflat( io.input );
     check_error( original_freq, io.expected );
 
     // Finer check on a random vector: are the two implementation
@@ -66,7 +82,7 @@ function asmjs_dftrealflat_check( /*integer, e.g. 16 or 1024*/dftsize )
     // proofed in ./index.html).
 
     var random_input = new Array( dftsize ).join(',').split(',').map( Math.random )
-    ,   original_output = original_flat( random_input )
+    ,   original_output = dftrealflat( random_input )
     ;
     arr.set( random_input );
     dftrealflat_asmjsO[ 'dftreal' + dftsize + 'flat' ]();

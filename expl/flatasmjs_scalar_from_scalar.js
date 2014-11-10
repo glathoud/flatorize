@@ -39,7 +39,7 @@ function expl_flatasmjs_scalar_from_scalar()
     // flatorized+asm.js version
     
     var plusone_asmjs_buffer = new ArrayBuffer( plusone_asmjs_gen.buffer_bytes )
-    ,   plusone_asmjs_O      = plusone_asmjs_gen( window, {}, plusone_asmjs_buffer )  // compile
+    ,   plusone_asmjs_O      = plusone_asmjs_gen( this, {}, plusone_asmjs_buffer )  // compile
     ,   plusone_asmjs        = plusone_asmjs_O[ plusone_asmjs_name ]
     ;
     
