@@ -4,11 +4,12 @@ import json, os
 
 from common import *
 
-from asmjs import test_asmjs
+from test_asmjs import test_asmjs
+from test_c     import test_c
 
-def main( verbose=True ):
+def main( verbose = True ):
 
-    result_li = test_asmjs( verbose=verbose )
+    result_li = test_asmjs( verbose = verbose ) # xxx work in progress: + test_c( verbose = verbose )
 
     s = summary( result_li )
     

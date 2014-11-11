@@ -4,3 +4,5 @@
 *.o
 *.s
 DIRECTIONS.org
+*.outdir
+*.pyc

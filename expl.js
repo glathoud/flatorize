@@ -1,3 +1,19 @@
+function augment_name_value_array_with_mapping( /*array of objects { name : ... , value : ... }*/nv_arr )
+{
+    nv_arr.forEach( augment_one );
+    return nv_arr;
+
+    function augment_one( o )
+    {
+        var name  = o.name
+        ,   value = o.value
+        ;
+        (name || null).substring.call.a;
+
+        nv_arr[ name ] = value;
+    }
+}
+
 function f2body( f )
 {
     var fs = f+'';

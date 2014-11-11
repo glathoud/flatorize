@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
-import json, os, re, subprocess
+import glob, json, os, re, shutil, subprocess
+
+ENCODING  = 'utf-8'
 
 MESSAGE   = 'message'
 
@@ -12,19 +14,33 @@ NAME = 'name'
 
 OK   = 'ok'
 
-
+TESTDIR = 'test'
 
 def d8_call( jscode ):
 
     wd = os.getcwd()
     
-    js_wd = re.sub( r'\/(test\/?)?$', '', wd )
+    js_wd = re.sub( r'\/(' + TESTDIR + '\/?)?$', '', wd )
     
     os.chdir( js_wd )
     outstr = subprocess.check_output( 'd8 -e "' + jscode + '"', shell=True, stderr=subprocess.STDOUT, universal_newlines = True )
     os.chdir( wd )
     
     return outstr
+
+
+def ensure_dir( dirname, empty = False ):
+
+    if os.path.exists( dirname ): 
+
+        if not os.path.isdir( dirname ):
+            None.error__must_be_a_directory
+
+        if empty and glob.glob( os.path.join( dirname, '*' ) ):
+            shutil.rmtree( dirname )
+
+    if not os.path.exists( dirname ):
+        os.makedirs( dirname )
 
 
 def summary( str_or_arr ):
