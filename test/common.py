@@ -2,7 +2,22 @@
 
 import glob, json, os, re, shutil, subprocess
 
+ARRAY_COUNT       = 'array_count'
+ARRAY_NAME2INFO   = 'array_name2info'
+ARRAY_TYPE        = 'array_type'
+
+ASMJS_TEST_INPUT  = 'asmjs_test_input'
+ASMJS_TEST_OUTPUT = 'asmjs_test_output'
+
+BEGIN = 'begin'
+
 ENCODING  = 'utf-8'
+END       = 'end'
+
+HAS_ARRAY = 'has_array'
+
+IS_INPUT  = 'is_input'
+IS_OUTPUT = 'is_output'
 
 MESSAGE   = 'message'
 
@@ -15,12 +30,15 @@ NAME = 'name'
 OK   = 'ok'
 
 TESTDIR = 'test'
+TESTDIR_RX_STR = r'\/(' + TESTDIR + '\/?)?$'
+
+VALUE = 'value'
 
 def d8_call( jscode ):
 
     wd = os.getcwd()
     
-    js_wd = re.sub( r'\/(' + TESTDIR + '\/?)?$', '', wd )
+    js_wd = re.sub( TESTDIR_RX_STR, '', wd )
     
     os.chdir( js_wd )
     outstr = subprocess.check_output( 'd8 -e "' + jscode + '"', shell=True, stderr=subprocess.STDOUT, universal_newlines = True )
@@ -42,6 +60,25 @@ def ensure_dir( dirname, empty = False ):
     if not os.path.exists( dirname ):
         os.makedirs( dirname )
 
+
+def get_array_test_sorted( info ):
+
+    n2i = info[ ARRAY_NAME2INFO ]
+
+    arr = (info[ ASMJS_TEST_INPUT ] + info[ ASMJS_TEST_OUTPUT ])
+    arr.sort( key = lambda x: n2i[ x[ NAME ] ][ BEGIN ] )
+
+    arr = list( map( lambda x: dict( list( x.items() ) + list( n2i[ x[ NAME ] ].items() ) ), arr ) )
+
+    return arr
+
+def get_test_dirname( somename ):
+
+    wd = os.getcwd()
+    
+    js_wd = re.sub( TESTDIR_RX_STR, '', wd )
+
+    return os.path.join( js_wd, TESTDIR, somename )
 
 def summary( str_or_arr ):
 

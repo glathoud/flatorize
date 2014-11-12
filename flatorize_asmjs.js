@@ -217,9 +217,9 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
         gen.cat_bytes = cat_bytes;
         gen.buffer_bytes = asmjs_buffer_bytes;
 
-        gen.array_name2info = fixed2.array_name2info;
-
-        gen.TypedArray = global[ cat_js + 'Array' ];  // Constructor function, e.g. Float64Array
+        gen.array_type      = cat_js  &&  cat;
+        gen.array_name2info = cat_js  &&  fixed2.array_name2info;
+        gen.TypedArray      = cat_js  &&  global[ cat_js + 'Array' ];  // Constructor function, e.g. Float64Array
 
         return gen;
     }

@@ -143,14 +143,31 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
         after = [ '}' ];
         
         var code = before.concat( body ).concat( after ).join( '\n' )
+
+        ,   has_array = !!fixed2.single_common_array_btd
+
         ,   ret  = {
-            code              : code
-            , array_name2info : fixed2.array_name2info
+
+            name              : fixed2.topFunName
+
+            , code            : code
+
+            , has_array       : has_array
+
+            , helper_h_dfltcode : helper_h()
+            , helper_c_dfltcode : helper_c()
+
             , helper_h        : helper_h
             , helper_c        : helper_c
         }
-        ;
-
+        ;       
+        if (ret.has_array)
+        {
+            ret.array_type      = fixed2.single_common_array_btd.type;
+            ret.array_name2info = fixed2.array_name2info;
+            ret.array_count     = fixed2.count;
+        }
+    
         return ret;
 
         function helper_h( /*?object?*/opt )

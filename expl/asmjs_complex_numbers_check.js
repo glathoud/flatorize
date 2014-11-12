@@ -20,8 +20,8 @@ function asmjs_complex_numbers_check()
             {
                 name    : 'd'
                 , value : [
-                    [ 1.2  - 2*(0 + -1) ]
-                    , [ -3.4 - 2*(1 + 9.99) ]
+                    1.2  - 2*(0 + -1)
+                    , -3.4 - 2*(1 + 9.99)
                 ]
             }
         ] )

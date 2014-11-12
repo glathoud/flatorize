@@ -398,7 +398,8 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             return { 
                 name   : name
                 , type : fixed.typed_in_var[ name ] 
-                , is_input : true
+                , is_input  : true
+                , is_output : false
             }; 
         } )
         ;
@@ -414,6 +415,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             fixed.arraynametype.push( { 
                 name   : fixed.typed_out_varname
                 , type : fixed.typed_out_vartype 
+                , is_input  : false
                 , is_output : true
             } );
         }
@@ -758,8 +760,8 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
             bt2.begin_bytes = bt2.begin * bt2.type_bytes;
         }
         
-        if (o.is_input)  bt2.is_input  = o.is_input;
-        if (o.is_output) bt2.is_output = o.is_output;
+        bt2.is_input  = !!o.is_input;
+        bt2.is_output = !!o.is_output;
 
         function matchFun( e )
         {
