@@ -14,7 +14,10 @@ BEGIN = 'begin'
 ENCODING  = 'utf-8'
 END       = 'end'
 
+FUN_DECL_CODE = 'funDeclCode'
+
 HAS_ARRAY = 'has_array'
+HAS_SIMPLE_OUTPUT = 'has_simple_output'
 
 IS_INPUT  = 'is_input'
 IS_OUTPUT = 'is_output'
@@ -29,8 +32,15 @@ NAME = 'name'
 
 OK   = 'ok'
 
-TESTDIR = 'test'
+SIMPLE_IN_VARARR = 'simple_in_vararr'
+
+TESTDIR        = 'test'
 TESTDIR_RX_STR = r'\/(' + TESTDIR + '\/?)?$'
+
+TYPED_IN_VAR = 'typed_in_var'
+
+TYPED_OUT_VARNAME = 'typed_out_varname'
+TYPED_OUT_VARTYPE = 'typed_out_vartype'
 
 VALUE = 'value'
 
@@ -61,11 +71,14 @@ def ensure_dir( dirname, empty = False ):
         os.makedirs( dirname )
 
 
-def get_array_test_sorted( info ):
+def get_array_test_sorted( info, expected_output_alone = False ):
 
     n2i = info[ ARRAY_NAME2INFO ]
 
-    arr = (info[ ASMJS_TEST_INPUT ] + info[ ASMJS_TEST_OUTPUT ])
+    ti = info[ ASMJS_TEST_INPUT ]
+    to = info[ ASMJS_TEST_OUTPUT ]
+    
+    arr = to  if  expected_output_alone  else  (ti + to)
     arr.sort( key = lambda x: n2i[ x[ NAME ] ][ BEGIN ] )
 
     arr = list( map( lambda x: dict( list( x.items() ) + list( n2i[ x[ NAME ] ].items() ) ), arr ) )

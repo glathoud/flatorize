@@ -4,6 +4,12 @@ import json, os, pprint, re
 
 from common import *
 
+ARRAY_NAME = 'io_array'
+
+PREFIX_INPUT           = 'input_'
+PREFIX_OUTPUT          = 'output_'
+PREFIX_EXPECTED_OUTPUT = 'expected_' + PREFIX_OUTPUT
+
 SRCDIR = 'test_c.srcdir'
 OUTDIR = 'test_c.outdir'
 
@@ -115,8 +121,13 @@ def test_c( verbose=True ):
 
 def unittest_c_code( info, filename_h ):
 
+    array_name = None
+    array_type = None
+
     if info[ HAS_ARRAY ]:
-        array_name = 'io_array'
+        array_name = ARRAY_NAME
+        array_type = info[ ARRAY_TYPE ]
+        
 
     return '''
 #include <math.h>
@@ -127,17 +138,33 @@ def unittest_c_code( info, filename_h ):
 
 extern const int   epsilon;
 
-int main()
+extern ''' + info[ FUN_DECL_CODE ] + ''';
+
+int main( int argc, char **argv )
 {
-  ''' + ('' if not info[ HAS_ARRAY ] else (info[ ARRAY_TYPE ] + '[] ' + array_name + ' = { ' + os.linesep + arrayinit_c_code( info ) + os.linesep + '  };')) + '''
+  float tmp;
+  int   n_iter_speed = 0;
 
-  const Nhh = 1 + (N >> 1);
+  if (argc > 1)  
+  {
+    sscanf( argv[ 1 ], "%g", &tmp );  /* Permit 1.234e5 notation */
+    n_iter_speed = tmp | 0;
+  }
 
-  double ** X;
+  ''' + comment_c_code( '--- Input(s) ---') + '''
 
-  ALIGNED_MALLOC_CPLX_ARRAY( X, N );  
+  ''' + simple_input_init_c_code( info ) + '''
+  ''' + ('' if not info[ HAS_ARRAY ] else (array_type + '[] ' + array_name + ' = { ' + os.linesep + arrayinit_c_code( info ) + os.linesep + '  };')) + '''
 
-  /* --- Sanity check --- */
+  ''' + comment_c_code( '--- Expected output ---' ) + '''
+
+  const ''' +(scalar_expected_output_init_c_code( info )  if  not array_expected_output_name( info )  else  (array_type + '[] ' + array_expected_output_name( info ) + ' = { ' + os.linesep + arrayinit_c_code( info, expected_output_alone = True )) + os.linesep + '  };') + '''
+
+  /* --- Unit test --- */
+
+  ''' + call_once_c_code( info ) + '''
+  
+  ''' + unit_test_output_c_code( info ) + '''
 
   dftreal1024flat_msr_hh( x_randreal, X );
   
@@ -178,12 +205,21 @@ int main()
 }
 '''
 
+def array_expected_output_name( info ):
 
-def arrayinit_c_code( info ):
+    tmp = info[ ASMJS_TEST_OUTPUT ][ 0 ][ NAME ] 
+    if tmp in info[ ARRAY_NAME2INFO ]:
+        return PREFIX_EXPECTED_OUTPUT + tmp
+    
+
+
+def arrayinit_c_code( info, expected_output_alone = False ):
     
     assert info[ HAS_ARRAY ]
+
+    array_type = info[ ARRAY_TYPE ]
     
-    array_test_sorted = get_array_test_sorted( info )
+    array_test_sorted = get_array_test_sorted( info, expected_output_alone = expected_output_alone )
 
     lines = []
 
@@ -192,20 +228,20 @@ def arrayinit_c_code( info ):
 
     indent = '  '
 
-    def push_array_recursive( v, indent_n = 0 ):
+    def push_array_recursive( v, indent_n = 0, is_output = False ):
 
         a = indent * indent_n
 
         if isinstance( v[ 0 ], list ):
             lines.append( a + c_open )
             for x in v:
-                push_array_recursive( x, indent_n = indent_n + 1 )
+                push_array_recursive( x, indent_n = indent_n + 1, is_output = is_output )
             lines.append( a + c_close )
         else:
-            lines.append( a + c_open + ' ' + ''.join( map( lambda v: str( v ) + ', ', v ) ) + ' ' + c_close )   # xxx more precise string conversion needed, depending on type (int)
+            lines.append( a + c_open + ' ' + ''.join( map( lambda v: format_value( 0  if  (is_output and not expected_output_alone)  else  v, array_type ) + ', ', v ) ) + ' ' + c_close )
 
 
-    i = 0
+    i = array_test_sorted[ 0 ][ BEGIN ]  if  expected_output_alone  else  0
     for x in array_test_sorted:
 
         begin = x[ BEGIN ]
@@ -221,11 +257,13 @@ def arrayinit_c_code( info ):
 
         indent_n_start = 2
 
+        is_output = x[ IS_OUTPUT ]
+
         lines.append( '' )
-        lines.append( indent * indent_n_start + comment_c_code( ( 'input'  if  x[ IS_INPUT ]  else  'output' ) + ' array "' + x[ NAME ] + '"' ) )
+        lines.append( indent * indent_n_start + comment_c_code( ( 'output'  if  is_output  else  'input' ) + ' array "' + x[ NAME ] + '"' + ( ' (initialization to 0)'  if  (is_output and not expected_output_alone)  else  '') ) )
         lines.append( '' )
 
-        push_array_recursive( x[ VALUE ], indent_n = indent_n_start )
+        push_array_recursive( x[ VALUE ], indent_n = indent_n_start, is_output = is_output )
         lines.append( '' )
         
         i = x[ END ]
@@ -246,8 +284,61 @@ def arrayinit_c_code( info ):
     return ret
 
 
+def simple_input_init_c_code( info ):
+
+    lines = []
+
+    for x in info[ ASMJS_TEST_INPUT ]:
+        x_type = info[ TYPED_IN_VAR ][ x[ NAME ]]
+        if isinstance( x_type, str ):
+            lines.append( 'const ' + x_type + ' ' + PREFIX_INPUT + x[ NAME ] + ' = ' + format_value( x[ VALUE ], x_type ) + ';' )
+    
+
+    return (os.linesep + os.linesep.join( lines )  if  lines  else  '')
+
+def scalar_expected_output_init_c_code( info ):
+
+    x = info[ ASMJS_TEST_OUTPUT ][ 0 ]
+    x_type = info[ TYPED_IN_VAR ][ x[ NAME ] ]
+    
+    return x_type + ' ' + PREFIX_EXPECTED_OUTPUT + x[ NAME ] + ' = ' + format_value( x[ VALUE ], x_type )
+
+def call_once_c_code( info ):
+
+    return (
+        ((PREFIX_OUTPUT + info[ TYPED_OUT_VARNAME ])  if  info[ HAS_SIMPLE_OUTPUT ]  else  '') + 
+        info[ NAME ] + '( ' + ', '.join( 
+            ([ ARRAY_NAME, ]  if  info[ HAS_ARRAY]  else  []) + 
+            info[ SIMPLE_IN_VARARR ]
+            ) + ' );'
+        )
+
+def unit_test_output_c_code( info ):
+
+    lines = []
+
+    if info[ HAS_SIMPLE_OUTPUT ]:
+        pass  # xxx
+
+    else:
+        pass  # xxx
+
+    return os.linesep.join( lines )  or  ''
+
 def comment_c_code( s ):
     return '/* ' + s + ' */'
+
+def format_value( v, t ):
+
+    if t == 'int' or isinstance( v, int ):
+        return str( v )
+
+    if t == 'float':
+        return '{0:.16}'.format( v )   # xxx check .16
+
+    if t == 'double':
+        return '{0:.32}'.format( v )   # xxx check .32
+
 
 if __name__ == '__main__':
     test_c( verbose=True )
