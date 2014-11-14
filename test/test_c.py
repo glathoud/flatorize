@@ -89,7 +89,7 @@ def test_c( verbose=True ):
         filename_base = os.path.join( outdir, name )
         filename_h    = filename_base + '.h'
         filename_c    = filename_base + '.c'
-        filename_unittest_c = filename_base + '_unit_test.c'
+        filename_test_c = filename_base + '_test.c'
 
         # Generate implementation files (.h and .c)
 
@@ -105,8 +105,8 @@ def test_c( verbose=True ):
         # Generate unit test file (.c)
 
         if verbose:
-            print( '    ' + filename_unittest_c )
-        open( filename_unittest_c, 'wb' ).write( unittest_c_code( info, filename_h ).encode( ENCODING ) )
+            print( '    ' + filename_test_c )
+        open( filename_test_c, 'wb' ).write( test_c_code( info, filename_h ).encode( ENCODING ) )
 
     assert False, 'xxx_rest_todo'
 
@@ -119,7 +119,7 @@ def test_c( verbose=True ):
     return ( { OK : False, NAME : 'asmjs.py call to V8 failed somewhere.' }, )
 
 
-def unittest_c_code( info, filename_h ):
+def test_c_code( info, filename_h ):
 
     array_name = None
     array_type = None
@@ -160,47 +160,28 @@ int main( int argc, char **argv )
 
   const ''' +(scalar_expected_output_init_c_code( info )  if  not array_expected_output_name( info )  else  (array_type + '[] ' + array_expected_output_name( info ) + ' = { ' + os.linesep + arrayinit_c_code( info, expected_output_alone = True )) + os.linesep + '  };') + '''
 
-  /* --- Unit test --- */
+
+  /* --- Unit test (mandatory) --- */
 
   ''' + call_once_c_code( info ) + '''
   
   ''' + unit_test_output_c_code( info ) + '''
 
-  dftreal1024flat_msr_hh( x_randreal, X );
-  
-  int ok_all = 1;
-  for (i = 0; i < Nhh; i++)
-    {
-      double*       result_i   = X[ i ];
-      const double* expected_i = X_randreal[ i ];
-      double  delta_0 = fabs( result_i[ 0 ] - expected_i[ 0 ] );
-      double  delta_1 = fabs( result_i[ 1 ] - expected_i[ 1 ] );
-      int ok = EPSILON > delta_0  &&  EPSILON > delta_1;
-      if (!ok)
-        printf( "%d: %g %g, %g %g, %g %g -> ok: %d\n", i, result_i[ 0 ], result_i[ 1 ], expected_i[ 0 ], expected_i[ 1 ], delta_0, delta_1, ok );
-      ok_all &= ok;
-    }
-  /* printf("ok_all: %d\n", ok_all); */
-  if (!ok_all)
-    {
-      fprintf( stderr, "\nERROR: buggy implementation!\n");
-      return -1;
-    }
-  
-  /* --- Performance test --- */
 
-  TEST_DURATION_BEGIN;
-  
-  for (i = NITER ; i-- ; )
-    dftreal1024flat_msr_hh( x_randreal, X );
-  
-  TEST_DURATION_END;
+  /* --- Speed test (optional) --- */
 
-  /* --- Cleanup --- */
-
-  ALIGNED_FREE_CPLX_ARRAY( X, N );  
+  if (n_iter_speed > 0)
+  {
+    TEST_DURATION_BEGIN;
   
-  /* printf("\nDone.\n"); */
+    for (i = n_iter_speed ; i-- ; )
+      ''' + call_once_c_code( info ) + '''
+  
+    TEST_DURATION_END;
+
+    printf( "%g\\n", duration );
+  }
+  
   return 0;
 }
 '''
@@ -317,11 +298,36 @@ def unit_test_output_c_code( info ):
 
     lines = []
 
+    x  = info[ ASMJS_TEST_OUTPUT ][ 0 ]
+    xi = info[ ARRAY_NAME2INFO ][ x[ NAME ] ]
+
+    o_name = info[ TYPED_OUT_VARNAME ]
+
     if info[ HAS_SIMPLE_OUTPUT ]:
-        pass  # xxx
+
+        one_expected = PREFIX_EXPECTED_OUTPUT + o_name
+        one_out      = PREFIX_OUTPUT + o_name    
+
+        o_type = info[ TYPED_OUT_VARTYPE ]
+
+        lines.append( o_type + ' ' + SIMPLE_ERROR + ' = abs( ' + one_expected + ' - ' + one_out + ' );'  )
+        lines.append( 'if (' + SIMPLE_ERROR + ' > EPSILON) { fprintf( stderr, "Wrong output: %g, expected: %g, error: %g' + one_out + ', ' + one_expected + ', ' + SIMPLE_ERROR + ' ); return -1; }')
+        
 
     else:
-        pass  # xxx
+
+        one_expected = PREFIX_EXPECTED_OUTPUT + o_name
+        one_out      = ARRAY_NAME
+
+        o_type = info[ ARRAY_TYPE ]
+
+        lines.append( 'int begin = ' + str( xi[ BEGIN ] ) + ';' )
+        lines.append( 'int end   = ' + str( xi[ END ] ) + ';' )
+        lines.append( 'for (int i = begin, j=0; i < end; i++,j++)' )
+        lines.append( '{' )
+        lines.append( '  ' + o_type + ' ' + SIMPLE_ERROR + ' = abs( ' + PREFIX_EXPECTED_OUTPUT + o_name + '[j] - ' + PREFIX_OUTPUT + o_name + '[i] );'  )
+        lines.append( '  if (' + SIMPLE_ERROR + ' > EPSILON) { fprintf( stderr, "Wrong output[%d]: %g, expected[%d]: %g, error: %g", i, ' + one_out + '[i], j, ' + one_expected + '[j], ' + SIMPLE_ERROR + ' ); return -1; }')
+        lines.append( '}' )
 
     return os.linesep.join( lines )  or  ''
 

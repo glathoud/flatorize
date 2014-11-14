@@ -32,6 +32,7 @@ NAME = 'name'
 
 OK   = 'ok'
 
+SIMPLE_ERROR = 'error'
 SIMPLE_IN_VARARR = 'simple_in_vararr'
 
 TESTDIR        = 'test'
