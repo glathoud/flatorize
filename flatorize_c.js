@@ -96,12 +96,16 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
 
         fixed.indent = indent;
 
-        return generateCodeC( fixed );
+        var opt = {
+            helper_h_name : cfg.helper_h_name  ||  null
+        };
+        
+        return generateCodeC( fixed, opt );
     }
 
     // ---------- Private details ----------
 
-    function generateCodeC( /*object*/fixed )
+    function generateCodeC( /*object*/fixed, /*?object?*/opt )
     // Returns an object:
     //
     // {{{
@@ -164,8 +168,8 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
 
             , has_array       : has_array
 
-            , helper_h_dfltcode : helper_h()
-            , helper_c_dfltcode : helper_c()
+            , helper_h_dfltcode : helper_h( opt )
+            , helper_c_dfltcode : helper_c( opt )
 
             , helper_h        : helper_h
             , helper_c        : helper_c
@@ -211,7 +215,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
         var declArr = fixed.simple_in_vararr.map( decl_in_var );
         
         if (fixed.single_common_array_btd)
-            declArr.push( '/*input and/or output array(s):*/ ' + decl( fixed.sca_name, fixed.sca_type + '[' + fixed.count + ']', /*notconst:*/true ) );
+            declArr.push( '/*input and/or output array(s):*/ ' + decl( fixed.sca_name + '[' + fixed.count + ']', fixed.sca_type, /*notconst:*/true ) );
         
         arr.push( declArr.join( ', ' ) );
 
@@ -308,11 +312,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
             (sca_type  ||  null).substring.call.a;
             
             
-            lines.push( line_comment_code( helper_text( fixed ) )
-                        , ''
-                        , helper_init_decl( fixed, opt ) + ';'
-                        , helper_done_decl( fixed, opt ) + '; ' + line_comment_code( please_please( fixed ) )
-                      );
+            lines.push( line_comment_code( helper_text( fixed ) ) );
 
             var STRUCT_NAME = array_info_struct_name( fixed );
             lines.push.apply(
@@ -330,7 +330,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
                                  {
                                      var info = an2i[ name ];
                                      
-                                     return sca_type + '[' + info.n + '] ' + name + '; ' + 
+                                     return sca_type + ' ' + name + '[' + info.n + ']; ' + 
                                          line_comment_code( 
                                              info.is_input  ?  'input'
                                                  : info.is_output  ?  'output'
@@ -342,7 +342,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
                                 [
                                     ''
                                     , line_comment_code( 'a single chunk `' + sca_name + '` will be allocated' )
-                                    , sca_type + '[' + fixed.count + '] ' + sca_name + ';'
+                                    , sca_type + ' ' + sca_name + '[' + fixed.count + '];'
                                 ]
                             )
                     ).map( indent ) 
@@ -353,6 +353,12 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
                         , '} ' + STRUCT_NAME + ';'
                     ]
                 )
+            );
+
+            lines.push(
+                ''
+                , helper_init_decl( fixed, opt ) + ';'
+                , helper_done_decl( fixed, opt ) + '; ' + line_comment_code( please_please( fixed ) )
             );
             
 
@@ -471,7 +477,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
             , indent( 'exit( 1 );' )
             , '}'
             , ''
-            , RET + '->' + sca_name + ' = malloc( ' + fixed.count + ' * sizeof( ' + sca_type + ' ) );'
+            , RET + '->' + sca_name + ' = (' + sca_type + '[])(malloc( ' + fixed.count + ' * sizeof( ' + sca_type + ' )) );'
             , 'if (NULL == ' + RET + '->' + sca_name + ')'
             , '{'
             , indent( 'printf( "Memory allocation failed: `' + STRUCT_NAME + '.' + sca_name + '`.\\n" );' )

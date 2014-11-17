@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
-import json, os, pprint, re
+import json, os, pprint, re, stat
 
 from common import *
 
 ARRAY_NAME = 'io_array'
+
+INDENT = '  '
 
 PREFIX_INPUT           = 'input_'
 PREFIX_OUTPUT          = 'output_'
@@ -26,7 +28,7 @@ def test_c( verbose=True ):
 
     if verbose:
         print( '' )
-        print( '  test_c: 0. setup outdir: ' + outdir )
+        print( INDENT + 'test_c: 0. setup outdir: ' + outdir )
 
     ensure_dir( outdir, empty = True )
 
@@ -35,13 +37,13 @@ def test_c( verbose=True ):
         copyname = os.path.join( outdir, t )
         assert filename != copyname, 'must differ'
         shutil.copyfile( filename, copyname )
-        print( '  test_c: 0. copied src file to: "{0}"'.format( copyname ) )
+        print( INDENT + 'test_c: 0. copied src file to: "{0}"'.format( copyname ) )
 
     #
 
     if verbose:
         print()
-        print( '  test_c: 1. pass all asm.js tests, 2. get their configuration and generate C code...' )
+        print( INDENT + 'test_c: 1. pass all asm.js tests, 2. get their configuration and generate C code...' )
 
     jscode = ' '.join( [ 'load(\'asmjs/tests.js\');'
                          , 'var out = [], _emptyObj = {};'
@@ -60,8 +62,13 @@ def test_c( verbose=True ):
                          , 'if (!flatorize.getCodeC) load( \'flatorize_c.js\' );'
                          , 'var output = {};'
                          , 'for (var name in passed_asmjsgen_info) {'
-                         , '  var asmjs_info = passed_asmjsgen_info[ name ];'
-                         , '  var o = flatorize.getCodeC( asmjs_info.cfg );'
+
+                         , '  var asmjs_info = passed_asmjsgen_info[ name ]'
+                         , '  ,   cfg        = Object.create( asmjs_info.cfg )'
+                         , '  ;'
+                         , '  cfg.helper_h_name = name + \'.h\';'
+
+                         , '  var o = flatorize.getCodeC( cfg );'
 
                          , '  delete o.helper_h; delete o.helper_c;'  # drop functions because uninteresting for JSON
 
@@ -82,31 +89,41 @@ def test_c( verbose=True ):
 
     if verbose:
         print()
-        print( '  test:c: 3. write out .h, .c and .sh files for each example...' )
+        print( INDENT + 'test:c: 3. write out .h, .c and .sh files for each example...' )
 
     for name,info in infomap.items():
 
         filename_base = os.path.join( outdir, name )
         filename_h    = filename_base + '.h'
         filename_c    = filename_base + '.c'
-        filename_test_c = filename_base + '_test.c'
+        filename_test_c  = filename_base + '_test.c'
+        filename_test_sh = os.path.splitext( filename_test_c )[ 0 ] + '.sh'
 
         # Generate implementation files (.h and .c)
 
         if verbose:
             print()
-            print( '    ' + filename_h )
+            print( INDENT * 2 + filename_h )
         open( filename_h, 'wb' ).write( info[ 'helper_h_dfltcode' ].encode( ENCODING ) )
 
         if verbose:
-            print( '    ' + filename_c )
+            print( INDENT * 2 + filename_c )
         open( filename_c, 'wb' ).write( info[ 'helper_c_dfltcode' ].encode( ENCODING ) )
 
         # Generate unit test file (.c)
 
         if verbose:
-            print( '    ' + filename_test_c )
+            print( INDENT * 2 + filename_test_c )
         open( filename_test_c, 'wb' ).write( test_c_code( info, filename_h ).encode( ENCODING ) )
+
+        # Generate compiler script (.sh)
+
+        if verbose:
+            print( INDENT * 2 + filename_test_sh )
+        open( filename_test_sh, 'wb' ).write(
+            test_compile_sh_code( info, filename_h, filename_c, filename_test_c ).encode( ENCODING ) 
+            )
+        os.chmod( filename_test_sh, stat.S_IRWXU )
 
     assert False, 'xxx_rest_todo'
 
@@ -154,11 +171,11 @@ int main( int argc, char **argv )
   ''' + comment_c_code( '--- Input(s) ---') + '''
 
   ''' + simple_input_init_c_code( info ) + '''
-  ''' + ('' if not info[ HAS_ARRAY ] else (array_type + '[] ' + array_name + ' = { ' + os.linesep + arrayinit_c_code( info ) + os.linesep + '  };')) + '''
+  ''' + ('' if not info[ HAS_ARRAY ] else (array_type + '[] ' + array_name + ' = { ' + os.linesep + arrayinit_c_code( info ) + os.linesep + INDENT + '};')) + '''
 
   ''' + comment_c_code( '--- Expected output ---' ) + '''
 
-  const ''' +(scalar_expected_output_init_c_code( info )  if  not array_expected_output_name( info )  else  (array_type + '[] ' + array_expected_output_name( info ) + ' = { ' + os.linesep + arrayinit_c_code( info, expected_output_alone = True )) + os.linesep + '  };') + '''
+  const ''' +(scalar_expected_output_init_c_code( info )  if  not array_expected_output_name( info )  else  (array_type + '[] ' + array_expected_output_name( info ) + ' = { ' + os.linesep + arrayinit_c_code( info, expected_output_alone = True )) + os.linesep + INDENT + '};') + '''
 
 
   /* --- Unit test (mandatory) --- */
@@ -180,6 +197,10 @@ int main( int argc, char **argv )
     TEST_DURATION_END;
 
     printf( "%g\\n", duration );
+  }
+  else
+  {
+    printf( "ok\\n" );
   }
   
   return 0;
@@ -207,11 +228,9 @@ def arrayinit_c_code( info, expected_output_alone = False ):
     c_open = comment_c_code( '[' )
     c_close = comment_c_code( ']' )
 
-    indent = '  '
-
     def push_array_recursive( v, indent_n = 0, is_output = False ):
 
-        a = indent * indent_n
+        a = INDENT * indent_n
 
         if isinstance( v[ 0 ], list ):
             lines.append( a + c_open )
@@ -241,7 +260,7 @@ def arrayinit_c_code( info, expected_output_alone = False ):
         is_output = x[ IS_OUTPUT ]
 
         lines.append( '' )
-        lines.append( indent * indent_n_start + comment_c_code( ( 'output'  if  is_output  else  'input' ) + ' array "' + x[ NAME ] + '"' + ( ' (initialization to 0)'  if  (is_output and not expected_output_alone)  else  '') ) )
+        lines.append( INDENT * indent_n_start + comment_c_code( ( 'output'  if  is_output  else  'input' ) + ' array "' + x[ NAME ] + '"' + ( ' (initialization to 0)'  if  (is_output and not expected_output_alone)  else  '') ) )
         lines.append( '' )
 
         push_array_recursive( x[ VALUE ], indent_n = indent_n_start, is_output = is_output )
@@ -321,13 +340,17 @@ def unit_test_output_c_code( info ):
 
         o_type = info[ ARRAY_TYPE ]
 
-        lines.append( 'int begin = ' + str( xi[ BEGIN ] ) + ';' )
-        lines.append( 'int end   = ' + str( xi[ END ] ) + ';' )
-        lines.append( 'for (int i = begin, j=0; i < end; i++,j++)' )
-        lines.append( '{' )
-        lines.append( '  ' + o_type + ' ' + SIMPLE_ERROR + ' = abs( ' + PREFIX_EXPECTED_OUTPUT + o_name + '[j] - ' + PREFIX_OUTPUT + o_name + '[i] );'  )
-        lines.append( '  if (' + SIMPLE_ERROR + ' > EPSILON) { fprintf( stderr, "Wrong output[%d]: %g, expected[%d]: %g, error: %g", i, ' + one_out + '[i], j, ' + one_expected + '[j], ' + SIMPLE_ERROR + ' ); return -1; }')
-        lines.append( '}' )
+        lines.append( INDENT + 'int begin = ' + str( xi[ BEGIN ] ) + ';' )
+        lines.append( INDENT + 'int end   = ' + str( xi[ END ] ) + ';' )
+        lines.append( INDENT + 'for (int i = begin, j=0; i < end; i++,j++)' )
+        lines.append( INDENT + '{' )
+        lines.append( INDENT * 2 + o_type + ' ' + SIMPLE_ERROR + ' = abs( ' + PREFIX_EXPECTED_OUTPUT + o_name + '[j] - ' + PREFIX_OUTPUT + o_name + '[i] );' )
+        lines.append( INDENT * 2 + 'if (' + SIMPLE_ERROR + ' > EPSILON)' )
+        lines.append( INDENT * 2 + '{' )
+        lines.append( INDENT * 3 + 'fprintf( stderr, "Wrong output[%d]: %g, expected[%d]: %g, error: %g", i, ' + one_out + '[i], j, ' + one_expected + '[j], ' + SIMPLE_ERROR + ' );' )
+        lines.append( INDENT * 3 + 'return -1;')
+        lines.append( INDENT * 2 + '}' )
+        lines.append( INDENT + '}' )
 
     return os.linesep.join( lines )  or  ''
 
@@ -344,6 +367,38 @@ def format_value( v, t ):
 
     if t == 'double':
         return '{0:.32}'.format( v )   # xxx check .32
+
+
+
+def test_compile_sh_code( info, filename_h, filename_c, filename_test_c ):
+
+    filename_s = os.path.splitext( filename_c )[ 0 ] + '.s'
+    filename_o = os.path.splitext( filename_c )[ 0 ] + '.o'
+
+    filename_test_bin = os.path.splitext( filename_test_c )[ 0 ] + '.bin'
+
+    return '''#!/usr/bin/env sh
+
+set -v
+#
+# Compiling
+#
+# quite long
+gcc -g -Wa,-a,-ad=common.s     -O3 -fomit-frame-pointer -mtune=native -malign-double -fstrict-aliasing -fno-schedule-insns -ffast-math   -lrt    -c -o common.o    common.c  # Same optimization flags as used by in FFTW3.3.3  +  -lrt for the time testsw
+#
+gcc -g -Wa,-a,-ad=''' + filename_s + '''     -O3 -fomit-frame-pointer -mtune=native -malign-double -fstrict-aliasing -fno-schedule-insns -ffast-math   -lrt    -c -o ''' + filename_o + '''    ''' + filename_c + '''  # Same optimization flags as used by in FFTW3.3.3  +  -lrt for the time testsw
+#
+gcc -o ''' + filename_test_bin + '    common.o ' + filename_o + ' ' + filename_test_c + '''
+#
+# Unit test
+#
+./''' + filename_test_bin + '''
+#
+# Speed test
+./''' + filename_test_bin + ''' 1e5
+#
+set +v
+'''
 
 
 if __name__ == '__main__':
