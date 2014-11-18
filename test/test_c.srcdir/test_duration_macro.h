@@ -10,7 +10,7 @@ clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &begin);
 #ifndef DURATION_END
 #define DURATION_END( name, begin, end, duration )       \
 clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end); \
-duration = (double)(end.tv_sec - begin.tv_sec) + 1e-9 * (double)(end.tv_nsec - begin.tv_nsec); printf(name " duration: %g seconds (" __FILE__  ")\n", duration);
+duration = (double)(end.tv_sec - begin.tv_sec) + 1e-9 * (double)(end.tv_nsec - begin.tv_nsec); printf("%g\n", duration);
 #endif
 
 

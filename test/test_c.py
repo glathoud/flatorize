@@ -165,17 +165,17 @@ int main( int argc, char **argv )
   if (argc > 1)  
   {
     sscanf( argv[ 1 ], "%g", &tmp );  /* Permit 1.234e5 notation */
-    n_iter_speed = tmp | 0;
+    n_iter_speed = (int)(tmp);
   }
 
   ''' + comment_c_code( '--- Input(s) ---') + '''
 
   ''' + simple_input_init_c_code( info ) + '''
-  ''' + ('' if not info[ HAS_ARRAY ] else (array_type + '[] ' + array_name + ' = { ' + os.linesep + arrayinit_c_code( info ) + os.linesep + INDENT + '};')) + '''
+  ''' + ('' if not info[ HAS_ARRAY ] else (array_type + ' ' + array_name + '[] = { ' + os.linesep + arrayinit_c_code( info ) + os.linesep + INDENT + '};')) + '''
 
   ''' + comment_c_code( '--- Expected output ---' ) + '''
 
-  const ''' +(scalar_expected_output_init_c_code( info )  if  not array_expected_output_name( info )  else  (array_type + '[] ' + array_expected_output_name( info ) + ' = { ' + os.linesep + arrayinit_c_code( info, expected_output_alone = True )) + os.linesep + INDENT + '};') + '''
+  const ''' +(scalar_expected_output_init_c_code( info )  if  not array_expected_output_name( info )  else  (array_type + ' ' + array_expected_output_name( info ) + '[] = { ' + os.linesep + arrayinit_c_code( info, expected_output_alone = True )) + os.linesep + INDENT + '};') + '''
 
 
   /* --- Unit test (mandatory) --- */
@@ -195,8 +195,6 @@ int main( int argc, char **argv )
       ''' + call_once_c_code( info ) + '''
   
     TEST_DURATION_END;
-
-    printf( "%g\\n", duration );
   }
   else
   {
@@ -329,7 +327,7 @@ def unit_test_output_c_code( info ):
 
         o_type = info[ TYPED_OUT_VARTYPE ]
 
-        lines.append( o_type + ' ' + SIMPLE_ERROR + ' = abs( ' + one_expected + ' - ' + one_out + ' );'  )
+        lines.append( o_type + ' ' + SIMPLE_ERROR + ' = fabs( ' + one_expected + ' - ' + one_out + ' );'  )
         lines.append( 'if (' + SIMPLE_ERROR + ' > EPSILON) { fprintf( stderr, "Wrong output: %g, expected: %g, error: %g' + one_out + ', ' + one_expected + ', ' + SIMPLE_ERROR + ' ); return -1; }')
         
 
@@ -342,9 +340,10 @@ def unit_test_output_c_code( info ):
 
         lines.append( INDENT + 'int begin = ' + str( xi[ BEGIN ] ) + ';' )
         lines.append( INDENT + 'int end   = ' + str( xi[ END ] ) + ';' )
-        lines.append( INDENT + 'for (int i = begin, j=0; i < end; i++,j++)' )
+        lines.append( INDENT + 'int i, j;' )
+        lines.append( INDENT + 'for (i = begin, j=0; i < end; i++,j++)' )
         lines.append( INDENT + '{' )
-        lines.append( INDENT * 2 + o_type + ' ' + SIMPLE_ERROR + ' = abs( ' + PREFIX_EXPECTED_OUTPUT + o_name + '[j] - ' + PREFIX_OUTPUT + o_name + '[i] );' )
+        lines.append( INDENT * 2 + o_type + ' ' + SIMPLE_ERROR + ' = fabs( ' + PREFIX_EXPECTED_OUTPUT + o_name + '[j] - ' + ARRAY_NAME + '[i] );' )
         lines.append( INDENT * 2 + 'if (' + SIMPLE_ERROR + ' > EPSILON)' )
         lines.append( INDENT * 2 + '{' )
         lines.append( INDENT * 3 + 'fprintf( stderr, "Wrong output[%d]: %g, expected[%d]: %g, error: %g", i, ' + one_out + '[i], j, ' + one_expected + '[j], ' + SIMPLE_ERROR + ' );' )
@@ -377,6 +376,8 @@ def test_compile_sh_code( info, filename_h, filename_c, filename_test_c ):
 
     filename_test_bin = os.path.splitext( filename_test_c )[ 0 ] + '.bin'
 
+    filename_test_bin_tail = os.path.split( filename_test_bin )[ 1 ]
+
     return '''#!/usr/bin/env sh
 
 set -v
@@ -388,14 +389,14 @@ gcc -g -Wa,-a,-ad=common.s     -O3 -fomit-frame-pointer -mtune=native -malign-do
 #
 gcc -g -Wa,-a,-ad=''' + filename_s + '''     -O3 -fomit-frame-pointer -mtune=native -malign-double -fstrict-aliasing -fno-schedule-insns -ffast-math   -lrt    -c -o ''' + filename_o + '''    ''' + filename_c + '''  # Same optimization flags as used by in FFTW3.3.3  +  -lrt for the time testsw
 #
-gcc -o ''' + filename_test_bin + '    common.o ' + filename_o + ' ' + filename_test_c + '''
+gcc -lrt -o ''' + filename_test_bin + '    common.o ' + filename_o + ' ' + filename_test_c + '''
 #
 # Unit test
 #
-./''' + filename_test_bin + '''
+./''' + filename_test_bin_tail + '''
 #
 # Speed test
-./''' + filename_test_bin + ''' 1e5
+./''' + filename_test_bin_tail + ''' 1e5
 #
 set +v
 '''

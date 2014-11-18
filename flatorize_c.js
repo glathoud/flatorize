@@ -83,6 +83,16 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
         
         fixed.topFunName        = topFunName;
 
+        if (fixed.single_common_array_btd)
+        {
+            fixed.STRUCT_NAME = array_info_struct_name( fixed );
+            fixed.struct_name = fixed.STRUCT_NAME.toLowerCase();
+
+            (fixed.STRUCT_NAME  ||  null).substring.call.a;
+            (fixed.struct_name  ||  null).substring.call.a;
+        }
+        
+
         // Syntax definitions
 
         fixed.castwrap          = null;  // No cast needed because same type everywhere      
@@ -130,7 +140,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
 
             var cat = fixed2.single_common_array_btd.type;
 
-            fixed2.sca_name = FTU.get_new_varname( fixed2, cat + '_io' );
+            fixed2.sca_name = FTU.get_new_varname( fixed2, 'io_array' );
             fixed2.sca_type = cat;
         }
         
@@ -314,7 +324,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
             
             lines.push( line_comment_code( helper_text( fixed ) ) );
 
-            var STRUCT_NAME = array_info_struct_name( fixed );
+            var STRUCT_NAME = fixed.STRUCT_NAME;
             lines.push.apply(
                 lines
                 , [
@@ -330,11 +340,14 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
                                  {
                                      var info = an2i[ name ];
                                      
-                                     return sca_type + ' ' + name + '[' + info.n + ']; ' + 
-                                         line_comment_code( 
-                                             info.is_input  ?  'input'
-                                                 : info.is_output  ?  'output'
-                                                 : null.bug )
+                                     return sca_type + '* ' + name + '; ' +
+                                         line_comment_code(
+                                             ( 
+                                                 info.is_input  ?  'input'
+                                                     : info.is_output  ?  'output'
+                                                     : null.bug 
+                                             ) + ': ' + info.type_string
+                                         )
                                      ;
                                  }
                                )
@@ -443,7 +456,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
         (sca_name  ||  null).substring.call.a;
         (sca_type  ||  null).substring.call.a;
         
-        return array_info_struct_name( fixed ) + '* ' + fixed.topFunName + '_malloc()';
+        return fixed.STRUCT_NAME + '* ' + fixed.topFunName + '_malloc()';
     }
 
     function helper_init_impl( /*object*/fixed, /*?object?*/opt )
@@ -460,7 +473,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
 
     function helper_init_body( /*object*/fixed, /*?object?*/opt )
     {
-        var STRUCT_NAME = array_info_struct_name( fixed )
+        var STRUCT_NAME = fixed.STRUCT_NAME
         ,   RET         = 'ret'
         ,   an2i        = fixed.array_name2info
         ,   sca_name    = fixed.sca_name
@@ -477,15 +490,12 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
             , indent( 'exit( 1 );' )
             , '}'
             , ''
-            , RET + '->' + sca_name + ' = (' + sca_type + '[])(malloc( ' + fixed.count + ' * sizeof( ' + sca_type + ' )) );'
-            , 'if (NULL == ' + RET + '->' + sca_name + ')'
-            , '{'
-            , indent( 'printf( "Memory allocation failed: `' + STRUCT_NAME + '.' + sca_name + '`.\\n" );' )
-            , indent( 'exit( 1 );' )
-            , '}'
-            , ''
         ]
             .concat( fixed.array_in_vararr.map( array_convenience ) )
+            .concat( fixed.typed_out_varname in fixed.array_name2info  
+                     ?  [ array_convenience( fixed.typed_out_varname ) ]
+                     :  []
+                   )
             .concat( [
                 ''
                 , 'return ' + RET + ';'
@@ -495,7 +505,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
         {
             var info = an2i[ name ];
             
-            return RET + '->' + name + ' = ' + sca_name + ' + ' + info.begin + ';'
+            return RET + '->' + name + ' = ' + RET + '->' + sca_name + ' + ' + info.begin + ';'
         }
     }
     
@@ -509,9 +519,11 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
         (sca_name  ||  null).substring.call.a;
         (sca_type  ||  null).substring.call.a;
 
-        var STRUCT_NAME = array_info_struct_name( fixed );
+        var STRUCT_NAME = fixed.STRUCT_NAME
+        ,   struct_name = fixed.struct_name
+        ;
 
-        return 'void ' + new Array( STRUCT_NAME.length-2 ).join( ' ' ) + fixed.topFunName + '_free( ' + STRUCT_NAME + '* )';
+        return 'void ' + new Array( STRUCT_NAME.length-2 ).join( ' ' ) + fixed.topFunName + '_free( ' + STRUCT_NAME + '* ' + struct_name + ' )';
     }
 
    function helper_done_impl( /*object*/fixed, /*?object?*/opt )
@@ -522,15 +534,16 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
         (sca_name  ||  null).substring.call.a;
         (sca_type  ||  null).substring.call.a;
         
-        var STRUCT_NAME = array_info_struct_name( fixed );
+        var STRUCT_NAME = fixed.STRUCT_NAME
+        ,   struct_name = fixed.struct_name
+        ;
 
         return [
             helper_done_decl( fixed, opt ) + ' ' + line_comment_code( please_please( fixed ) )
             , '{'
         ]
             .concat( [
-                'free( ' + STRUCT_NAME + '->' + sca_name + ' );'
-                , 'free( ' + STRUCT_NAME + ' );'
+                'free( ' + struct_name + ' );'
             ].map( indent ) )
             .concat( [
                 '}'

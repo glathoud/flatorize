@@ -376,9 +376,12 @@
         ,   inArr  = in_out[ 0 ].split( ',' )
         ,  out_nt  = in_out[ 1 ].split( ':' )
         ,  outName = out_nt[ 0 ]
-        ,  outType = parse_type( out_nt[ 1 ] )
+
+        ,  outTypeString = out_nt[ 1 ]
+        ,  outType = parse_type( outTypeString )
         ;
-        
+        outType.type_string = outTypeString;
+
         return { 
             typed_in_var        : typed_arr_2_obj(  inArr )
             , typed_out_varname : outName
@@ -396,6 +399,7 @@
                 , type = nt[ 1 ]
                 ;
                 ret[ name ] = parse_type( type );
+                ret[ name ].type_string = type;
             }
             return ret;
         }
