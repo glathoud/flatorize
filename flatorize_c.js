@@ -166,6 +166,8 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
 
             name                : fixed2.topFunName
             , simple_in_vararr  : fixed2.simple_in_vararr
+            , STRUCT_NAME       : fixed2.STRUCT_NAME
+            , struct_name       : fixed2.struct_name
             , typed_in_var      : fixed2.typed_in_var
             , typed_out_varname : fixed2.typed_out_varname
             , typed_out_vartype : fixed2.typed_out_vartype

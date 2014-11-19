@@ -752,6 +752,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
         bt2.name        = name;
         bt2.matchFun    = matchFun;
         bt2.type_string = type.type_string;
+        bt2.n           = bt2.n;
 
         if (has_count)
         {

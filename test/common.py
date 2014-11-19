@@ -72,7 +72,7 @@ def ensure_dir( dirname, empty = False ):
         os.makedirs( dirname )
 
 
-def get_array_test_sorted( info, expected_output_alone = False ):
+def get_array_test_sorted( info, expected_output_alone = False, one_name = None ):
 
     n2i = info[ ARRAY_NAME2INFO ]
 
@@ -80,7 +80,12 @@ def get_array_test_sorted( info, expected_output_alone = False ):
     to = info[ ASMJS_TEST_OUTPUT ]
     
     arr = to  if  expected_output_alone  else  (ti + to)
+
+    if one_name:
+        arr = list( filter( lambda x: x[ NAME ] == one_name, arr ) )
+    
     arr.sort( key = lambda x: n2i[ x[ NAME ] ][ BEGIN ] )
+
 
     arr = list( map( lambda x: dict( list( x.items() ) + list( n2i[ x[ NAME ] ].items() ) ), arr ) )
 

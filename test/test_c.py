@@ -9,11 +9,15 @@ ARRAY_NAME = 'io_array'
 INDENT = '  '
 
 PREFIX_INPUT           = 'input_'
+PREFIX_INPUT_DATA      = PREFIX_INPUT + 'data_'
 PREFIX_OUTPUT          = 'output_'
 PREFIX_EXPECTED_OUTPUT = 'expected_' + PREFIX_OUTPUT
 
 SRCDIR = 'test_c.srcdir'
 OUTDIR = 'test_c.outdir'
+
+STRUCT_NAME_TYPE     = 'STRUCT_NAME'
+STRUCT_NAME_INSTANCE = 'struct_name'
 
 def test_c( verbose=True ):
     
@@ -150,6 +154,7 @@ def test_c_code( info, filename_h ):
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "common.h"
 #include "''' + filename_h + '''"
 
@@ -170,8 +175,9 @@ int main( int argc, char **argv )
 
   ''' + comment_c_code( '--- Input(s) ---') + '''
 
-  ''' + simple_input_init_c_code( info ) + '''
-  ''' + ('' if not info[ HAS_ARRAY ] else (array_type + ' ' + array_name + '[] = { ' + os.linesep + arrayinit_c_code( info ) + os.linesep + INDENT + '};')) + '''
+  ''' + simple_input_init_c_code( info ) + (
+      '' if not info[ HAS_ARRAY ] else os.linesep.join( map( lambda s: INDENT + s, infostruct_init_c_code( info )))
+      ) + '''
 
   ''' + comment_c_code( '--- Expected output ---' ) + '''
 
@@ -201,6 +207,9 @@ int main( int argc, char **argv )
     printf( "ok\\n" );
   }
   
+
+''' + ('' if not info[ HAS_ARRAY ] else os.linesep.join( map( lambda s: INDENT + s, infostruct_done_c_code( info )))) + '''
+
   return 0;
 }
 '''
@@ -213,13 +222,13 @@ def array_expected_output_name( info ):
     
 
 
-def arrayinit_c_code( info, expected_output_alone = False ):
+def arrayinit_c_code( info, expected_output_alone = False, one_name = None ):
     
     assert info[ HAS_ARRAY ]
 
     array_type = info[ ARRAY_TYPE ]
     
-    array_test_sorted = get_array_test_sorted( info, expected_output_alone = expected_output_alone )
+    array_test_sorted = get_array_test_sorted( info, expected_output_alone = expected_output_alone, one_name = one_name )
 
     lines = []
 
@@ -239,7 +248,10 @@ def arrayinit_c_code( info, expected_output_alone = False ):
             lines.append( a + c_open + ' ' + ''.join( map( lambda v: format_value( 0  if  (is_output and not expected_output_alone)  else  v, array_type ) + ', ', v ) ) + ' ' + c_close )
 
 
-    i = array_test_sorted[ 0 ][ BEGIN ]  if  expected_output_alone  else  0
+
+    single = expected_output_alone  or  one_name
+
+    i = array_test_sorted[ 0 ][ BEGIN ]  if  single  else  0
     for x in array_test_sorted:
 
         begin = x[ BEGIN ]
@@ -258,8 +270,10 @@ def arrayinit_c_code( info, expected_output_alone = False ):
         is_output = x[ IS_OUTPUT ]
 
         lines.append( '' )
-        lines.append( INDENT * indent_n_start + comment_c_code( ( 'output'  if  is_output  else  'input' ) + ' array "' + x[ NAME ] + '"' + ( ' (initialization to 0)'  if  (is_output and not expected_output_alone)  else  '') ) )
-        lines.append( '' )
+
+        if is_output and not single:
+            lines.append( comment_c_code( ( 'output'  if  is_output  else  'input' ) + ' array "' + x[ NAME ] + '"' + ( ' (initialization to 0)'  if  (is_output and not single)  else  '') ) )
+            lines.append( '' )
 
         push_array_recursive( x[ VALUE ], indent_n = indent_n_start, is_output = is_output )
         lines.append( '' )
@@ -267,13 +281,14 @@ def arrayinit_c_code( info, expected_output_alone = False ):
         i = x[ END ]
         
 
-    count = info[ ARRAY_COUNT ]
-    s = []
-    while i < count:
-        s.append( '0, ' )
-        i += 1
-    if s:
-        lines.append( ''.join( s ) )
+    if not single:
+        count = info[ ARRAY_COUNT ]
+        s = []
+        while i < count:
+            s.append( '0, ' )
+            i += 1
+        if s:
+            lines.append( ''.join( s ) )
 
     ret = os.linesep.join( lines )
 
@@ -293,6 +308,49 @@ def simple_input_init_c_code( info ):
     
 
     return (os.linesep + os.linesep.join( lines )  if  lines  else  '')
+
+
+def infostruct_init_c_code( info ):
+
+    assert info[ HAS_ARRAY ]
+
+    ret = []
+        
+    a_n2i = info[ ARRAY_NAME2INFO ]
+    array_type = info[ ARRAY_TYPE ]
+
+    for x in info[ ASMJS_TEST_INPUT ]:
+        name = x[ NAME ]
+        if name in a_n2i:
+            ret.append( '' )
+            ret.append( 'const ' + array_type + ' ' + PREFIX_INPUT_DATA + name + '[] = {' )
+            ret.append( arrayinit_c_code( info, expected_output_alone = False, one_name = name ) )
+            ret.append( '};' )
+
+
+    ret.extend( [
+            '',
+            '',
+            info[ STRUCT_NAME_TYPE ] + '* ' + info[ STRUCT_NAME_INSTANCE ] + ' = ' + info[ NAME ] + '_malloc();',
+            '', 
+            info[ ARRAY_TYPE ] + '* ' + ARRAY_NAME + ' = ' + info[ STRUCT_NAME_INSTANCE ] + '->' + ARRAY_NAME + ';',
+            '',
+            ] )
+
+    for x in info[ ASMJS_TEST_INPUT ]:
+        name = x[ NAME ]
+        if name in a_n2i:
+            ret.append( 'memcpy( ' + info[ STRUCT_NAME_INSTANCE ] + '->' + name + ', ' + PREFIX_INPUT_DATA + name + ', ' + str( a_n2i[ name ][ N ]) + ' * sizeof( ' + info[ ARRAY_TYPE ]+ ' ) );' )
+
+    return ret
+
+def infostruct_done_c_code( info ):
+
+    assert info[ HAS_ARRAY ]
+
+    return [
+        info[ NAME ] + '_free( ' + info[ STRUCT_NAME_INSTANCE ]+ ' );',
+        ]
 
 def scalar_expected_output_init_c_code( info ):
 
@@ -334,19 +392,17 @@ def unit_test_output_c_code( info ):
     else:
 
         one_expected = PREFIX_EXPECTED_OUTPUT + o_name
-        one_out      = ARRAY_NAME
+        one_out      = info[ STRUCT_NAME_INSTANCE ] + '->' + info[ TYPED_OUT_VARNAME ]
 
         o_type = info[ ARRAY_TYPE ]
 
-        lines.append( INDENT + 'int begin = ' + str( xi[ BEGIN ] ) + ';' )
-        lines.append( INDENT + 'int end   = ' + str( xi[ END ] ) + ';' )
-        lines.append( INDENT + 'int i, j;' )
-        lines.append( INDENT + 'for (i = begin, j=0; i < end; i++,j++)' )
+        lines.append( INDENT + 'int i;' )
+        lines.append( INDENT + 'for (i = ' + str( xi[ N ] ) + '; i--;)' )
         lines.append( INDENT + '{' )
-        lines.append( INDENT * 2 + o_type + ' ' + SIMPLE_ERROR + ' = fabs( ' + PREFIX_EXPECTED_OUTPUT + o_name + '[j] - ' + ARRAY_NAME + '[i] );' )
+        lines.append( INDENT * 2 + o_type + ' ' + SIMPLE_ERROR + ' = fabs( ' + one_expected + '[i] - ' + one_out + '[i] );' )
         lines.append( INDENT * 2 + 'if (' + SIMPLE_ERROR + ' > EPSILON)' )
         lines.append( INDENT * 2 + '{' )
-        lines.append( INDENT * 3 + 'fprintf( stderr, "Wrong output[%d]: %g, expected[%d]: %g, error: %g", i, ' + one_out + '[i], j, ' + one_expected + '[j], ' + SIMPLE_ERROR + ' );' )
+        lines.append( INDENT * 3 + 'fprintf( stderr, "Wrong output[%d]: %g, expected[%d]: %g, error: %g", i, ' + one_out + '[i], i, ' + one_expected + '[i], ' + SIMPLE_ERROR + ' );' )
         lines.append( INDENT * 3 + 'return -1;')
         lines.append( INDENT * 2 + '}' )
         lines.append( INDENT + '}' )
@@ -396,7 +452,7 @@ gcc -lrt -o ''' + filename_test_bin + '    common.o ' + filename_o + ' ' + filen
 ./''' + filename_test_bin_tail + '''
 #
 # Speed test
-./''' + filename_test_bin_tail + ''' 1e5
+./''' + filename_test_bin_tail + ''' 3
 #
 set +v
 '''
