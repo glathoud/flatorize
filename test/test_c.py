@@ -97,11 +97,14 @@ def test_c( verbose=True ):
 
     for name,info in infomap.items():
 
-        filename_base = os.path.join( outdir, name )
-        filename_h    = filename_base + '.h'
-        filename_c    = filename_base + '.c'
-        filename_test_c  = filename_base + '_test.c'
-        filename_test_sh = os.path.splitext( filename_test_c )[ 0 ] + '.sh'
+        filename_base     = os.path.join( outdir, name )
+        filename_h        = filename_base + '.h'
+        filename_c        = filename_base + '.c'
+        filename_test_c   = filename_base + '_test.c'
+
+        extless = os.path.splitext( filename_test_c )[ 0 ]
+        filename_test_sh  = extless + '.sh'
+        filename_test_bin = extless + '.bin'
 
         # Generate implementation files (.h and .c)
 
@@ -128,6 +131,14 @@ def test_c( verbose=True ):
             test_compile_sh_code( info, filename_h, filename_c, filename_test_c ).encode( ENCODING ) 
             )
         os.chmod( filename_test_sh, stat.S_IRWXU )
+
+        # Call compiler script
+
+        sh_out = sh_call( filename_test_sh )
+
+        print('sh_out: \n' + sh_out) #  xxx now analyse its output, make sure both test & speed test worked
+
+        # xxx also call .bin directly to be really sure
 
     assert False, 'xxx_rest_todo'
 
@@ -340,7 +351,7 @@ def infostruct_init_c_code( info ):
     for x in info[ ASMJS_TEST_INPUT ]:
         name = x[ NAME ]
         if name in a_n2i:
-            ret.append( 'memcpy( ' + info[ STRUCT_NAME_INSTANCE ] + '->' + name + ', ' + PREFIX_INPUT_DATA + name + ', ' + str( a_n2i[ name ][ N ]) + ' * sizeof( ' + info[ ARRAY_TYPE ]+ ' ) );' )
+            ret.append( 'memcpy( ' + info[ STRUCT_NAME_INSTANCE ] + '->' + name + ', ' + PREFIX_INPUT_DATA + name + ', ' + info[ STRUCT_NAME_INSTANCE ] + '->' + name.upper() + '_NBYTES );' )
 
     return ret
 
@@ -386,7 +397,7 @@ def unit_test_output_c_code( info ):
         o_type = info[ TYPED_OUT_VARTYPE ]
 
         lines.append( o_type + ' ' + SIMPLE_ERROR + ' = fabs( ' + one_expected + ' - ' + one_out + ' );'  )
-        lines.append( 'if (' + SIMPLE_ERROR + ' > EPSILON) { fprintf( stderr, "Wrong output: %g, expected: %g, error: %g' + one_out + ', ' + one_expected + ', ' + SIMPLE_ERROR + ' ); return -1; }')
+        lines.append( 'if (' + SIMPLE_ERROR + ' > EPSILON) { fprintf( stderr, "Wrong output: %g, expected: %g, error: %g\\n"' + one_out + ', ' + one_expected + ', ' + SIMPLE_ERROR + ' ); return -1; }')
         
 
     else:
@@ -402,7 +413,7 @@ def unit_test_output_c_code( info ):
         lines.append( INDENT * 2 + o_type + ' ' + SIMPLE_ERROR + ' = fabs( ' + one_expected + '[i] - ' + one_out + '[i] );' )
         lines.append( INDENT * 2 + 'if (' + SIMPLE_ERROR + ' > EPSILON)' )
         lines.append( INDENT * 2 + '{' )
-        lines.append( INDENT * 3 + 'fprintf( stderr, "Wrong output[%d]: %g, expected[%d]: %g, error: %g", i, ' + one_out + '[i], i, ' + one_expected + '[i], ' + SIMPLE_ERROR + ' );' )
+        lines.append( INDENT * 3 + 'fprintf( stderr, "Wrong output[%d]: %g, expected[%d]: %g, error: %g\\n", i, ' + one_out + '[i], i, ' + one_expected + '[i], ' + SIMPLE_ERROR + ' );' )
         lines.append( INDENT * 3 + 'return -1;')
         lines.append( INDENT * 2 + '}' )
         lines.append( INDENT + '}' )

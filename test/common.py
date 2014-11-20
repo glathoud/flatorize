@@ -99,6 +99,19 @@ def get_test_dirname( somename ):
 
     return os.path.join( js_wd, TESTDIR, somename )
 
+def sh_call( filename ):
+
+    wd = os.getcwd()
+
+    path,name = os.path.split( filename )
+    
+    os.chdir( path )
+    outstr = subprocess.check_output( './' + name, shell=True, stderr=subprocess.STDOUT, universal_newlines = True )
+    os.chdir( wd )
+    
+    return outstr
+
+
 def summary( str_or_arr ):
 
     try:

@@ -26,8 +26,8 @@
 
 /*global flatorize load console*/
 
-if ('undefined' === typeof flatorize  &&  'function' === typeof load)
-    load( 'flatorize.js' );  // e.g. V8
+        if ('undefined' === typeof flatorize  &&  'function' === typeof load)
+            load( 'flatorize.js' );  // e.g. V8
 
 if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
     load( 'flatorize_type_util.js' );  // e.g. V8
@@ -194,7 +194,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
             ret.array_name2info = fixed2.array_name2info;
             ret.array_count     = fixed2.count;
         }
-    
+        
         return ret;
 
         function helper_h( /*?object?*/opt )
@@ -217,7 +217,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
         ,   typed_out_varname = fixed.typed_out_varname
         ,   typed_out_vartype = fixed.typed_out_vartype
         ,   array_name2info   = fixed.array_name2info   
-    
+        
         ,   is_out_type_simple = 'string' === typeof typed_out_vartype
         ,   arr = [ ]
         ;
@@ -333,47 +333,52 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
                     ''
                     , 'typedef struct ' + STRUCT_NAME 
                     , '{' 
-                ].concat
-                ( 
+                    , ''
+                ].concat( 
                     [ 
-                        line_comment_code( 'convenience access to parts of `' + sca_name + '`'  )
-                    ].concat( 
-                        arr.map( function ( name ) 
-                                 {
-                                     var info = an2i[ name ];
-                                     
-                                     return sca_type + '* ' + name + '; ' +
-                                         line_comment_code(
-                                             ( 
-                                                 info.is_input  ?  'input'
-                                                     : info.is_output  ?  'output'
-                                                     : null.bug 
-                                             ) + ': ' + info.type_string
-                                         )
-                                     ;
-                                 }
-                               )
-                            .concat( 
-                                [
-                                    ''
-                                    , line_comment_code( 'a single chunk `' + sca_name + '` will be allocated' )
-                                    , sca_type + ' ' + sca_name + '[' + fixed.count + '];'
-                                ]
-                            )
-                    ).map( indent ) 
-                ).concat
-                (
-                    [
+                        line_comment_code( 'convenience access to parts of `' + sca_name + '`: individual sizes' ) 
+                    ]
+                        .concat( 
+                            arr.map( function ( name ) {
+                                var info = an2i[ name ];
+                                return [ 
+                                    'const int ' + array_name_N( name ) + ';      ' + line_comment_code( info.n + '' ),
+                                    'const int ' + array_name_NBYTES( name ) + '; ' + line_comment_code( info.n + '*sizeof( ' + info.type + ' )' ),
+                                ];
+                            } ).reduce( concat_two_arrays ) )
+                        .concat( [
+                            '',
+                            line_comment_code( 'convenience access to parts of `' + sca_name + '`: individual pointers' ),
+                        ] )
+                        .concat( arr.map( function ( name ) {
+                            
+                            var info = an2i[ name ];
+                            
+                            return sca_type + '* ' + name + '; ' +
+                                line_comment_code(
+                                    ( 
+                                        info.is_input  ?  'input'
+                                            : info.is_output  ?  'output'
+                                            : null.bug 
+                                    ) + ': ' + info.type_string
+                                )
+                            ;
+                        } ) )
+                        .concat( [
+                            ''
+                            , line_comment_code( 'a single chunk `' + sca_name + '` will be allocated (might help CPU caching)' )
+                            , sca_type + ' ' + sca_name + '[' + fixed.count + '];'
+                        ] ).map( indent ) 
+                )
+                    .concat( [
                         ''
                         , '} ' + STRUCT_NAME + ';'
-                    ]
-                )
-            );
-
-            lines.push(
-                ''
-                , helper_init_decl( fixed, opt ) + ';'
-                , helper_done_decl( fixed, opt ) + '; ' + line_comment_code( please_please( fixed ) )
+                    ] )
+                    .concat( [ 
+                        ''
+                        , helper_init_decl( fixed, opt ) + ';'
+                        , helper_done_decl( fixed, opt ) + '; ' + line_comment_code( please_please( fixed ) )
+                    ] )
             );
             
 
@@ -418,12 +423,13 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
         ;
         if (arr  &&  arr.length)
         {
-     
+            
             lines = lines
                 .concat(
                     [
                         '#include <stdio.h>'
                         , '#include <stdlib.h>'
+                        , '#include <string.h>'
                         , ''
                         , '#include "' + helper_h_name + '" ' + line_comment_code( 'customizable, or customized, through `opt.helper_h_name`' )
                         , ''
@@ -477,22 +483,45 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
     {
         var STRUCT_NAME = fixed.STRUCT_NAME
         ,   RET         = 'ret'
+        ,   INIT        = 'INIT'
         ,   an2i        = fixed.array_name2info
         ,   sca_name    = fixed.sca_name
         ,   sca_type    = fixed.sca_type
+
+        ,   arr         = fixed.arrayname_arr
+        ,   has_arr     = arr  &&  arr.length > 0   
+
+        ,   an2i        = fixed.array_name2info
         ;
         (sca_name  ||  null).substring.call.a;
         (sca_type  ||  null).substring.call.a;
 
         return [
-            STRUCT_NAME + '* ' + RET + ' = malloc( sizeof( ' + STRUCT_NAME + ' ) );' 
-            , 'if (NULL == ' + RET + ')'
-            , '{'
-            , indent( 'printf( "Memory allocation failed: `' + STRUCT_NAME + '`.\\n" );' )
-            , indent( 'exit( 1 );' )
-            , '}'
-            , ''
+            line_comment_code( 'Constant values: individual array sizes' )
+            , 'static const ' + STRUCT_NAME + ' ' + INIT + ' = { ' + 
+                arr.map( function ( name ) {
+                    var info = an2i[ name ]
+                    ,   n    = info.n
+                    ,   type = info.type
+                    ;
+                    (n  ||  null).toPrecision.call.a;
+                    (type  ||  null).substring.call.a;
+                    return [
+                        info.n + ''
+                        , info.n + ' * sizeof( ' + type + ' )'
+                    ];
+                } ).reduce( concat_two_arrays ).join( ', ' ) + ' };'
         ]
+            .concat( [
+                ''
+                , STRUCT_NAME + '* ' + RET + ' = malloc( sizeof( ' + STRUCT_NAME + ' ) );' 
+                , 'if (NULL == ' + RET + ')'
+                , '{'
+                , indent( 'printf( "Memory allocation failed: `' + STRUCT_NAME + '`.\\n" );' )
+                , indent( 'exit( 1 );' )
+                , '}'
+                , 'memcpy( ' + RET + ', &' + INIT + ', sizeof( ' + STRUCT_NAME + ' ) );'
+            ] )
             .concat( fixed.array_in_vararr.map( array_convenience ) )
             .concat( fixed.typed_out_varname in fixed.array_name2info  
                      ?  [ array_convenience( fixed.typed_out_varname ) ]
@@ -501,7 +530,8 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
             .concat( [
                 ''
                 , 'return ' + RET + ';'
-            ] );
+            ] )
+        ;
 
         function array_convenience( /*string*/name )
         {
@@ -528,7 +558,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
         return 'void ' + new Array( STRUCT_NAME.length-2 ).join( ' ' ) + fixed.topFunName + '_free( ' + STRUCT_NAME + '* ' + struct_name + ' )';
     }
 
-   function helper_done_impl( /*object*/fixed, /*?object?*/opt )
+    function helper_done_impl( /*object*/fixed, /*?object?*/opt )
     {
         var sca_name = fixed.sca_name
         ,   sca_type = fixed.sca_type
@@ -559,5 +589,10 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
         return fixed.topFunName.toUpperCase() + '_ARRAY_INFO'; 
     }
 
+
+    function array_name_N( name ) { return name.toUpperCase() + '_N'; }
+    function array_name_NBYTES( name ) { return name.toUpperCase() + '_NBYTES'; }
+
+    function concat_two_arrays( a, b ) { return a.concat( b ); }
 
 })();
