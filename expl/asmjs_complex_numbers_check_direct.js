@@ -1,21 +1,39 @@
 /*global passed asmjs_complex_numbers_check_direct f2_asmjsGen_direct ArrayBuffer window Float32Array*/
 
-var passed, f2_asmjsGen_direct;
+var passed, passed_asmjsgen_info, f2_asmjsGen_direct;
 function asmjs_complex_numbers_check_direct()
 {
-    (passed  ||  (passed = {})).asmjs_complex_numbers_check_direct = false;
+    var NAME = 'asmjs_complex_numbers_check_direct';
+
+    (passed  ||  (passed = {}))[ NAME ] = false;
 
     // "Complex numbers" example
 
-    if (typeof f2_asmjsGen_direct === 'undefined')
-    {
-        f2_asmjsGen_direct = flatorize.getAsmjsGen( { 
+    var info = (passed_asmjsgen_info  ||  (passed_asmjsgen_info = {}))[ NAME ] = {
+        cfg : { 
             name      : 'f2'
             , varstr  : 'a:[2 float],b:[2 float],c:[2 float]->d:[2 float]'
             , exprgen : f2.exprgen 
-        } );
-    }
+        }
+        , input : augment_name_value_array_with_mapping( [
+            { name : "a",   value : [1.2, -3.4] }
+            , { name : "b", value : [0,   1]    }
+            , { name : "c", value : [-1,  9.99] }
+        ] )
+        , output : augment_name_value_array_with_mapping( [
+            {
+                name    : 'd'
+                , value : [
+                    1.2  - 2*(0 + -1)
+                    , -3.4 - 2*(1 + 9.99)
+                ]
+            }
+        ] )
+    };    
 
+    if (typeof f2_asmjsGen_direct === 'undefined')
+        f2_asmjsGen_direct = flatorize.getAsmjsGen( info.cfg );
+    
     // --- Inputs and output
     var f2_buffer = new ArrayBuffer( f2_asmjsGen_direct.buffer_bytes );
 
@@ -36,9 +54,9 @@ function asmjs_complex_numbers_check_direct()
     ;
 
     // Write input values
-    a.set([1.2, -3.4]);
-    b.set([0,   1]);
-    c.set([-1,  9.99]);
+    a.set( info.input.a );
+    b.set( info.input.b );
+    c.set( info.input.c );
 
     // Compute
     f2_asmjsO.f2();
@@ -46,15 +64,15 @@ function asmjs_complex_numbers_check_direct()
     
     // The result is accessible through `d`
     var error_v = [
-        d[0]   - (1.2  - 2*(0 + -1))
-        , d[1] - (-3.4 - 2*(1 + 9.99))
+        d[ 0 ]   - info.output.d[ 0 ]
+        , d[ 1 ] - info.output.d[ 1 ]
     ]
     , error = Math.max.apply( Math, error_v.map( 
         function (delta) { return Math.abs( delta ); } 
     ) )
     ;
     if (1e-5 < error)
-        throw new Error( 'asmjs_complex_numbers_check failed!' );
+        throw new Error( NAME + ' failed!' );
 
-    (passed  ||  (passed = {})).asmjs_complex_numbers_check_direct = true;
+    (passed  ||  (passed = {}))[ NAME ] = true;
 }

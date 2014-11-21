@@ -68,7 +68,7 @@ function asmjs_complex_numbers_check()
     ) )
     ;
     if (1e-5 < error)
-        throw new Error( 'asmjs_complex_numbers_check failed!' );
+        throw new Error( NAME + ' failed!' );
 
     (passed  ||  (passed = {}))[ NAME ] = true;
 }

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import json, os, pprint, re, stat
+import json, math, os, pprint, re, stat
 
 from common import *
 
@@ -89,66 +89,138 @@ def test_c( verbose=True ):
     infomap_str = d8_call( jscode )
     infomap     = json.loads( infomap_str )
     
-    pprint.pprint( infomap )
+    # xxx pprint.pprint( infomap )
 
     if verbose:
         print()
         print( INDENT + 'test:c: 3. write out .h, .c and .sh files for each example...' )
 
+    out_arr = []
+
     for name,info in infomap.items():
+        try:
+            assert_test( name, info, outdir, verbose )
+        except e:
+            out_arr.append( { NAME : name, OK : False } )
+            continue
 
-        filename_base     = os.path.join( outdir, name )
-        filename_h        = filename_base + '.h'
-        filename_c        = filename_base + '.c'
-        filename_test_c   = filename_base + '_test.c'
-
-        extless = os.path.splitext( filename_test_c )[ 0 ]
-        filename_test_sh  = extless + '.sh'
-        filename_test_bin = extless + '.bin'
-
-        # Generate implementation files (.h and .c)
-
-        if verbose:
-            print()
-            print( INDENT * 2 + filename_h )
-        open( filename_h, 'wb' ).write( info[ 'helper_h_dfltcode' ].encode( ENCODING ) )
-
-        if verbose:
-            print( INDENT * 2 + filename_c )
-        open( filename_c, 'wb' ).write( info[ 'helper_c_dfltcode' ].encode( ENCODING ) )
-
-        # Generate unit test file (.c)
-
-        if verbose:
-            print( INDENT * 2 + filename_test_c )
-        open( filename_test_c, 'wb' ).write( test_c_code( info, filename_h ).encode( ENCODING ) )
-
-        # Generate compiler script (.sh)
-
-        if verbose:
-            print( INDENT * 2 + filename_test_sh )
-        open( filename_test_sh, 'wb' ).write(
-            test_compile_sh_code( info, filename_h, filename_c, filename_test_c ).encode( ENCODING ) 
-            )
-        os.chmod( filename_test_sh, stat.S_IRWXU )
-
-        # Call compiler script
-
-        sh_out = sh_call( filename_test_sh )
-
-        print('sh_out: \n' + sh_out) #  xxx now analyse its output, make sure both test & speed test worked
-
-        # xxx also call .bin directly to be really sure
-
-    assert False, 'xxx_rest_todo'
+        out_arr.append( { NAME : name, OK : True } )
 
     if verbose:
-        print( '...done with `test_c`: {0}'.format( summary( outstr )[ MESSAGE ] ) )
+        print()
+        print( '...done with `test_c`: {0}'.format( summary( out_arr )[ MESSAGE ] ) )
 
-    if outstr:
-        return list( json.loads( outstr ) )
+    return out_arr
+
+def assert_test( name, info, outdir, verbose ):
+
+    if verbose:
+        print()
+        print( INDENT * 2 + name )
+
+    filename_base     = os.path.join( outdir, name )
+    filename_h        = filename_base + '.h'
+    filename_c        = filename_base + '.c'
+    filename_test_c   = filename_base + '_test.c'
+
+    extless = os.path.splitext( filename_test_c )[ 0 ]
+    filename_test_sh  = extless + '.sh'
+    filename_test_bin = extless + '.bin'
+
+    pathless_test_bin = os.path.split( filename_test_bin )[ 1 ]
+
+    # Generate implementation files (.h and .c)
+
+    if verbose:
+        print()
+        print( INDENT * 3 + 'Write: ' + filename_h )
+    open( filename_h, 'wb' ).write( info[ 'helper_h_dfltcode' ].encode( ENCODING ) )
+
+    if verbose:
+        print( INDENT * 3 + 'Write: ' + filename_c )
+    open( filename_c, 'wb' ).write( info[ 'helper_c_dfltcode' ].encode( ENCODING ) )
+
+    # Generate unit test file (.c)
+
+    if verbose:
+        print( INDENT * 3 + 'Write: ' + filename_test_c )
+    open( filename_test_c, 'wb' ).write( test_c_code( info, filename_h ).encode( ENCODING ) )
+
+    # Generate compiler script (.sh)
+
+    if verbose:
+        print( INDENT * 3 + 'Write: ' + filename_test_sh )
+    open( filename_test_sh, 'wb' ).write(
+        test_compile_sh_code( info, filename_h, filename_c, filename_test_c ).encode( ENCODING ) 
+        )
+    os.chmod( filename_test_sh, stat.S_IRWXU )
+
+    # Call compiler script
+
+    if verbose:
+        print( INDENT * 3 + 'Call "compiler script" == compile + unit test + speed test' )
+
+    sh_out = sh_call( filename_test_sh )
+
+    line_must_be_ok = False
+    line_must_be_a_number = False
+
+    unit_test_ok = False
+    speed_test_ok = False
+
+    for line in sh_out.split( os.linesep ):
+
+        line = line.strip()
+
+        if line.endswith( pathless_test_bin ):
+            line_must_be_ok = True
+            continue
+
+        if line_must_be_ok:
+            assert line == 'ok'
+            line_must_be_ok = False
+            unit_test_ok = True
+            if verbose:
+                print( INDENT * 4 + '- unit test:  ok' )
+            continue
+
+        arr = line.split( ' ' )
+        if len( arr ) == 2  and  arr[ 0 ].endswith( pathless_test_bin ):
+            ns = arr[ 1 ]
+            n  = int( ns )
+            assert not math.isnan( n )
+            assert str( n ) == ns
+            line_must_be_a_number = True
+            continue
+
+        if line_must_be_a_number:
+            number = float( line )
+            assert not math.isnan( number )
+            line_must_be_a_number = False
+            speed_test_ok = True
+            if verbose:
+                print( INDENT * 4 + '- speed test: ok' )
+            continue
+
+
+    assert unit_test_ok
+    assert speed_test_ok
     
-    return ( { OK : False, NAME : 'asmjs.py call to V8 failed somewhere.' }, )
+    
+    if verbose:
+        print( INDENT * 3 + 'Call .bin directly to be sure' )
+    
+    bin_out_unit = sh_call( filename_test_bin )
+    assert 'ok' == bin_out_unit.strip()
+    if verbose:
+        print( INDENT * 4 + '- unit test:  ok' )
+
+    bin_out_speed = sh_call( filename_test_bin + ' 3' )
+    number = float( bin_out_speed.strip() )
+    assert not math.isnan( number )
+    if verbose:
+        print( INDENT * 4 + '- speed test: ok' )
+
 
 
 def test_c_code( info, filename_h ):
@@ -266,8 +338,6 @@ def arrayinit_c_code( info, expected_output_alone = False, one_name = None ):
     for x in array_test_sorted:
 
         begin = x[ BEGIN ]
-
-        pprint.pprint( x )
 
         s = []
         while i < begin:
