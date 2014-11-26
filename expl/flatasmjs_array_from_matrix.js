@@ -1,9 +1,12 @@
-/*global expl_flatasmjs_array_from_matrix flatorize ArrayBuffer window*/
+/*global expl_flatasmjs_array_from_matrix flatorize ArrayBuffer window passed_asmjsgen_info*/
 
+var passed_asmjsgen_info;
 function expl_flatasmjs_array_from_matrix( /*integer*/nrow, /*integer*/ncol )
 // Probably not the most sumingful use(s) of flatorize (already flat)
 // BUT useful as a unit test for both flatorize and flatorize+asm.js
 {
+    var NAME = 'expl_flatasmjs_array_from_matrix';
+
     // Give external access, for example to display source code.
     // Example of use: ../index.html
 
@@ -27,8 +30,32 @@ function expl_flatasmjs_array_from_matrix( /*integer*/nrow, /*integer*/ncol )
         }
     )
     
+    , col_factor = Math.pow( 10, Math.ceil( Math.log( ncol ) / Math.log( 10 ) ) )
+
+    ,        input = new Array( nrow ).join(',').split(',').map( 
+        function ( tmp, irow ) { 
+            return new Array( ncol ).join( ',' ).split( ',' ).map( 
+                function ( tmp, icol ) { return irow + icol / col_factor; } 
+            );
+        }
+    )
+    ,  expected = input.slice( 0, diaglen ).map( function (row,i) { return row[ i ]; } )
+
+
     , diagflat_asmjs_name = diagflat_name + '_asmjs'
-    , diagflat_asmjs_gen = flatorize.getAsmjsGen( { switcher : diagflat, name : diagflat_asmjs_name } )
+
+    ,  info = (passed_asmjsgen_info  ||  (passed_asmjsgen_info = {}))[ NAME ] = {
+        cfg : { switcher : diagflat, name : diagflat_asmjs_name }
+        , input : augment_name_value_array_with_mapping( [
+            { name : 'mat',  value : input }
+        ] )
+        , output : augment_name_value_array_with_mapping( [
+            { name : 'diag', value : expected }
+        ] )
+    }
+
+    
+    , diagflat_asmjs_gen = flatorize.getAsmjsGen( info.cfg )
     ;
 
     function symbol_matrixrows( name, nrow, ncol )
@@ -53,18 +80,6 @@ function expl_flatasmjs_array_from_matrix( /*integer*/nrow, /*integer*/ncol )
         
     // --- Do they work?
 
-    var col_factor = Math.pow( 10, Math.ceil( Math.log( ncol ) / Math.log( 10 ) ) )
-
-    ,        input = new Array( nrow ).join(',').split(',').map( 
-        function ( tmp, irow ) { 
-            return new Array( ncol ).join( ',' ).split( ',' ).map( 
-                function ( tmp, icol ) { return irow + icol / col_factor; } 
-            );
-        }
-    )
-    ,  expected = input.slice( 0, diaglen ).map( function (row,i) { return row[ i ]; } )
-    ;
-    
     // flatorized version
 
     var obtained = diagflat( input );

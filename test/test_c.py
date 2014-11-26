@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import json, math, os, pprint, re, stat
+import json, math, os, pprint, re, stat, sys, traceback
 
 from common import *
 
@@ -97,10 +97,17 @@ def test_c( verbose=True ):
 
     out_arr = []
 
-    for name,info in infomap.items():
+    name_li = sorted( infomap.keys() )
+
+    for name in name_li:
+        info = infomap[ name ]
         try:
             assert_test( name, info, outdir, verbose )
-        except e:
+        except Exception as exc:
+            if verbose:
+                print()
+                print( '...caught an exception: ' )
+                traceback.print_exc()
             out_arr.append( { NAME : name, OK : False } )
             continue
 
@@ -446,7 +453,7 @@ def call_once_c_code( info ):
         ((PREFIX_OUTPUT + info[ TYPED_OUT_VARNAME ])  if  info[ HAS_SIMPLE_OUTPUT ]  else  '') + 
         info[ NAME ] + '( ' + ', '.join( 
             ([ ARRAY_NAME, ]  if  info[ HAS_ARRAY]  else  []) + 
-            info[ SIMPLE_IN_VARARR ]
+            [ PREFIX_INPUT + s  for s in info[ SIMPLE_IN_VARARR ] ]
             ) + ' );'
         )
 

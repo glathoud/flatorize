@@ -1,10 +1,11 @@
 /*global passed asmjs_complex_numbers_check matmulrows_zip_342_asmjsGen ArrayBuffer window Float32Array*/
 
-var passed;
+var passed, passed_asmjsgen_info;
 function asmjs_dftrealflat_check( /*integer, e.g. 16 or 1024*/dftsize )
 {
-    var checkname = 'asmjs_dftreal' + dftsize + 'flat_check';
-    (passed  ||  (passed = {}))[ checkname ] = false;
+    var NAME = 'asmjs_dftreal' + dftsize + 'flat_check';
+
+    (passed  ||  (passed = {}))[ NAME ] = false;
 
     // "DFT REAL" example
 
@@ -19,13 +20,32 @@ function asmjs_dftrealflat_check( /*integer, e.g. 16 or 1024*/dftsize )
         expl_dftreal_flatorize( 16 );       
         dftrealflat = expl_dftreal_flatorize[ NAME_FLAT ];
     }
-    if (typeof dftrealflat_asmjsGen === 'undefined')
-    {
-        var dftrealflat_asmjsGen = flatorize.getAsmjsGen( 
-            { 
+
+    var io = get_dftreal_sin_input_output_for_check( dftsize );
+    
+    var info = (passed_asmjsgen_info  ||  (passed_asmjsgen_info = {}))[ NAME ] = {
+        cfg : { 
                 switcher: dftrealflat
                 , name: "dftreal" + dftsize + "flat" 
             } 
+        , input : augment_name_value_array_with_mapping( [
+            { 
+                name : "arr"
+                , value : io.input 
+            }
+        ] )
+        , output : augment_name_value_array_with_mapping( [
+            {
+                name    : 'freq'
+                , value : io.expected
+            }
+        ] )
+    };    
+
+    if (typeof dftrealflat_asmjsGen === 'undefined')
+    {
+        var dftrealflat_asmjsGen = flatorize.getAsmjsGen( 
+            info.cfg
         );
     }
     
@@ -60,9 +80,9 @@ function asmjs_dftrealflat_check( /*integer, e.g. 16 or 1024*/dftsize )
 
     // Write input values
 
-    var io = get_dftreal_sin_input_output_for_check( dftsize );
+ 
 
-    arr.set( io.input );
+    arr.set( info.input.arr );
     
     // Compute
 
@@ -70,12 +90,12 @@ function asmjs_dftrealflat_check( /*integer, e.g. 16 or 1024*/dftsize )
     
     // The result is accessible through `freq`
 
-    check_error( freq, io.expected );
+    check_error( freq, info.output.freq );
     
     // Sanity check: original flatorized implementation
     
-    var original_freq = dftrealflat( io.input );
-    check_error( original_freq, io.expected );
+    var original_freq = dftrealflat( info.input.arr );
+    check_error( original_freq, info.output.freq );
 
     // Finer check on a random vector: are the two implementation
     // consistent? (Don't worry, the original one is independently
@@ -91,7 +111,7 @@ function asmjs_dftrealflat_check( /*integer, e.g. 16 or 1024*/dftsize )
     
     // 
 
-    (passed  ||  (passed = {}))[ checkname ] = 'asmjs_dftrealflat_check';  // Name of the present file
+    (passed  ||  (passed = {}))[ NAME ] = true;
 
     // --- Details
 
@@ -104,7 +124,7 @@ function asmjs_dftrealflat_check( /*integer, e.g. 16 or 1024*/dftsize )
         ) )
         ;
         if (1e-10 < error)
-            throw new Error( checkname + ' failed!' );
+            throw new Error( NAME + ' failed!' );
     }
 
     function get_error( obtained_flat, expected_flat )

@@ -1,9 +1,12 @@
-/*global expl_flatasmjs_array_from_ndim flatorize ArrayBuffer window*/
+/*global expl_flatasmjs_array_from_ndim flatorize ArrayBuffer window passed_asmjsgen_info*/
 
+var passed_asmjsgen_info;
 function expl_flatasmjs_array_from_ndim( /*array of integer*/dim )
 // Maybe not the most meaningful use of flatorize, but a good unit
 // test for both flatorize and flatorize+asm.js
 {
+    var NAME = 'expl_flatasmjs_array_from_ndim';
+    
     // Give external access, for example to display source code.
     // Example of use: ../index.html
 
@@ -32,7 +35,30 @@ function expl_flatasmjs_array_from_ndim( /*array of integer*/dim )
     )
     
     , ndimdiagflat_asmjs_name = ndimdiagflat_name + '_asmjs'
-    , ndimdiagflat_asmjs_gen = flatorize.getAsmjsGen( { switcher : ndimdiagflat, name : ndimdiagflat_asmjs_name } )
+
+    ,     input = random_ndim_matrix( dim )
+    ,  expected = new Array( ndimdiaglen )
+    ;
+    for (var i = ndimdiaglen; i--;)
+    {
+        var tmp = input;
+        for (var id = dim.length; id--;)
+            tmp = tmp[ i ];
+        
+        expected[ i ] = tmp;
+    }
+    
+    var info = (passed_asmjsgen_info  ||  (passed_asmjsgen_info = {}))[ NAME ] = {
+        cfg : { switcher : ndimdiagflat, name : ndimdiagflat_asmjs_name }
+        , input : augment_name_value_array_with_mapping( [
+            { name : 'mat',  value : input }
+        ] )
+        , output : augment_name_value_array_with_mapping( [
+            { name : 'ndimdiag', value : expected }
+        ] )
+    }
+
+    , ndimdiagflat_asmjs_gen = flatorize.getAsmjsGen( info.cfg )
     ;
 
     function dim2spec( /*array of integer*/dim, /*string*/basic_type )
@@ -82,20 +108,6 @@ function expl_flatasmjs_array_from_ndim( /*array of integer*/dim )
     }
     
     // --- Do they work?
-
-
-    var   input = random_ndim_matrix( dim )
-    ,  expected = new Array( ndimdiaglen )
-    ;
-    for (var i = ndimdiaglen; i--;)
-    {
-        var tmp = input;
-        for (var id = dim.length; id--;)
-            tmp = tmp[ i ];
-        
-        expected[ i ] = tmp;
-    }
-    
 
     function random_ndim_matrix( dim )
     {

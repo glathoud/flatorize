@@ -1,9 +1,12 @@
-/*global expl_flatasmjs_array_from_scalar flatorize ArrayBuffer window*/
+/*global expl_flatasmjs_array_from_scalar flatorize ArrayBuffer window passed_asmjsgen_info*/
 
+var passed_asmjsgen_info;
 function expl_flatasmjs_array_from_scalar( /*integer*/size )
 // Probably not the most sumingful use(s) of flatorize (already flat)
 // BUT useful as a unit test for both flatorize and flatorize+asm.js
 {
+    var NAME = 'expl_flatasmjs_array_from_scalar';
+
     // Give external access, for example to display source code.
     // Example of use: ../index.html
 
@@ -40,9 +43,29 @@ function expl_flatasmjs_array_from_scalar( /*integer*/size )
             ;
         }
     )
+
+    ,     input = 3
+    ,  expected = empty_array( size ).map( function ( tmp, i ) { return input + i; } )
+
+    ,     input_double = 4.567
+    ,  expected_double = empty_array( size ).map( function ( tmp, i ) { return input_double + i; } )
     
+
     ,   count_a_few_double_asmjs_name = count_a_few_double_name
-    ,   count_a_few_double_asmjs_gen  = flatorize.getAsmjsGen( { switcher : count_a_few_double, name : count_a_few_double_asmjs_name } )
+
+    ,   info = (passed_asmjsgen_info  ||  (passed_asmjsgen_info = {}))[ NAME ] = {
+        
+        cfg : { switcher : count_a_few_double, name : count_a_few_double_asmjs_name }
+        , input : augment_name_value_array_with_mapping( [
+            { name : 'n',  value : input_double }
+        ] )
+        , output : augment_name_value_array_with_mapping( [
+            { name : 'v', value : expected_double }
+        ] )
+    }
+
+    
+    ,   count_a_few_double_asmjs_gen  = flatorize.getAsmjsGen( info.cfg )
 
     ;
     
@@ -52,13 +75,6 @@ function expl_flatasmjs_array_from_scalar( /*integer*/size )
     }
 
     // --- Do they work?
-    
-    var   input = 3
-    ,  expected = empty_array( size ).map( function ( tmp, i ) { return input + i; } )
-
-    ,     input_double = 4.567
-    ,  expected_double = empty_array( size ).map( function ( tmp, i ) { return input_double + i; } )
-    ;
     
     // flatorized version
 

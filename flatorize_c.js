@@ -346,7 +346,18 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
                                     'const int ' + array_name_NBYTES( name ) + '; ' + line_comment_code( info.n + '*sizeof( ' + info.type + ' )' ),
                                 ];
                             } ).reduce( concat_two_arrays ) )
+
+                    // On some platform GCC requires array[] to come
+                    // before the convenience pointers, otherwise a
+                    // bug may lead to a decrement of array when
+                    // the malloc helper function returns. I love C.
+                    //
+                    // Take home: struct: first array[], then ptr*
                         .concat( [
+                            ''
+                            , line_comment_code( 'a single chunk `' + sca_name + '` will be allocated (might help CPU caching)' )
+                            , sca_type + ' ' + sca_name + '[' + fixed.count + '];'
+                        ] ).concat( [
                             '',
                             line_comment_code( 'convenience access to parts of `' + sca_name + '`: individual pointers' ),
                         ] )
@@ -364,11 +375,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
                                 )
                             ;
                         } ) )
-                        .concat( [
-                            ''
-                            , line_comment_code( 'a single chunk `' + sca_name + '` will be allocated (might help CPU caching)' )
-                            , sca_type + ' ' + sca_name + '[' + fixed.count + '];'
-                        ] ).map( indent ) 
+                        .map( indent ) 
                 )
                     .concat( [
                         ''

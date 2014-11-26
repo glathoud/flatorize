@@ -217,7 +217,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
 
         // Convenience access to the list of duplicate variable names
         var dvn_set = fixed.duplivarname2idnum = {};
-        for (var i = fixed.duplicates; i--;)
+        for (var i = fixed.duplicates.length; i--;)
         {
             var idnum = fixed.duplicates[ i ];
             dvn_set[ fixed.dupliidnum2varname[ idnum ] ] = idnum;
@@ -486,6 +486,9 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
                     if (isNaN( ind )  ||  !(ind.toPrecision))
                         null.bug;
                     
+                    // Protect against in-place: use case, asm.js code, then C code.
+                    e = Object.create( e );
+
                     e.length = 1;
 
                     var varname = sca  ?  sca_name  :  name

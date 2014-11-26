@@ -1,9 +1,11 @@
 /*global passed asmjs_complex_numbers_check matmulrows_zip_342_asmjsGen ArrayBuffer window Float32Array*/
 
-var passed;
+var passed, passed_asmjsgen_info;
 function asmjs_matmulrows_zip_342_check()
 {
-    (passed  ||  (passed = {})).asmjs_matmulrows_zip_342_check = false;
+    var NAME = 'asmjs_matmulrows_zip_342_check';
+
+    (passed  ||  (passed = {}))[ NAME ] = false;
 
     // "Matrix multiplication" example
 
@@ -12,16 +14,39 @@ function asmjs_matmulrows_zip_342_check()
     ;
     if (typeof matmulrows_zip_342 === 'undefined')
     {
-        expl_matmulrows_zip_flatorize()
+        expl_matmulrows_zip_flatorize();
         matmulrows_zip_342 = expl_matmulrows_zip_flatorize.matmulrows_zip_342;
     }
 
+
+    var info = (passed_asmjsgen_info  ||  (passed_asmjsgen_info = {}))[ NAME ] = {
+        cfg : { 
+            switcher: matmulrows_zip_342
+            , name: "matmulrows_zip_342" 
+        } 
+        , input : augment_name_value_array_with_mapping( [
+            { 
+                name : 'a'
+                , value : [ [1,2,3,4], [5,6,7,8], [9,10,11,12] ]
+            }
+            , {
+                name : 'b'
+                , value : [ [13,14], [15,16], [17,18], [19,20] ]
+            }
+            
+        ] )
+        , output : augment_name_value_array_with_mapping( [
+            {
+                name    : 'c'
+                , value : [[170,180],[426,452],[682,724]]
+            }
+        ] )
+    };    
+
+
     if (typeof matmulrows_zip_342_asmjsGen === 'undefined')
-    {
-        matmulrows_zip_342_asmjsGen = flatorize.getAsmjsGen( 
-            { switcher: matmulrows_zip_342, name: "matmulrows_zip_342" } 
-        );
-    }
+        matmulrows_zip_342_asmjsGen = flatorize.getAsmjsGen( info.cfg );
+    
      
     // --- Inputs and output
     var matmulrows_zip_342_buffer =
@@ -49,8 +74,8 @@ function asmjs_matmulrows_zip_342_check()
 
     // Write input values
 
-    set_rows( a, [ [1,2,3,4], [5,6,7,8], [9,10,11,12] ] );
-    set_rows( b, [ [13,14], [15,16], [17,18], [19,20] ] );
+    set_rows( a, info.input.a );
+    set_rows( b, info.input.b );
 
     // Compute
 
@@ -58,7 +83,7 @@ function asmjs_matmulrows_zip_342_check()
     
     // The result is accessible through `c`
 
-    var error_v = [[170,180],[426,452],[682,724]]
+    var error_v = info.output.c
         .reduce( function (a,b) { return a.concat(b); }, [] )
         .map( function (number,i) { return number - c[ i ]; } )
     
@@ -69,7 +94,7 @@ function asmjs_matmulrows_zip_342_check()
     if (1e-10 < error)
         throw new Error( 'asmjs_matmulrows_zip_342_check failed!' );
 
-    (passed  ||  (passed = {})).asmjs_matmulrows_zip_342_check = true;
+    (passed  ||  (passed = {}))[ NAME ] = true;
 
     function set_rows( typedArray, rows )
     {

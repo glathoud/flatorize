@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import json
+import json, pprint
 
 from common import *
 
@@ -28,6 +28,8 @@ def test_asmjs( verbose=True ):
     outstr = d8_call( jscode )
     
     if verbose:
+        pprint.pprint( json.loads( outstr ) )
+        print()
         print( '...done with `test_asmjs`: {0}'.format( summary( outstr )[ MESSAGE ] ) )
 
     if outstr:

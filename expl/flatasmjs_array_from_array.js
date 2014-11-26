@@ -1,9 +1,12 @@
-/*global expl_array_from_array flatorize ArrayBuffer window*/
+/*global expl_array_from_array flatorize ArrayBuffer window passed_asmjsgen_info*/
 
+var passed_asmjsgen_info;
 function expl_flatasmjs_array_from_array( /*integer*/size )
 // Probably not the most sumingful use(s) of flatorize (already flat)
 // BUT useful as a unit test for both flatorize and flatorize+asm.js
 {
+    var NAME = 'expl_flatasmjs_array_from_array';
+
     // Give external access, for example to display source code.
     // Example of use: ../index.html
 
@@ -20,9 +23,23 @@ function expl_flatasmjs_array_from_array( /*integer*/size )
             return symbol_array( arrname, size ).reverse();
         }
     )
+
+    ,  input = empty_array( size ).map( function (tmp,i) { return i; } )
+    ,  expected = input.slice().reverse()
     
     , flip_asmjs_name = 'flip' + size + '_asmjs'
-    , flip_asmjs_gen = flatorize.getAsmjsGen( { switcher : flip, name : flip_asmjs_name } )
+    
+    ,  info = (passed_asmjsgen_info  ||  (passed_asmjsgen_info = {}))[ NAME ] = {
+        cfg : { switcher : flip, name : flip_asmjs_name }
+        , input : augment_name_value_array_with_mapping( [
+            { name : "arr",     value : input }
+        ] )
+        , output : augment_name_value_array_with_mapping( [
+            { name : 'flipped', value : expected }
+        ] )
+    }
+
+    , flip_asmjs_gen = flatorize.getAsmjsGen( info.cfg )
     ;
     
     function symbol_array( arrname, size )
@@ -40,10 +57,6 @@ function expl_flatasmjs_array_from_array( /*integer*/size )
 
     // --- Do they work?
 
-    var   input = empty_array( size ).map( function (tmp,i) { return i; } )
-    ,  expected = input.slice().reverse()
-    ;
-    
     // flatorized version
 
     var obtained = flip( input );
