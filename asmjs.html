@@ -792,7 +792,8 @@ var all_passed;
 (function ()
 {
     var empty = {};
-    all_passed = passed  &&  Object.keys( passed ).sort().map( function (k) { 
+    var passed_name_arr = passed  &&  Object.keys( passed ).sort();
+    all_passed = passed_name_arr  &&  passed_name_arr.map( function (k) { 
         if (k in empty)
             return true;
   
@@ -803,7 +804,7 @@ var all_passed;
     }).every( function (x) { return x; }); 
     
     [].forEach.call( document.getElementsByClassName( 'global-result' ), function ( grnode ) { 
-        grnode.innerHTML = all_passed  ?  'ALL TESTS \x3Cspan class="happy"\x3Epassed\x3C/span\x3E'  :  'Some test(s) \x3Cspan class="sad"\x3EFAILED\x3C/span\x3E';
+        grnode.innerHTML = all_passed  ?  'ALL ' + passed_name_arr.length + ' TESTS \x3Cspan class="happy"\x3Epassed\x3C/span\x3E'  :  'Some test(s) \x3Cspan class="sad"\x3EFAILED\x3C/span\x3E';
     });
 })();
 </script>

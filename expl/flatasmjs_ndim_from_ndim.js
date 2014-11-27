@@ -1,9 +1,20 @@
-/*global expl_flatasmjs_ndim_from_ndim flatorize ArrayBuffer window*/
+/*global expl_flatasmjs_ndim_from_ndim flatorize ArrayBuffer window passed_asmjsgen_info*/
 
+var passed_asmjsgen_info;
 function expl_flatasmjs_ndim_from_ndim( /*array of integer*/dim, /*array of integer*/outdim )
 // Maybe not the most meaningful use of flatorize, but a good unit
 // test for both flatorize and flatorize+asm.js
 {
+    var ndim2name = { 1 : 'array', 2 : 'matrix' }
+    ,   NAME      = 'expl_flatasmjs_' + ndim2name_f( outdim.length ) + '_from_' + ndim2name_f( dim.length )
+    ;
+    function ndim2name_f( n )
+    {
+        n.toPrecision.call.a;
+        return n in ndim2name  ?  ndim2name[ n ]  :  'ndim_' + n;
+    }
+
+
     // Give external access, for example to display source code.
     // Example of use: ../index.html
 
@@ -32,9 +43,35 @@ function expl_flatasmjs_ndim_from_ndim( /*array of integer*/dim, /*array of inte
                 );
         }
     )
+
+
+    ,     input = random_ndim_matrix( dim )
+    ,  expected = random_ndim_matrix( outdim )
+    ;
     
-    , flipreshapeflat_asmjs_name = flipreshapeflat_name + '_asmjs'
-    , flipreshapeflat_asmjs_gen  = flatorize.getAsmjsGen( { switcher : flipreshapeflat, name : flipreshapeflat_asmjs_name } )
+    for (var i = n_elt; i--;)
+    {
+        var v = ndim_get( input, dim, i );
+        ndim_set( expected, outdim, n_elt - 1 - i, v );
+    }
+    
+    var flipreshapeflat_asmjs_name = flipreshapeflat_name + '_asmjs'
+
+    ,   info = (passed_asmjsgen_info  ||  (passed_asmjsgen_info = {}))[ NAME ] = {
+        
+        cfg : { switcher : flipreshapeflat, name : flipreshapeflat_asmjs_name }
+
+        , input : augment_name_value_array_with_mapping( [
+            { name : 'mat',  value : input }
+        ] )
+
+        , output : augment_name_value_array_with_mapping( [
+            { name : 'flipreshape', value : expected }
+        ] )
+    }
+
+
+    ,   flipreshapeflat_asmjs_gen  = flatorize.getAsmjsGen( info.cfg )
     ;
 
     function prod( arr )
@@ -110,18 +147,6 @@ function expl_flatasmjs_ndim_from_ndim( /*array of integer*/dim, /*array of inte
     }
     
     // --- Do they work?
-
-
-    var   input = random_ndim_matrix( dim )
-    ,  expected = random_ndim_matrix( outdim )
-    ;
-    
-    for (var i = n_elt; i--;)
-    {
-        var v = ndim_get( input, dim, i );
-        ndim_set( expected, outdim, n_elt - 1 - i, v );
-    }
-    
 
     function random_ndim_matrix( dim )
     {

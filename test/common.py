@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import glob, json, os, re, shutil, subprocess
+import glob, json, os, re, shutil, subprocess, sys
 
 ARRAY_COUNT       = 'array_count'
 ARRAY_NAME2INFO   = 'array_name2info'
@@ -52,7 +52,13 @@ def d8_call( jscode ):
     js_wd = re.sub( TESTDIR_RX_STR, '', wd )
     
     os.chdir( js_wd )
-    outstr = subprocess.check_output( 'd8 -e "' + jscode + '"', shell=True, stderr=subprocess.STDOUT, universal_newlines = True )
+    try:
+        outstr = subprocess.check_output( 'd8 -e "' + jscode + '"', shell=True, stderr=subprocess.STDOUT, universal_newlines = True )
+    except Exception as e:
+        print(e.output)
+        raise e
+        
+    
     os.chdir( wd )
     
     return outstr

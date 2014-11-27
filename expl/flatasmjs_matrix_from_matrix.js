@@ -1,9 +1,12 @@
-/*global expl_flatasmjs_matrix_from_matrix flatorize ArrayBuffer window*/
+/*global expl_flatasmjs_matrix_from_matrix flatorize ArrayBuffer window passed_asmjsgen_info*/
 
+var passed_asmjsgen_info;
 function expl_flatasmjs_matrix_from_matrix( /*integer*/nrow, /*integer*/ncol )
 // Probably not the most sumingful use(s) of flatorize (already flat)
 // BUT useful as a unit test for both flatorize and flatorize+asm.js
 {
+    var NAME = 'expl_flatasmjs_matrix_from_matrix';
+
     // Give external access, for example to display source code.
     // Example of use: ../index.html
 
@@ -22,8 +25,44 @@ function expl_flatasmjs_matrix_from_matrix( /*integer*/nrow, /*integer*/ncol )
         }
     )
     
+
+    ,   col_factor = Math.pow( 10, Math.ceil( Math.log( ncol ) / Math.log( 10 ) ) )
+    
+    ,        input = empty_array( nrow ).map( 
+        function ( tmp, irow ) { 
+            return empty_array( ncol ).map( 
+                function ( tmp, icol ) { return irow + icol / col_factor; } 
+            );
+        }
+    )
+
+    ,     expected = empty_array( ncol ).map( 
+        function ( tmp, icol ) { 
+            return empty_array( nrow ).map( 
+                function ( tmp, irow ) { return irow + icol / col_factor; } 
+            );
+        }
+    )
+        
+
     ,   transpose_asmjs_name = transpose_name + '_asmjs'
-    ,   transpose_asmjs_gen  = flatorize.getAsmjsGen( { switcher : transpose, name : transpose_asmjs_name } )
+
+
+    ,   info = (passed_asmjsgen_info  ||  (passed_asmjsgen_info = {}))[ NAME ] = {
+        
+        cfg : { switcher : transpose, name : transpose_asmjs_name }
+
+        , input : augment_name_value_array_with_mapping( [
+            { name : 'mat',  value : input }
+        ] )
+
+        , output : augment_name_value_array_with_mapping( [
+            { name : 'tmat', value : expected }
+        ] )
+    }
+
+
+    ,   transpose_asmjs_gen  = flatorize.getAsmjsGen( info.cfg )
     ;
 
     function zip(/*...arguments...*/)
@@ -63,25 +102,6 @@ function expl_flatasmjs_matrix_from_matrix( /*integer*/nrow, /*integer*/ncol )
         
     // --- Do they work?
 
-    var col_factor = Math.pow( 10, Math.ceil( Math.log( ncol ) / Math.log( 10 ) ) )
-    
-    ,        input = empty_array( nrow ).map( 
-        function ( tmp, irow ) { 
-            return empty_array( ncol ).map( 
-                function ( tmp, icol ) { return irow + icol / col_factor; } 
-            );
-        }
-    )
-
-    ,     expected = empty_array( ncol ).map( 
-        function ( tmp, icol ) { 
-            return empty_array( nrow ).map( 
-                function ( tmp, irow ) { return irow + icol / col_factor; } 
-            );
-        }
-    )
-    ;
-    
     // flatorized version
 
     var obtained = transpose( input );

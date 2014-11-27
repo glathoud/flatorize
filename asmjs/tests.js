@@ -80,15 +80,15 @@ generate_small_functions();
     passed.expl_flatasmjs_matrix_from_ndim_4 = expl_run( expl_flatasmjs_ndim_from_ndim, { doc_silent : true, args : [ [ 5, 4, 3, 2 ], [ 10, 4, 3 ] ] } );
 
 
-    passed.expl_flatasmjs_ndim_3_from_array = expl_run( expl_flatasmjs_ndim_from_ndim, { doc_silent : true, args : [ [ 5, 4, 3 ], [ 60 ] ] } );
+    passed.expl_flatasmjs_ndim_3_from_array = expl_run( expl_flatasmjs_ndim_from_ndim, { doc_silent : true, args : [ [ 60 ], [ 5, 4, 3 ] ] } );
 
-    passed.expl_flatasmjs_ndim_3_from_matrix = expl_run( expl_flatasmjs_ndim_from_ndim, { doc_silent : true, args : [ [ 5, 4, 3 ], [ 30, 2 ] ] } );
+    passed.expl_flatasmjs_ndim_3_from_matrix = expl_run( expl_flatasmjs_ndim_from_ndim, { doc_silent : true, args : [ [ 30, 2 ], [ 5, 4, 3 ] ] } );
 
-    passed.expl_flatasmjs_ndim_4_from_array = expl_run( expl_flatasmjs_ndim_from_ndim, { doc_silent : true, args : [ [ 5, 4, 3, 2 ], [ 120 ] ] } );
+    passed.expl_flatasmjs_ndim_4_from_array = expl_run( expl_flatasmjs_ndim_from_ndim, { doc_silent : true, args : [ [ 120 ], [ 5, 4, 3, 2 ] ] } );
 
-    passed.expl_flatasmjs_ndim_4_from_matrix = expl_run( expl_flatasmjs_ndim_from_ndim, { doc_silent : true, args : [ [ 5, 4, 3, 2 ], [ 4, 30 ] ] } );
+    passed.expl_flatasmjs_ndim_4_from_matrix = expl_run( expl_flatasmjs_ndim_from_ndim, { doc_silent : true, args : [ [ 4, 30 ], [ 5, 4, 3, 2 ] ] } );
 
-    passed.expl_flatasmjs_ndim_4_from_ndim_3 = expl_run( expl_flatasmjs_ndim_from_ndim, { doc_silent : true, args : [ [ 5, 4, 3, 2 ], [ 5, 12, 2 ] ] } );
+    passed.expl_flatasmjs_ndim_4_from_ndim_3 = expl_run( expl_flatasmjs_ndim_from_ndim, { doc_silent : true, args : [ [ 5, 12, 2 ], [ 5, 4, 3, 2 ] ] } );
 
     // Cast tests
 

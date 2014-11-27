@@ -6,3 +6,4 @@
 DIRECTIONS.org
 *.outdir
 *.pyc
+.*.sh

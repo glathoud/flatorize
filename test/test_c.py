@@ -50,18 +50,9 @@ def test_c( verbose=True ):
         print( INDENT + 'test_c: 1. pass all asm.js tests, 2. get their configuration and generate C code...' )
 
     jscode = ' '.join( [ 'load(\'asmjs/tests.js\');'
-                         , 'var out = [], _emptyObj = {};'
-                         , 'for (var k in passed) {'
-                         ,   'if (!(k in _emptyObj)) {'
-                         ,     'var one = {};'
-                         ,     'one[\'' + OK + '\'] = passed[ k ];'
-                         ,     'one[ \'' + NAME + '\' ] = k;'
-                         ,     'out.push( one );'
-                         ,   '}'
-                         , '}'
 
                          , 'var passed;'
-                         , 'for (var name in passed) if (!passed[ name ]) throw new Error(\'Not all asm.js test passed.\');'
+                         , 'for (var name in passed) if (!passed[ name ]) throw new Error(\'Not all asm.js test passed: failed on at least: \' + name + \'.\');'
 
                          , 'if (!flatorize.getCodeC) load( \'flatorize_c.js\' );'
                          , 'var output = {};'
@@ -89,7 +80,7 @@ def test_c( verbose=True ):
     infomap_str = d8_call( jscode )
     infomap     = json.loads( infomap_str )
     
-    # xxx pprint.pprint( infomap )
+    print( os.linesep.join(sorted(infomap.keys()) ))
 
     if verbose:
         print()
@@ -184,7 +175,11 @@ def assert_test( name, info, outdir, verbose ):
             continue
 
         if line_must_be_ok:
-            assert line == 'ok'
+            tmp = line == 'ok'
+            if not tmp  and verbose:
+                print()
+                print( INDENT * 4 + '-> error: ' + line )
+            assert tmp
             line_must_be_ok = False
             unit_test_ok = True
             if verbose:
@@ -452,8 +447,8 @@ def call_once_c_code( info ):
     return (
         ((PREFIX_OUTPUT + info[ TYPED_OUT_VARNAME ])  if  info[ HAS_SIMPLE_OUTPUT ]  else  '') + 
         info[ NAME ] + '( ' + ', '.join( 
-            ([ ARRAY_NAME, ]  if  info[ HAS_ARRAY]  else  []) + 
-            [ PREFIX_INPUT + s  for s in info[ SIMPLE_IN_VARARR ] ]
+            [ PREFIX_INPUT + s  for s in info[ SIMPLE_IN_VARARR ] ] + 
+            ([ ARRAY_NAME, ]  if  info[ HAS_ARRAY]  else  [])
             ) + ' );'
         )
 
