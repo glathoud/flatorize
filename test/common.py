@@ -47,6 +47,8 @@ VALUE = 'value'
 
 def d8_call( jscode ):
 
+    jscode = re.sub( r'[\r\n]', ' ', jscode )
+
     wd = os.getcwd()
     
     js_wd = re.sub( TESTDIR_RX_STR, '', wd )

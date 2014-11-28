@@ -233,6 +233,7 @@
             switcher.typed_in_var      = o.typed_in_var;
             switcher.typed_out_varname = o.typed_out_varname;
             switcher.typed_out_vartype = o.typed_out_vartype;
+            switcher.has_simple_output = o.has_simple_output;
         }
 
         // Setup API methods
@@ -337,6 +338,7 @@
                     direct.typed_in_var      = switcher.typed_in_var;
                     direct.typed_out_varname = switcher.typed_out_varname;
                     direct.typed_out_vartype = switcher.typed_out_vartype;
+                    direct.has_simple_output = switcher.has_simple_output;
                 }
                 direct.e          = e;
                 direct.exprCache  = exprCache;
@@ -386,6 +388,7 @@
             typed_in_var        : typed_arr_2_obj(  inArr )
             , typed_out_varname : outName
             , typed_out_vartype : outType
+            , has_simple_output : 'string' === typeof outType
         };
 
         function typed_arr_2_obj( arr )

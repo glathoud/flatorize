@@ -172,7 +172,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
             , typed_out_varname : fixed2.typed_out_varname
             , typed_out_vartype : fixed2.typed_out_vartype
             
-            , has_simple_output : 'string' === typeof typed_out_vartype
+            , has_simple_output : fixed2.has_simple_output
 
             , code            : code
 

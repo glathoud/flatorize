@@ -1,9 +1,12 @@
-/*global expl_scalar_from_array flatorize ArrayBuffer window*/
+/*global expl_scalar_from_array flatorize ArrayBuffer window passed_asmjsgen_info*/
 
+var passed_asmjsgen_info;
 function expl_flatasmjs_scalar_from_array( /*integer*/size )
 // Probably not the most sumingful use(s) of flatorize (already flat)
 // BUT useful as a unit test for both flatorize and flatorize+asm.js
 {
+    var NAME = 'expl_flatasmjs_scalar_from_array';
+
     // Give external access, for example to display source code.
     // Example of use: ../index.html
 
@@ -21,8 +24,25 @@ function expl_flatasmjs_scalar_from_array( /*integer*/size )
         }
     )
 
+    ,     input = empty_array( size ).map( Math.random )
+    ,  expected = input.reduce( function (a,b) { return a+b; } )
+    
     , sumflat_asmjs_name = 'sumflat' + size + 'asmjs'
-    , sumflat_asmjs_gen = flatorize.getAsmjsGen( { switcher : sumflat, name : sumflat_asmjs_name } )
+
+    ,   info = (passed_asmjsgen_info  ||  (passed_asmjsgen_info = {}))[ NAME ] = {
+        
+        cfg : { switcher : sumflat, name : sumflat_asmjs_name }
+
+        , input : augment_name_value_array_with_mapping( [
+            { name : 'arr',  value : input }
+        ] )
+
+        , output : augment_name_value_array_with_mapping( [
+            { name : 'sum', value : expected }
+        ] )
+    }   
+
+    , sumflat_asmjs_gen = flatorize.getAsmjsGen( info.cfg )
     ;
 
     function symbol_array( arrname, size )
@@ -54,10 +74,6 @@ function expl_flatasmjs_scalar_from_array( /*integer*/size )
 
     // --- Do they work?
 
-    var   input = empty_array( size ).map( Math.random )
-    ,  expected = input.reduce( function (a,b) { return a+b; } )
-    ;
-    
     // flatorized version
 
     var obtained = sumflat( input );

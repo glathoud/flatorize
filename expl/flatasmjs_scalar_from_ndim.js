@@ -1,9 +1,12 @@
-/*global expl_flatasmjs_scalar_from_ndim flatorize ArrayBuffer window*/
+/*global expl_flatasmjs_scalar_from_ndim flatorize ArrayBuffer window passed_asmjsgen_info*/
 
+var passed_asmjsgen_info;
 function expl_flatasmjs_scalar_from_ndim( /*array of integer*/dim )
 // Probably not the most sumingful use(s) of flatorize (no fun call)
 // BUT useful as a unit test for both flatorize and flatorize+asm.js
 {
+    var NAME = 'expl_flatasmjs_scalar_from_ndim_' + dim.length;
+
     // Give external access, for example to display source code.
     // Example of use: ../index.html
 
@@ -31,8 +34,25 @@ function expl_flatasmjs_scalar_from_ndim( /*array of integer*/dim )
         }
     )
 
+    ,     input = random_ndim_matrix( dim )
+    ,  expected = flatten_values( input ).reduce( function ( a, b ) { return a+b; }, 0 )
+    
     , ndimsumflat_asmjs_name = ndimsumflat_name + 'asmjs'
-    , ndimsumflat_asmjs_gen = flatorize.getAsmjsGen( { switcher : ndimsumflat, name : ndimsumflat_asmjs_name } )
+    
+    ,   info = (passed_asmjsgen_info  ||  (passed_asmjsgen_info = {}))[ NAME ] = {
+        
+        cfg : { switcher : ndimsumflat, name : ndimsumflat_asmjs_name }
+
+        , input : augment_name_value_array_with_mapping( [
+            { name : 'mat',  value : input }
+        ] )
+
+        , output : augment_name_value_array_with_mapping( [
+            { name : 'sum', value : expected }
+        ] )
+    }   
+    
+    , ndimsumflat_asmjs_gen = flatorize.getAsmjsGen( info.cfg )
     ;
 
     function dim2spec( /*array of integer*/dim, /*string*/basic_type )
@@ -84,10 +104,6 @@ function expl_flatasmjs_scalar_from_ndim( /*array of integer*/dim )
     
     // --- Do they work?
 
-    var   input = random_ndim_matrix( dim )
-    ,  expected = flatten_values( input ).reduce( function ( a, b ) { return a+b; }, 0 )
-    ;
-    
     function random_ndim_matrix( dim )
     {
         return !(dim.length > 0)

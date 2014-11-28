@@ -5,7 +5,7 @@ function expl_flatasmjs_array_from_ndim( /*array of integer*/dim )
 // Maybe not the most meaningful use of flatorize, but a good unit
 // test for both flatorize and flatorize+asm.js
 {
-    var NAME = 'expl_flatasmjs_array_from_ndim';
+    var NAME = 'expl_flatasmjs_array_from_ndim_' + dim.length;
     
     // Give external access, for example to display source code.
     // Example of use: ../index.html

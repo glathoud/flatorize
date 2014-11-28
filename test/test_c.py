@@ -104,6 +104,8 @@ def test_c( verbose=True ):
 
         out_arr.append( { NAME : name, OK : True } )
 
+    special_test_scalarint_from_scalardouble_forbidden( out_arr, verbose = verbose )
+
     if verbose:
         print()
         print( '...done with `test_c`: {0}'.format( summary( out_arr )[ MESSAGE ] ) )
@@ -282,9 +284,12 @@ int main( int argc, char **argv )
   {
     TEST_DURATION_BEGIN;
   
+    int i;
     for (i = n_iter_speed ; i-- ; )
+    {
       ''' + call_once_c_code( info ) + '''
-  
+    }
+ 
     TEST_DURATION_END;
   }
   else
@@ -301,9 +306,12 @@ int main( int argc, char **argv )
 
 def array_expected_output_name( info ):
 
-    tmp = info[ ASMJS_TEST_OUTPUT ][ 0 ][ NAME ] 
-    if tmp in info[ ARRAY_NAME2INFO ]:
-        return PREFIX_EXPECTED_OUTPUT + tmp
+    if info[ HAS_ARRAY ]:
+
+        tmp = info[ ASMJS_TEST_OUTPUT ][ 0 ][ NAME ] 
+
+        if tmp in info[ ARRAY_NAME2INFO ]:
+            return PREFIX_EXPECTED_OUTPUT + tmp
     
 
 
@@ -438,14 +446,14 @@ def infostruct_done_c_code( info ):
 def scalar_expected_output_init_c_code( info ):
 
     x = info[ ASMJS_TEST_OUTPUT ][ 0 ]
-    x_type = info[ TYPED_IN_VAR ][ x[ NAME ] ]
+    x_type = info[ TYPED_OUT_VARTYPE ]
     
-    return x_type + ' ' + PREFIX_EXPECTED_OUTPUT + x[ NAME ] + ' = ' + format_value( x[ VALUE ], x_type )
+    return x_type + ' ' + PREFIX_EXPECTED_OUTPUT + x[ NAME ] + ' = ' + format_value( x[ VALUE ], x_type ) + ';'
 
 def call_once_c_code( info ):
 
     return (
-        ((PREFIX_OUTPUT + info[ TYPED_OUT_VARNAME ])  if  info[ HAS_SIMPLE_OUTPUT ]  else  '') + 
+        ((info[ TYPED_OUT_VARTYPE ] + ' ' + PREFIX_OUTPUT + info[ TYPED_OUT_VARNAME ] + ' = ')  if  info[ HAS_SIMPLE_OUTPUT ]  else  '') + 
         info[ NAME ] + '( ' + ', '.join( 
             [ PREFIX_INPUT + s  for s in info[ SIMPLE_IN_VARARR ] ] + 
             ([ ARRAY_NAME, ]  if  info[ HAS_ARRAY]  else  [])
@@ -457,7 +465,6 @@ def unit_test_output_c_code( info ):
     lines = []
 
     x  = info[ ASMJS_TEST_OUTPUT ][ 0 ]
-    xi = info[ ARRAY_NAME2INFO ][ x[ NAME ] ]
 
     o_name = info[ TYPED_OUT_VARNAME ]
 
@@ -469,10 +476,12 @@ def unit_test_output_c_code( info ):
         o_type = info[ TYPED_OUT_VARTYPE ]
 
         lines.append( o_type + ' ' + SIMPLE_ERROR + ' = fabs( ' + one_expected + ' - ' + one_out + ' );'  )
-        lines.append( 'if (' + SIMPLE_ERROR + ' > EPSILON) { fprintf( stderr, "Wrong output: %g, expected: %g, error: %g\\n"' + one_out + ', ' + one_expected + ', ' + SIMPLE_ERROR + ' ); return -1; }')
+        lines.append( 'if (' + SIMPLE_ERROR + ' > EPSILON) { fprintf( stderr, "Wrong output: %g, expected: %g, error: %g\\n", ' + one_out + ', ' + one_expected + ', ' + SIMPLE_ERROR + ' ); return -1; }')
         
 
     else:
+
+        xi = info[ ARRAY_NAME2INFO ][ x[ NAME ] ]
 
         one_expected = PREFIX_EXPECTED_OUTPUT + o_name
         one_out      = info[ STRUCT_NAME_INSTANCE ] + '->' + info[ TYPED_OUT_VARNAME ]
@@ -540,6 +549,46 @@ gcc -lrt -o ''' + filename_test_bin + '    common.o ' + filename_o + ' ' + filen
 set +v
 '''
 
+
+def special_test_scalarint_from_scalardouble_forbidden( out_arr, verbose = True ):
+
+    jscode = '''load('flatorize.js'); load('flatorize_c.js');
+
+        var plusone_name = 'plusone'
+    ,   plusone = flatorize(
+        /* note the :[type] declarations, ignored by flatorize */
+        /* but useful later in asm.js or C contexts */
+        'a:double->b:int'
+        , function (a)
+        {
+            return flatorize.expr( a, '+', 1.1 );
+        }
+    )
+    ;
+
+    try {
+        var plusone_asmjs_name = plusone_name + '_asmjs'
+        , plusone_asmjs_gen    = flatorize.getCodeC( { switcher : plusone, name : plusone_asmjs_name } )
+        ;
+    } catch (e) {
+     
+        if (!(-1 < ('' + e).indexOf( 'Only one basic type permitted' )))
+            throw e;
+
+        print('ok');
+    }
+'''
+
+    outstr = d8_call( jscode )
+
+    is_ok = 'ok' == outstr.strip()
+    name  = 'scalarint_from_scalardouble'
+
+    out_arr.append( { OK : is_ok, NAME : name } )
+
+    if verbose:
+        print()
+        print( INDENT * 2 + 'special test: ' + name + ' must be forbidden, an error must be thrown -> result: ' + ('success' if is_ok else 'failure'))
 
 if __name__ == '__main__':
     test_c( verbose=True )

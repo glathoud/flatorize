@@ -1,9 +1,12 @@
-/*global expl_flatasmjs_scalar_from_matrix flatorize ArrayBuffer window*/
+/*global expl_flatasmjs_scalar_from_matrix flatorize ArrayBuffer window passed_asmjsgen_info*/
 
+var passed_asmjsgen_info;
 function expl_flatasmjs_scalar_from_matrix( /*integer*/nrow, /*integer*/ncol )
 // Probably not the most sumingful use(s) of flatorize (no fun call)
 // BUT useful as a unit test for both flatorize and flatorize+asm.js
 {
+    var NAME = 'expl_flatasmjs_scalar_from_matrix';
+
     // Give external access, for example to display source code.
     // Example of use: ../index.html
 
@@ -32,8 +35,29 @@ function expl_flatasmjs_scalar_from_matrix( /*integer*/nrow, /*integer*/ncol )
         }
     )
 
+    ,     input = empty_array( nrow ).map( 
+        function () { return empty_array( ncol ).map( Math.random ); }
+    )
+    ,  expected = input.reduce( function (a,b) { return a+b.reduce( function (x,y) { return x+y; } ); }
+                                , 0 
+                              )
+    
     , matsumflat_asmjs_name = matsumflat_name + 'asmjs'
-    , matsumflat_asmjs_gen = flatorize.getAsmjsGen( { switcher : matsumflat, name : matsumflat_asmjs_name } )
+    
+    ,   info = (passed_asmjsgen_info  ||  (passed_asmjsgen_info = {}))[ NAME ] = {
+        
+        cfg : { switcher : matsumflat, name : matsumflat_asmjs_name }
+
+        , input : augment_name_value_array_with_mapping( [
+            { name : 'mat',  value : input }
+        ] )
+
+        , output : augment_name_value_array_with_mapping( [
+            { name : 'sum', value : expected }
+        ] )
+    }   
+    
+    , matsumflat_asmjs_gen = flatorize.getAsmjsGen( info.cfg )
     ;
 
     function symbol_matrixrows( name, nrow, ncol )
@@ -68,14 +92,6 @@ function expl_flatasmjs_scalar_from_matrix( /*integer*/nrow, /*integer*/ncol )
     
     // --- Do they work?
 
-    var   input = empty_array( nrow ).map( 
-        function () { return empty_array( ncol ).map( Math.random ); }
-    )
-    ,  expected = input.reduce( function (a,b) { return a+b.reduce( function (x,y) { return x+y; } ); }
-                                , 0 
-                              )
-    ;
-    
     // flatorized version
 
     var obtained = matsumflat( input );
