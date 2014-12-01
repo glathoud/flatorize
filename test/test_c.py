@@ -41,7 +41,8 @@ def test_c( verbose=True ):
         copyname = os.path.join( outdir, t )
         assert filename != copyname, 'must differ'
         shutil.copyfile( filename, copyname )
-        print( INDENT + 'test_c: 0. copied src file to: "{0}"'.format( copyname ) )
+        if verbose:
+            print( INDENT + 'test_c: 0. copied src file to: "{0}"'.format( copyname ) )
 
     #
 
@@ -80,9 +81,9 @@ def test_c( verbose=True ):
     infomap_str = d8_call( jscode )
     infomap     = json.loads( infomap_str )
     
-    print( os.linesep.join(sorted(infomap.keys()) ))
 
     if verbose:
+        print( os.linesep.join(sorted(infomap.keys()) ))
         print()
         print( INDENT + 'test:c: 3. write out .h, .c and .sh files for each example...' )
 
@@ -589,6 +590,8 @@ def special_test_scalarint_from_scalardouble_forbidden( out_arr, verbose = True 
     if verbose:
         print()
         print( INDENT * 2 + 'special test: ' + name + ' must be forbidden, an error must be thrown -> result: ' + ('success' if is_ok else 'failure'))
+
+    return is_ok
 
 if __name__ == '__main__':
     test_c( verbose=True )

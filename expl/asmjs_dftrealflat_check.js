@@ -17,7 +17,7 @@ function asmjs_dftrealflat_check( /*integer, e.g. 16 or 1024*/dftsize )
     ;
     if (typeof dftrealflat === 'undefined')
     {
-        expl_dftreal_flatorize( 16 );       
+        expl_dftreal_flatorize( dftsize );       
         dftrealflat = expl_dftreal_flatorize[ NAME_FLAT ];
     }
 
@@ -79,8 +79,6 @@ function asmjs_dftrealflat_check( /*integer, e.g. 16 or 1024*/dftsize )
     ;
 
     // Write input values
-
- 
 
     arr.set( info.input.arr );
     

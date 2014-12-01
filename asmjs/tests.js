@@ -41,6 +41,11 @@ generate_small_functions();
 
     asmjs_dftrealflat_check( 16 );
 
+    // xxx still an issue with some gcc -> memory usage explodes
+    // if ('undefined' === typeof document  &&  'undefined' === typeof window)
+    //     asmjs_dftrealflat_check( 1024 );  // Too slow - not in the browser
+        
+
     var vsize = 10;
 
     passed.expl_flatasmjs_scalar_from_scalar = expl_run( expl_flatasmjs_scalar_from_scalar, { doc_silent : true, args : [ ] } );
