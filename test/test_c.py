@@ -536,7 +536,10 @@ set -v
 # quite long
 gcc -g -Wa,-a,-ad=common.s     -O3 -fomit-frame-pointer -mtune=native -malign-double -fstrict-aliasing -fno-schedule-insns -ffast-math   -lrt    -c -o common.o    common.c  # Same optimization flags as used by in FFTW3.3.3  +  -lrt for the time testsw
 #
-gcc -g -Wa,-a,-ad=''' + filename_s + '''     -O3 -fomit-frame-pointer -mtune=native -malign-double -fstrict-aliasing -fno-schedule-insns -ffast-math   -lrt    -c -o ''' + filename_o + '''    ''' + filename_c + '''  # Same optimization flags as used by in FFTW3.3.3  +  -lrt for the time testsw
+#
+# Note: as of 2014-12-01  -O1 -O2 -O3 can all lead to a memory explosion during gcc 4.8.2 compilation on the dft1024 case.
+# That is why such options are not used yet in the next command.
+gcc -g -Wa,-a,-ad=''' + filename_s + '''      -fomit-frame-pointer -mtune=native -malign-double -fstrict-aliasing -fno-schedule-insns -ffast-math   -lrt    -c -o ''' + filename_o + '''    ''' + filename_c + '''  # Same optimization flags as used by in FFTW3.3.3  +  -lrt for the time testsw
 #
 gcc -lrt -o ''' + filename_test_bin + '    common.o ' + filename_o + ' ' + filename_test_c + '''
 #
