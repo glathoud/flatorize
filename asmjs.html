@@ -13,8 +13,6 @@
 <script type="text/javascript" src="flatorize_type_util.js"></script>
 <script type="text/javascript" src="flatorize_asmjs.js"></script>
 
-<script type="text/javascript" src="flatorize_c.js"></script>xxx
-
 <script type="text/javascript" src="expl.js"></script>
 
 <script type="text/javascript" src="expl/matmulrows_zip_flatorize.js"></script>
@@ -752,9 +750,9 @@ flatorize.getAsmjsGen(): speed: 3.54e+4 iterations/second.
 
 <h3 class="anchorable" id="js_c">Additional remark: JavaScript vs. C<a href="#js_c" class="anchor">#</a></h3>
 
-xxx need to update the C plugin first, with the improvements developed for the asm.js plugin
+<p>On an Ubuntu laptop for the (heavy) DFT1024 case I measured a speed of about 47800 iterations per seconds for <code>Chrome 39</code> and about 60000 iterations per seconds for <code>clang</code> (had to forget the increasingly unreliable GCC).</p>
 
-
+<p>This is fast enough for me to do scientific computation in the browser with a much much faster and simpler developement process (JavaScript) than in C.</p>
 
 
 
