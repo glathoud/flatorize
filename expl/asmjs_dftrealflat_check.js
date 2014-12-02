@@ -84,7 +84,9 @@ function asmjs_dftrealflat_check( /*integer, e.g. 16 or 1024*/dftsize )
     
     // Compute
 
+    //#COMPUTE_BEGIN
     dftrealflat_asmjsO[ 'dftreal' + dftsize + 'flat' ]();
+    //#COMPUTE_END
     
     // The result is accessible through `freq`
 

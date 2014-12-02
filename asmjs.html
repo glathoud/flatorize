@@ -754,8 +754,22 @@ flatorize.getAsmjsGen(): speed: 3.54e+4 iterations/second.
 
 <p>This is fast enough for me to do scientific computation in the browser with a much much faster and simpler developement process (JavaScript) than in C.</p>
 
+<p><strong>How to run the speed test:</strong></p>
 
+<p><code>flatorize_asmjs</code> on <code>Chrome 39</code>: open the present page with <code>Chrome 39</code> and go to any performance section, for example the <a href="#use_asm">first performance test</a>, and run 3-4 times the test by clicking on the button that says "Measure  the speed!". After the first run, Chrome should have optimized the code. Pick the median speed of the next few runs.</p>
 
+<p><code>flatorize_c</code> with <code>clang</code>: install <a href="https://code.google.com/p/v8/"><code>V8</code></a>, <a href="http://www.python.org"><code>Python 3</code></a> and <a href="http://clang.llvm.org"><code>clang</code></a> (for the latter two something like <code>sudo apt-get install python3</code> and <code>sudo apt-get install clang</code> should be enough). In the command line do this:</p>
+<pre class="prettyprint lang-sh">
+  <code>
+jars@jars-desktop:~/gl/flatorize$ cd test/
+jars@jars-desktop:~/gl/flatorize/test$ ./test_c_v8_speed.py
+  </code>
+</pre>
+<p>...and wait. This runs all necessary unit tests, then at the end the DFT1024 speed test. The final two lines should look like this:</p>
+<pre><code>test_v8_c_speed: (3) evaluate the speed of the C implementation of asmjs_dftreal1024
+
+test_v8_c_speed done, speed in clang: 59856.2169386728 iterations/second = 65536 iterations / 1.094890445 seconds
+</code></pre>
 
 
 

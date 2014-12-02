@@ -45,6 +45,8 @@ TYPED_OUT_VARTYPE = 'typed_out_vartype'
 
 VALUE = 'value'
 
+V8_SPEED = 'v8_speed';
+
 def d8_call( jscode ):
 
     jscode = re.sub( r'[\r\n]', ' ', jscode )
