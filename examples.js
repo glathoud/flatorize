@@ -621,7 +621,7 @@ function generate_dftrealflat( dftsize )
     };
 }
 
-function get_dftreal_sin_input_output_for_check( dftsize )
+function get_dftreal_sin_input_output_for_check( dftsize, /*?boolean?*/hermihalf )
 {
     var sinreal = new Array( dftsize );
     for (var i = dftsize; i--; )
@@ -640,6 +640,10 @@ function get_dftreal_sin_input_output_for_check( dftsize )
     sinfreq[ left ][ 1 ]  = -howmuch;
     sinfreq[ right ][ 1 ] = +howmuch;
 
+    log('sin_input_output: freq: left,right',left,right);
+
+    if (hermihalf)
+        sinfreq = sinfreq.slice( 0, (sinfreq.length >> 1) + 1 );
     
     return { input : sinreal, expected : sinfreq };
 }

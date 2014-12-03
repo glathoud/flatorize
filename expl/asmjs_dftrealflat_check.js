@@ -1,15 +1,15 @@
 /*global passed asmjs_complex_numbers_check matmulrows_zip_342_asmjsGen ArrayBuffer window Float32Array*/
 
 var passed, passed_asmjsgen_info;
-function asmjs_dftrealflat_check( /*integer, e.g. 16 or 1024*/dftsize )
+function asmjs_dftrealflat_check( /*integer, e.g. 16 or 1024*/dftsize, /*?boolean?*/hermihalf )
 {
-    var NAME = 'asmjs_dftreal' + dftsize + 'flat_check';
+    var NAME = 'asmjs_dftreal' + dftsize + 'flat' + (hermihalf  ?  '_hermihalf'  :  '') + '_check';
 
     (passed  ||  (passed = {}))[ NAME ] = false;
 
     // "DFT REAL" example
 
-    var NAME_FLAT     = 'dftreal' + dftsize + 'flat'
+    var NAME_FLAT     = 'dftreal' + dftsize + 'flat' + (hermihalf  ?  '_hermihalf'  :  '')
     ,   NAME_ASMJSGEN = NAME_FLAT + '_asmjsGen'
 
     ,   dftrealflat          = this[ NAME_FLAT ]
@@ -17,16 +17,16 @@ function asmjs_dftrealflat_check( /*integer, e.g. 16 or 1024*/dftsize )
     ;
     if (typeof dftrealflat === 'undefined')
     {
-        expl_dftreal_flatorize( dftsize );       
+        expl_dftreal_flatorize( dftsize, hermihalf );       
         dftrealflat = expl_dftreal_flatorize[ NAME_FLAT ];
     }
 
-    var io = get_dftreal_sin_input_output_for_check( dftsize );
+    var io = get_dftreal_sin_input_output_for_check( dftsize, hermihalf );
     
     var info = (passed_asmjsgen_info  ||  (passed_asmjsgen_info = {}))[ NAME ] = {
         cfg : { 
                 switcher: dftrealflat
-                , name: "dftreal" + dftsize + "flat" 
+                , name: NAME_FLAT
             } 
         , input : augment_name_value_array_with_mapping( [
             { 
@@ -85,7 +85,7 @@ function asmjs_dftrealflat_check( /*integer, e.g. 16 or 1024*/dftsize )
     // Compute
 
     //#COMPUTE_BEGIN
-    dftrealflat_asmjsO[ 'dftreal' + dftsize + 'flat' ]();
+    dftrealflat_asmjsO[ NAME_FLAT ]();
     //#COMPUTE_END
     
     // The result is accessible through `freq`
@@ -105,7 +105,7 @@ function asmjs_dftrealflat_check( /*integer, e.g. 16 or 1024*/dftsize )
     ,   original_output = dftrealflat( random_input )
     ;
     arr.set( random_input );
-    dftrealflat_asmjsO[ 'dftreal' + dftsize + 'flat' ]();
+    dftrealflat_asmjsO[ NAME_FLAT ]();
     
     check_error( freq, original_output );
     

@@ -36,7 +36,7 @@ function expl_run( f, /*?object?*/opt )
 {
     var opt_args   = opt  &&  opt.args
     ,   doc_silent = opt  &&  opt.doc_silent
-    ,   PRECISION  = 10
+    ,   PRECISION  = 1e-9
     ;
 
     try {
@@ -49,7 +49,9 @@ function expl_run( f, /*?object?*/opt )
         if (!doc_silent)
             document.write( f2body( f ) + '\n// ' + r.name + ': ' + s_obtained + (ok  ?  '   // Yes!'  :  '   // NOOOO!\n//\n// expected:\n// ' + r.name + ': ' + s_expected ) );
     } catch (e) {
-        if (!doc_silent)
+        if (doc_silent)
+            throw e;
+        else
             document.write( '--- expl_run: FAILED! ---\n\ne:\n\n' + e );
         ok = false;
     }
@@ -60,7 +62,7 @@ function expl_run( f, /*?object?*/opt )
         var tof_x = typeof x;
         
         if ('number' === tof_x)
-            return '<number:' + x.toPrecision( PRECISION ) + '>';
+            return '<number:' + (Math.round(x/PRECISION)*PRECISION) + '>';
 
         if ('object' === tof_x)
         {

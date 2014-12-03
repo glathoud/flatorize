@@ -1,0 +1,32 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>DFTREAL1024 use case: FFTW vs. flatorize_asmjs</title>
+
+    <script type="text/javascript" src="../../flatorize.js"></script>
+    <script type="text/javascript" src="../../flatorize_type_util.js"></script>
+    <script type="text/javascript" src="../../flatorize_asmjs.js"></script>
+    <script type="text/javascript" src="../../examples.js"></script>
+    <script type="text/javascript" src="../../expl.js"></script>
+    <script type="text/javascript" src="../../expl/dftreal_flatorize.js"></script>
+    <script type="text/javascript" src="../../expl/asmjs_dftrealflat_check.js"></script>
+    <script type="text/javascript" src="../../log.js"></script>
+    <script type="text/javascript" src="dftreal1024.js"></script>
+    
+  </head>
+  <body>
+    <h1>DFTREAL1024 use case: FFTW vs. flatorize_asmjs</h1>
+
+    <button onclick="dftreal1024_test_asmjs(this,'dftreal1024_test_asmjs_output')">Measure the speed of flatorize_asmjs</button>
+
+    <pre>
+      <code id="dftreal1024_test_asmjs_output">
+// Advice: let me run multiple times. Indeed, as of 2014-12, V8 and
+// Chrome need a "warm-up" before they optimize the code - probably
+// they first have to see the code is actually being used a lot.
+       
+        </code>
+      </pre>
+    
+  </body>
+</html>
