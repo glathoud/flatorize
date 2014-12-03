@@ -26,8 +26,8 @@
 
 /*global flatorize load console*/
 
-        if ('undefined' === typeof flatorize  &&  'function' === typeof load)
-            load( 'flatorize.js' );  // e.g. V8
+if ('undefined' === typeof flatorize  &&  'function' === typeof load)
+    load( 'flatorize.js' );  // e.g. V8
 
 if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
     load( 'flatorize_type_util.js' );  // e.g. V8
