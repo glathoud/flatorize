@@ -36,7 +36,7 @@ SIMPLE_ERROR = 'error'
 SIMPLE_IN_VARARR = 'simple_in_vararr'
 
 TESTDIR        = 'test'
-TESTDIR_RX_STR = r'\/(' + TESTDIR + '\/?)?$'
+TESTDIR_RX_STR = r'\/(' + TESTDIR + '(\/.*)?)?$'
 
 TYPED_IN_VAR = 'typed_in_var'
 

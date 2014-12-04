@@ -11,7 +11,13 @@ if ('undefined' !== typeof load)
     load( "expl/dftreal_flatorize.js" );
     load( "expl/asmjs_dftrealflat_check.js" );
     load( "log.js" );
-    //    load( "test/test_c_fftw/dftreal1024.js" );  // how you can load me from the base directory
+    load( "speed_test.js" );
+    
+    // How you can load me from the base directory:
+    // 
+    //    load( "test/test_c_fftw/dftreal1024.js" );
+    // 
+    // example of use: ./dftreal1024_v8.py
 }
 
 (function () {
@@ -21,8 +27,9 @@ if ('undefined' !== typeof load)
     
     // Export to the global namespace
 
-    this.dftreal1024_getCodeC   = dftreal1024_getCodeC;
-    this.dftreal1024_test_asmjs = dftreal1024_test_asmjs;
+    this.dftreal1024_getCodeC         = dftreal1024_getCodeC;
+    this.dftreal1024_speed_test_flatorize = dftreal1024_speed_test_flatorize;
+    this.dftreal1024_speed_test_flatorize_asmjs = dftreal1024_speed_test_flatorize_asmjs;
 
     // Implementation (function declaration)
 
@@ -57,23 +64,76 @@ if ('undefined' !== typeof load)
             
             var info = passed_asmjsgen_info[ name_check ];
 
-            me._cO = flatorize.getCodeC( info.cfg );
+            var c_cfg = Object.create( info.cfg );
+            c_cfg.helper_h_name = name + '_helper.h';
+
+            me._cO = flatorize.getCodeC( c_cfg );
+
+            // Remove functions (not interesting for JSON)
+            delete me._cO.helper_h;
+            delete me._cO.helper_c;
         }
         
-        return me._cO
+        return me._cO;
     }
 
 
 
-    function dftreal1024_test_asmjs( /*?dom node?*/button, /*?string?*/output_dom_node_id )
-    // Advice: let me run multiple times. Indeed, as of 2014-12, V8 and
-    // Chrome need a "warm-up" before they optimize the code - probably
-    // they first have to see the code is actually being used a lot.
+    function dftreal1024_speed_test_flatorize( /*?dom node?*/button, /*?string?*/output_dom_node_id )
     {
         if (button)
             button.setAttribute( 'disabled', 'disabled' );
 
-        var      me = dftreal1024_test_asmjs
+        var      me = dftreal1024_speed_test_flatorize
+        ,   dftsize = DFTSIZE
+        , hermihalf = HERMIHALF
+        ,      name = 'dftreal' + dftsize + 'flat' + (hermihalf  ?  '_hermihalf'  :  '')
+        ;
+
+        // create implementation if necessary
+
+        if (!me.dftrealflat)
+        {
+            generate_small_functions();
+
+            // unit test the flatorize implementation
+            var ok = expl_run( expl_dftreal_flatorize, { doc_silent : true, args : [ dftsize, hermihalf ] } );
+            if (!ok)
+                throw new Error( 'Failed the unit test!' );
+            
+            me.dftrealflat = expl_dftreal_flatorize[ name ];
+            me.dftrealflat.call.a;
+
+            // Prepare some input values
+
+            me.input = new Array( dftsize ).join( ',' ).split( ',' ).map( Math.random );
+        }
+
+        return speed_test( {
+
+            impl  : me.dftrealflat
+            , arg : [ me.input ]
+            
+            , button             : button
+            , output_dom_node_id : output_dom_node_id
+
+            , mix : {
+                dftsize     : dftsize
+                , hermihalf : hermihalf
+            }
+
+        } );
+
+    }
+        
+        
+
+    function dftreal1024_speed_test_flatorize_asmjs( /*?dom node?*/button, /*?string?*/output_dom_node_id )
+    {
+        if (button)
+            button.setAttribute( 'disabled', 'disabled' );
+
+        var      me = dftreal1024_speed_test_flatorize_asmjs
         ,   dftsize = DFTSIZE
         , hermihalf = HERMIHALF
         ,      name = 'dftreal' + dftsize + 'flat' + (hermihalf  ?  '_hermihalf'  :  '')
@@ -127,88 +187,24 @@ if ('undefined' !== typeof load)
         // speed test
 
         var               N = 1
+        ,     one_more_time = 2
         , prev_duration_sec = 0
         ,              impl = dftrealflat_asmjsO[ name ]
         ;
         impl.call.a;
         
-        speed_test_async_because_of_garbage_collection();
+        return speed_test( {
+            impl : impl
+            , arg : []
+            , button : button
+            , output_dom_node_id : output_dom_node_id
 
-        function speed_test_async_because_of_garbage_collection()
-        {
-            log( 'speed_test_async_because_of_garbage_collection: N: ' + N );
-
-            var begin = Date.now();
-            for (var i = N; i--;)
-            {
-                impl();
+            , mix : {
+                dftsize     : dftsize
+                , hermihalf : hermihalf
             }
-            var duration_sec = (Date.now() - begin) / 1000;
-
-            log( 'speed_test_async_because_of_garbage_collection: -> duration_sec: ' + duration_sec );
-
-            var done = false;
-
-            if (prev_duration_sec > 0.1  &&  duration_sec > prev_duration_sec * 4)
-            {
-                // reject result, probably was interrupted by garbage collecting
-            }
-            else
-            {
-                prev_duration_sec = duration_sec;
-                
-                if (duration_sec > 1.0)
-                    done = true;
-                else
-                    N <<= 1;
-            }
-
-            // next
-
-            if (done)
-            {
-                var iter_per_sec = N / duration_sec;
-                
-                var msg = 'dftreal1024: asmjs implementation: ' + iter_per_sec + ' iter / seconds = ' + N + ' iterations / ' + duration_sec + ' seconds';
-                
-                log( msg );
-                
-                var output_dom_node = output_dom_node_id  &&  document.getElementById( output_dom_node_id );
-                if (output_dom_node)
-                {
-                    output_dom_node.textContent += '\n' + msg;
-                }
-                
-                if (button)
-                    button.removeAttribute( 'disabled' );
-            }
-            else
-            {
-                var wait_ms = 456;
-
-                if ('undefined' !== typeof setTimeout)
-                {
-                    // Browser
-                    setTimeout( speed_test_async_because_of_garbage_collection, wait_ms );
-                }
-                else
-                {
-                    // V8
-                    var begin = Date.now();
-                    while (Date.now() - begin < wait_ms)
-                    {
-                        for (var i = 1e4; i--;)
-                            ;
-                    }
-                    speed_test_async_because_of_garbage_collection();
-                }
-                
-            }
-            
-        }
-        
+        } );
 
     }
-
-
+    
 })();
