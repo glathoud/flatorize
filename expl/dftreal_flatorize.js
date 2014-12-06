@@ -1,3 +1,6 @@
+if ('undefined' === typeof dft_msr_exprgenF  &&  'undefined' !== typeof load)
+    load( 'modifsplitradix.js' );
+
 function expl_dftreal_flatorize( /*integer, e.g. 16 or 1024*/dftsize, /*?boolean?*/hermihalf )
 {
     // Give external access, for example to display source code.
@@ -15,7 +18,7 @@ function expl_dftreal_flatorize( /*integer, e.g. 16 or 1024*/dftsize, /*?boolean
         // note the :[type] declarations, ignored by `flatorize`
         // but useful later in asm.js or C contexts
         'arr:[' + dftsize + ' double]->freq:[' + (hermihalf  ?  1 + (dftsize >> 1)  :  dftsize) + ' [2 double]]'
-        , dft_exprgenF( power, { real: true, hermihalf : !!hermihalf } )
+        , dft_msr_exprgenF( power, { real: true, hermihalf : !!hermihalf } )
     )
     ;
     

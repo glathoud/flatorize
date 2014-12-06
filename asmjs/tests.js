@@ -7,6 +7,7 @@ if (typeof 'load' !== 'undefined') // For non-browser environment like V8
     if (typeof generate_small_functions === 'undefined' )  load( 'examples.js' );
     if (typeof flatorize.type_util      === 'undefined' )  load( 'flatorize_type_util.js' );
     if (typeof flatorize.getAsmjsGen    === 'undefined' )  load( 'flatorize_asmjs.js' );
+    if (typeof dft_msr_exprgenF         === 'undefined' )  load( 'modifsplitradix.js' );
 
     if (typeof expl_run                 === 'undefined' )  load( 'expl.js' );
 
