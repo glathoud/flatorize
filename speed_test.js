@@ -20,6 +20,11 @@ function speed_test( cfg )
     button  &&  button.childNodes.a;
     output_dom_node_id  &&  output_dom_node_id.substring.call.a;
 
+    
+    var output_dom_node = output_dom_node_id  &&  document.getElementById( output_dom_node_id );
+    if (output_dom_node)
+	output_dom_node.textContent += '\nTest running. Please be patient...\n';
+
     var      narg = arg.length
     , argname_arr = new Array( narg ).join( ',' ).split( ',' ).map( function (tmp,i) { 
         return '_' + i; 
@@ -98,10 +103,9 @@ function speed_test( cfg )
                 
                 log( msg );
                 
-                var output_dom_node = output_dom_node_id  &&  document.getElementById( output_dom_node_id );
                 if (output_dom_node)
                 {
-                    output_dom_node.textContent += '\n' + msg;
+                    output_dom_node.textContent += '\n' + msg + '\n';
                 }
                 
                 if (button)
