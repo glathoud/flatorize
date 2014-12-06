@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import glob, json, os, re, shutil, subprocess, sys
+import glob, json, math, os, re, shutil, subprocess, sys
 
 ARRAY_COUNT       = 'array_count'
 ARRAY_NAME2INFO   = 'array_name2info'
@@ -82,6 +82,9 @@ def ensure_dir( dirname, empty = False ):
         os.makedirs( dirname )
 
 
+def extless_from( filename ):
+    return os.path.splitext( filename )[ 0 ]
+
 def get_array_test_sorted( info, expected_output_alone = False, one_name = None ):
 
     n2i = info[ ARRAY_NAME2INFO ]
@@ -109,17 +112,43 @@ def get_test_dirname( somename ):
 
     return os.path.join( js_wd, TESTDIR, somename )
 
+def pathless_from( filename ):
+    return os.path.split( filename )[ 1 ]
+
 def sh_call( filename ):
 
     wd = os.getcwd()
 
-    path,name = os.path.split( filename )
+    path,name = os.path.split( os.path.abspath( filename ) )
     
     os.chdir( path )
     outstr = subprocess.check_output( './' + name, shell=True, stderr=subprocess.STDOUT, universal_newlines = True )
     os.chdir( wd )
     
     return outstr
+
+
+def sh_speed_test( filename, min_duration_sec = 1.0, verbose_prefix = None):
+
+    n = 1
+    while True:
+        bin_out = sh_call( '{0} {1}'.format( filename, n ) )
+        duration_sec = float( bin_out )
+        assert not math.isnan( duration_sec )
+
+        if 1.0 < duration_sec:
+            break
+        else:
+            n = n << 1
+        
+    iter_per_sec = n / duration_sec
+
+    ret = (iter_per_sec,n,duration_sec,)
+
+    if isinstance( verbose_prefix, str ):
+        print( verbose_prefix + '{0} iterations/second = {1} iterations / {2} seconds'.format( *ret ) )
+    
+    return ret
 
 
 def summary( str_or_arr ):

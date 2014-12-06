@@ -108,9 +108,11 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
 
         var opt = {
             helper_h_name : cfg.helper_h_name  ||  null
-        };
-        
-        return generateCodeC( fixed, opt );
+        }
+        , ret = generateCodeC( fixed, opt )
+        ;
+        ret.cfg = cfg;
+        return ret;
     }
 
     // ---------- Private details ----------

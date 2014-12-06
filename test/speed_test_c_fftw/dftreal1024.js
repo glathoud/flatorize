@@ -65,7 +65,7 @@ if ('undefined' !== typeof load)
             var info = passed_asmjsgen_info[ name_check ];
 
             var c_cfg = Object.create( info.cfg );
-            c_cfg.helper_h_name = name + '_helper.h';
+            c_cfg.helper_h_name = name + '.h';
 
             me._cO = flatorize.getCodeC( c_cfg );
 

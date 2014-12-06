@@ -8,7 +8,7 @@ from common import *
 def speed_test_dftreal1024_flatorize_v8( verbose = True ):
 
     jscode_li = [
-        'load(\'test/test_c_fftw/dftreal1024.js\');',
+        'load(\'test/speed_test_c_fftw/dftreal1024.js\');',
         'log=function(){}; /*no logging*/',
         'var o = dftreal1024_speed_test_flatorize();',
         'print(JSON.stringify(o));',

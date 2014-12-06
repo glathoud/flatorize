@@ -6,6 +6,8 @@ from common import *
 
 ARRAY_NAME = 'io_array'
 
+CUSTOM_INIT_C_CODE = 'custom_init_c_code'
+
 INDENT = '  '
 
 PREFIX_INPUT           = 'input_'
@@ -18,6 +20,17 @@ OUTDIR = 'test_c.outdir'
 
 STRUCT_NAME_TYPE     = 'STRUCT_NAME'
 STRUCT_NAME_INSTANCE = 'struct_name'
+
+def copy_src( srcdir, outdir, verbose_prefix=None ):
+
+    for filename in glob.glob( os.path.join( srcdir, '*.[hc]' )):
+        h,t = os.path.split( filename )
+        copyname = os.path.join( outdir, t )
+        assert filename != copyname, 'must differ'
+        shutil.copyfile( filename, copyname )
+        if isinstance( verbose_prefix, str ):
+            print( verbose_prefix + ('copied src file to: "{0}"'.format( copyname )) )
+
 
 def test_c( verbose=True ):
     
@@ -36,13 +49,7 @@ def test_c( verbose=True ):
 
     ensure_dir( outdir, empty = True )
 
-    for filename in glob.glob( os.path.join( srcdir, '*.[hc]' )):
-        h,t = os.path.split( filename )
-        copyname = os.path.join( outdir, t )
-        assert filename != copyname, 'must differ'
-        shutil.copyfile( filename, copyname )
-        if verbose:
-            print( INDENT + 'test_c: 0. copied src file to: "{0}"'.format( copyname ) )
+    copy_src( srcdir, outdir, verbose_prefix = verbose and (INDENT + 'test_c: 0. ') )
 
     #
 
@@ -161,7 +168,21 @@ def assert_test( name, info, outdir, verbose ):
     if verbose:
         print( INDENT * 3 + 'Call "compiler script" == compile + unit test + speed test' )
 
-    sh_out = sh_call( filename_test_sh )
+    call_sh_assert_ok( filename_test_sh, filename_test_bin, verbose = verbose )
+    
+
+
+def call_sh_assert_ok( filename_test_sh, filename_test_bin, verbose=True ):
+
+    wd = os.getcwd()
+
+    sh_path = os.path.split( filename_test_sh )[ 0 ]
+    os.chdir( sh_path )
+
+    pathless_test_sh  = pathless_from( filename_test_sh )
+    pathless_test_bin = pathless_from( filename_test_bin )
+    
+    sh_out = sh_call( pathless_test_sh )
 
     line_must_be_ok = False
     line_must_be_a_number = False
@@ -210,23 +231,23 @@ def assert_test( name, info, outdir, verbose ):
 
     assert unit_test_ok
     assert speed_test_ok
-    
-    
+
+
     if verbose:
         print( INDENT * 3 + 'Call .bin directly to be sure' )
     
-    bin_out_unit = sh_call( filename_test_bin )
+    bin_out_unit = sh_call( pathless_test_bin )
     assert 'ok' == bin_out_unit.strip()
     if verbose:
         print( INDENT * 4 + '- unit test:  ok' )
 
-    bin_out_speed = sh_call( filename_test_bin + ' 3' )
+    bin_out_speed = sh_call( pathless_test_bin + ' 3' )
     number = float( bin_out_speed.strip() )
     assert not math.isnan( number )
     if verbose:
         print( INDENT * 4 + '- speed test: ok' )
-
-
+    
+    os.chdir( wd )
 
 def test_c_code( info, filename_h ):
 
@@ -265,18 +286,20 @@ int main( int argc, char **argv )
 
   ''' + simple_input_init_c_code( info ) + (
       '' if not info[ HAS_ARRAY ] else os.linesep.join( map( lambda s: INDENT + s, infostruct_init_c_code( info )))
-      ) + '''
+      ) + (
+      (os.linesep + info[ CUSTOM_INIT_C_CODE ])  if  CUSTOM_INIT_C_CODE in info  else ('''
 
   ''' + comment_c_code( '--- Expected output ---' ) + '''
-
-  const ''' +(scalar_expected_output_init_c_code( info )  if  not array_expected_output_name( info )  else  (array_type + ' ' + array_expected_output_name( info ) + '[] = { ' + os.linesep + arrayinit_c_code( info, expected_output_alone = True )) + os.linesep + INDENT + '};') + '''
+          
+  const ''' +(scalar_expected_output_init_c_code( info )  if  not array_expected_output_name( info )  else  (array_type + ' ' + array_expected_output_name( info ) + '[] = { ' + os.linesep + arrayinit_c_code( info, expected_output_alone = True )) + os.linesep + INDENT + '};')) + '''
 
 
   /* --- Unit test (mandatory) --- */
 
   ''' + call_once_c_code( info ) + '''
   
-  ''' + unit_test_output_c_code( info ) + '''
+  ''' + unit_test_output_c_code( info )
+          ) + '''
 
 
   /* --- Speed test (optional) --- */
@@ -307,7 +330,7 @@ int main( int argc, char **argv )
 
 def array_expected_output_name( info ):
 
-    if info[ HAS_ARRAY ]:
+    if info[ HAS_ARRAY ] and not (CUSTOM_INIT_C_CODE in info):
 
         tmp = info[ ASMJS_TEST_OUTPUT ][ 0 ][ NAME ] 
 
@@ -393,11 +416,11 @@ def simple_input_init_c_code( info ):
 
     lines = []
 
-    for x in info[ ASMJS_TEST_INPUT ]:
-        x_type = info[ TYPED_IN_VAR ][ x[ NAME ]]
-        if isinstance( x_type, str ):
-            lines.append( 'const ' + x_type + ' ' + PREFIX_INPUT + x[ NAME ] + ' = ' + format_value( x[ VALUE ], x_type ) + ';' )
-    
+    if CUSTOM_INIT_C_CODE not in info:
+        for x in info[ ASMJS_TEST_INPUT ]:
+            x_type = info[ TYPED_IN_VAR ][ x[ NAME ]]
+            if isinstance( x_type, str ):
+                lines.append( 'const ' + x_type + ' ' + PREFIX_INPUT + x[ NAME ] + ' = ' + format_value( x[ VALUE ], x_type ) + ';' )   
 
     return (os.linesep + os.linesep.join( lines )  if  lines  else  '')
 
@@ -411,13 +434,14 @@ def infostruct_init_c_code( info ):
     a_n2i = info[ ARRAY_NAME2INFO ]
     array_type = info[ ARRAY_TYPE ]
 
-    for x in info[ ASMJS_TEST_INPUT ]:
-        name = x[ NAME ]
-        if name in a_n2i:
-            ret.append( '' )
-            ret.append( 'const ' + array_type + ' ' + PREFIX_INPUT_DATA + name + '[] = {' )
-            ret.append( arrayinit_c_code( info, expected_output_alone = False, one_name = name ) )
-            ret.append( '};' )
+    if CUSTOM_INIT_C_CODE not in info:
+        for x in info[ ASMJS_TEST_INPUT ]:
+            name = x[ NAME ]
+            if name in a_n2i:
+                ret.append( '' )
+                ret.append( 'const ' + array_type + ' ' + PREFIX_INPUT_DATA + name + '[] = {' )
+                ret.append( arrayinit_c_code( info, expected_output_alone = False, one_name = name ) )
+                ret.append( '};' )
 
 
     ret.extend( [
@@ -429,10 +453,11 @@ def infostruct_init_c_code( info ):
             '',
             ] )
 
-    for x in info[ ASMJS_TEST_INPUT ]:
-        name = x[ NAME ]
-        if name in a_n2i:
-            ret.append( 'memcpy( ' + info[ STRUCT_NAME_INSTANCE ] + '->' + name + ', ' + PREFIX_INPUT_DATA + name + ', ' + info[ STRUCT_NAME_INSTANCE ] + '->' + name.upper() + '_NBYTES );' )
+    if CUSTOM_INIT_C_CODE not in info:
+        for x in info[ ASMJS_TEST_INPUT ]:
+            name = x[ NAME ]
+            if name in a_n2i:
+                ret.append( 'memcpy( ' + info[ STRUCT_NAME_INSTANCE ] + '->' + name + ', ' + PREFIX_INPUT_DATA + name + ', ' + info[ STRUCT_NAME_INSTANCE ] + '->' + name.upper() + '_NBYTES );' )
 
     return ret
 

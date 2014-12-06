@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 
-import json, os, pprint, sys
+import json, pprint, sys
 sys.path.append( '..' )
 
 from common import *
 
-def speed_test_dftreal1024_flatorize_c( verbose = True ):
-
+def speed_test_dftreal1024_flatorize_asmjs_v8( verbose = True ):
+    
     jscode_li = [
-        'load(\'test/test_c_fftw/dftreal1024.js\');',
+        'load(\'test/speed_test_c_fftw/dftreal1024.js\');',
         'log=function(){}; /*no logging*/',
-        'var o = dftreal1024_getCodeC();',
+        'var o = dftreal1024_speed_test_flatorize_asmjs();',
         'print(JSON.stringify(o));',
         ]
     
     if verbose:
         print()
-        print( 'start V8, let it load "dftreal1024.js", and run "dftreal1024_getCodeC()".' )
+        print( 'dftreal1024_v8_test.py: start V8, let it load "dftreal1024.js", and run "dftreal1024_speed_test_flatorize_asmjs()".' )
         print()
         print( os.linesep.join( '  ' + line  for  line in jscode_li ) )
         print()
@@ -26,7 +26,7 @@ def speed_test_dftreal1024_flatorize_c( verbose = True ):
     #
 
     jscode = ' '.join( jscode_li )
-    
+
     outstr = d8_call( jscode )
     outobj = json.loads( outstr )
 
@@ -40,5 +40,5 @@ def speed_test_dftreal1024_flatorize_c( verbose = True ):
     return outobj
 
 if __name__ == '__main__':
-    speed_test_dftreal1024_flatorize_c( verbose = True )
+    speed_test_dftreal1024_flatorize_asmjs_v8( verbose = True )
     
