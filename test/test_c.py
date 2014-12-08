@@ -557,18 +557,15 @@ def test_compile_sh_code( info, filename_h, filename_c, filename_test_c ):
 set -v
 #
 # Compiling
-# Almost the same optimization flags as used by in FFTW3.3.3  except -malign-double was dropped because I had to move from GCC to clang
+# The same optimization flags as used by in FFTW3.3.3
 #
-clang -g -O3 -fomit-frame-pointer -mtune=native -fstrict-aliasing -fno-schedule-insns -ffast-math    -c -o common.o    common.c
+gcc -malign-double -g -O3 -fomit-frame-pointer -mtune=native -fstrict-aliasing -fno-schedule-insns -ffast-math    -c -o common.o    common.c
 #
 #
-# Note: as of 2014-12-01  -O1 -O2 -O3 can all lead to a memory explosion during gcc 4.8.2 compilation on the dft1024 case.
-# That is why I switched to clang.
+gcc -malign-double -g -O3 -fomit-frame-pointer -mtune=native -fstrict-aliasing -fno-schedule-insns -ffast-math    -c -o ''' + filename_o + '''    ''' + filename_c + '''
 #
-clang -g -O3 -fomit-frame-pointer -mtune=native -fstrict-aliasing -fno-schedule-insns -ffast-math    -c -o ''' + filename_o + '''    ''' + filename_c + '''
-#
-# Difference with GCC: for clang I had to add the -lm tag for math.h
-clang -lrt -lm -o ''' + filename_test_bin + '    common.o ' + filename_o + ' ' + filename_test_c + '''
+# Difference with GCC: for gcc -malign-double I had to add the -lm tag for math.h
+gcc -malign-double -lrt -lm -o ''' + filename_test_bin + '    common.o ' + filename_o + ' ' + filename_test_c + '''
 #
 # Unit test
 #

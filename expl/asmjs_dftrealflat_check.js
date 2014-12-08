@@ -55,6 +55,16 @@ function asmjs_dftrealflat_check( /*integer, e.g. 16 or 1024*/dftsize, /*?boolea
         new ArrayBuffer( dftrealflat_asmjsGen.buffer_bytes )
     ;
 
+        /* xxx
+    // --- (independent) sanity check: naive, non-flatorized implementation
+
+    var radix      = Math.round( Math.log( dftsize ) / Math.log( 2 ) )
+    ,   naive_impl = dft_msr_genF( radix, { real : true, hermihalf : hermihalf } )
+    ,   naive_freq = naive_impl( info.input.arr )
+    ;
+    check_error( naive_freq, info.output.freq );
+*/
+
     // --- Compile the asm.js code
     var dftrealflat_asmjsO = dftrealflat_asmjsGen( 
         this, {}, dftrealflat_buffer 
@@ -117,9 +127,12 @@ function asmjs_dftrealflat_check( /*integer, e.g. 16 or 1024*/dftsize, /*?boolea
 
     function check_error( obtained, expected )
     {
-        var error_v = get_error( flattened( obtained ), flattened( expected ) ) 
+        var error_v = get_error( flattened( obtained ), flattened( expected ) );
         
-        , error = Math.max.apply( Math, error_v.map( 
+        if (error_v.some( isNaN ))
+            throw new Error( NAME + ' failed! Got some NaN(s).' );
+
+        var error = Math.max.apply( Math, error_v.map( 
             function (delta) { return Math.abs( delta ); } 
         ) )
         ;

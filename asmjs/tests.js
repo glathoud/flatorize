@@ -40,6 +40,8 @@ generate_small_functions();
     asmjs_complex_numbers_check_direct();
     asmjs_matmulrows_zip_342_check();
 
+    asmjs_dftrealflat_check( 8 );
+
     asmjs_dftrealflat_check( 16 );
 
     // xxx still an issue with some gcc -> memory usage explodes
