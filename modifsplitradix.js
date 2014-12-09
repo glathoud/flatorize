@@ -157,15 +157,15 @@ function dft_msr_genF( radix, /*?object?*/opt )
         {
             // x0: real (single number) or complex (two numbers)
             var x0 = arr[ index( Ntop, shift, mul, 0 ) ];  
-            ret = [ real  ?  cplx.evalnow( x0, 0 )  :  x0  ];
+            ret = [ real  ?  cplx( x0, 0 )  :  x0  ];
         }
         else if (N === 2)
         {
             var x0 = arr[ index( Ntop, shift, mul, 0 ) ]
             ,   x1 = arr[ index( Ntop, shift, mul, 1 ) ]
             ;
-            ret = [ real  ?  cplx.evalnow( x0 + 1, 0 )  :  cadd.evalnow( x0, x1 ),
-                    real  ?  cplx.evalnow( x0 - 1, 0 )  :  csub.evalnow( x0, x1 )
+            ret = [ real  ?  cplx( x0 + 1, 0 )  :  cadd( x0, x1 ),
+                    real  ?  cplx( x0 - 1, 0 )  :  csub( x0, x1 )
                   ];
         }
         else
@@ -181,15 +181,15 @@ function dft_msr_genF( radix, /*?object?*/opt )
             ret = new Array( N );
             for (var k = 0; k < N_4; k++)
             {
-                var wz  = cmul.evalnow( wsNk(N,  k), z [ k ] )
-                ,   wzp = cmul.evalnow( wsNk(N, -k), zp[ k ] )
-                ,  sum  = cadd.evalnow( wz, wzp )
-                , idiff = cmul.evalnow( cplx.evalnow( 0, 1 ), csub.evalnow( wz, wzp ) )
+                var wz  = cmul( wsNk(N,  k), z [ k ] )
+                ,   wzp = cmul( wsNk(N, -k), zp[ k ] )
+                ,  sum  = cadd( wz, wzp )
+                , idiff = cmul( cplx( 0, 1 ), csub( wz, wzp ) )
                 ;  
-                ret[ k ]           = cadd.evalnow( u[ k ], sum );
-                ret[ k +     N_2 ] = csub.evalnow( u[ k ], sum );
-                ret[ k +     N_4 ] = csub.evalnow( u[ k + N_4 ], idiff );
-                ret[ k + 3 * N_4 ] = cadd.evalnow( u[ k + N_4 ], idiff );
+                ret[ k ]           = cadd( u[ k ], sum );
+                ret[ k +     N_2 ] = csub( u[ k ], sum );
+                ret[ k +     N_4 ] = csub( u[ k + N_4 ], idiff );
+                ret[ k + 3 * N_4 ] = cadd( u[ k + N_4 ], idiff );
             }
         }
         
@@ -206,7 +206,7 @@ function dft_msr_genF( radix, /*?object?*/opt )
             // x0: real (single number) or complex (two numbers)
             // S_{1,k} = 1 for all k
             var x0 = arr[ index( Ntop, shift, mul, 0 ) ];  
-            ret = [ real  ?  cplx.evalnow( x0, 0 )  :  x0  ];
+            ret = [ real  ?  cplx( x0, 0 )  :  x0  ];
         }
         else if (N === 2)
         {
@@ -214,8 +214,8 @@ function dft_msr_genF( radix, /*?object?*/opt )
             var x0 = arr[ index( Ntop, shift, mul, 0 ) ]
             ,   x1 = arr[ index( Ntop, shift, mul, 1 ) ]
             ;
-            ret = [ real  ?  cplx.evalnow( x0 + x1, 0 )  :  cadd.evalnow( x0, x1 ),
-                    real  ?  cplx.evalnow( x0 - x1, 0 )  :  csub.evalnow( x0, x1 )
+            ret = [ real  ?  cplx( x0 + x1, 0 )  :  cadd( x0, x1 ),
+                    real  ?  cplx( x0 - x1, 0 )  :  csub( x0, x1 )
                   ];
         }
         else
@@ -232,16 +232,16 @@ function dft_msr_genF( radix, /*?object?*/opt )
             for (var k = 0; k < N_4; k++)
             {
                 var  t  = tNk( N, k )
-                ,    tc = conj.evalnow( t )
-                ,  tz   = cmul.evalnow( t,   z[ k ] )
-                ,  tczp = cmul.evalnow( tc, zp[ k ] )
-                ,  sum  = cadd.evalnow( tz, tczp )
-                , idiff = cmul.evalnow( cplx.evalnow( 0, 1 ), csub.evalnow( tz, tczp ) )
+                ,    tc = conj( t )
+                ,  tz   = cmul( t,   z[ k ] )
+                ,  tczp = cmul( tc, zp[ k ] )
+                ,  sum  = cadd( tz, tczp )
+                , idiff = cmul( cplx( 0, 1 ), csub( tz, tczp ) )
                 ;  
-                ret[ k ]           = cadd.evalnow( u[ k ], sum );
-                ret[ k +     N_2 ] = csub.evalnow( u[ k ], sum );
-                ret[ k +     N_4 ] = csub.evalnow( u[ k + N_4 ], idiff );
-                ret[ k + 3 * N_4 ] = cadd.evalnow( u[ k + N_4 ], idiff );
+                ret[ k ]           = cadd( u[ k ], sum );
+                ret[ k +     N_2 ] = csub( u[ k ], sum );
+                ret[ k +     N_4 ] = csub( u[ k + N_4 ], idiff );
+                ret[ k + 3 * N_4 ] = cadd( u[ k + N_4 ], idiff );
             }
         }
         
@@ -259,7 +259,7 @@ function dft_msr_genF( radix, /*?object?*/opt )
             // x0: real (single number) or complex (two numbers)
             // S_{2,k} = 1 for all k
             var x0 = arr[ index( Ntop, shift, mul, 0 ) ];  
-            ret = [ real  ?  cplx.evalnow( x0, 0 )  :  x0  ];
+            ret = [ real  ?  cplx( x0, 0 )  :  x0  ];
         }
         else if (N === 2)
         {
@@ -267,8 +267,8 @@ function dft_msr_genF( radix, /*?object?*/opt )
             var x0 = arr[ index( Ntop, shift, mul, 0 ) ]
             ,   x1 = arr[ index( Ntop, shift, mul, 1 ) ]
             ;
-            ret = [ real  ?  cplx.evalnow( x0 + x1, 0 )  :  cadd.evalnow( x0, x1 ),
-                    real  ?  cplx.evalnow( x0 - x1, 0 )  :  csub.evalnow( x0, x1 )
+            ret = [ real  ?  cplx( x0 + x1, 0 )  :  cadd( x0, x1 ),
+                    real  ?  cplx( x0 - x1, 0 )  :  csub( x0, x1 )
                   ];
         }
         else
@@ -285,16 +285,16 @@ function dft_msr_genF( radix, /*?object?*/opt )
             for (var k = 0; k < N_4; k++)
             {
                 var  t  = tNk( N, k )
-                ,    tc = conj.evalnow( t )
-                ,    tz   = cmul.evalnow( t,   z[ k ] )
-                ,    tczp = cmul.evalnow( tc, zp[ k ] )
-                ,  sum_f  = cmul.evalnow( cadd.evalnow( tz, tczp ), cplx.evalnow( sNk( N, k ) / sNk( 2 * N, k ), 0 ) )
-                , idiff_f = cmul.evalnow( csub.evalnow( tz, tczp ), cplx.evalnow( 0,                             sNk( N, k ) / sNk( 2 * N, k + N_4 ) ) )
+                ,    tc = conj( t )
+                ,    tz   = cmul( t,   z[ k ] )
+                ,    tczp = cmul( tc, zp[ k ] )
+                ,  sum_f  = cmul( cadd( tz, tczp ), cplx( sNk( N, k ) / sNk( 2 * N, k ), 0 ) )
+                , idiff_f = cmul( csub( tz, tczp ), cplx( 0,                             sNk( N, k ) / sNk( 2 * N, k + N_4 ) ) )
                 ;  
-                ret[ k ]           = cadd.evalnow( u[ k ], sum_f );
-                ret[ k +     N_2 ] = csub.evalnow( u[ k ], sum_f );
-                ret[ k +     N_4 ] = csub.evalnow( u[ k + N_4 ], idiff_f );
-                ret[ k + 3 * N_4 ] = cadd.evalnow( u[ k + N_4 ], idiff_f );
+                ret[ k ]           = cadd( u[ k ], sum_f );
+                ret[ k +     N_2 ] = csub( u[ k ], sum_f );
+                ret[ k +     N_4 ] = csub( u[ k + N_4 ], idiff_f );
+                ret[ k + 3 * N_4 ] = cadd( u[ k + N_4 ], idiff_f );
             }
         }
         
@@ -311,7 +311,7 @@ function dft_msr_genF( radix, /*?object?*/opt )
             // x0: real (single number) or complex (two numbers)
             // S_{4,k} = 1 for all k
             var x0 = arr[ index( Ntop, shift, mul, 0 ) ];  
-            ret = [ real  ?  cplx.evalnow( x0, 0 )  :  x0  ];
+            ret = [ real  ?  cplx( x0, 0 )  :  x0  ];
         }
         else if (N === 2)
         {
@@ -320,8 +320,8 @@ function dft_msr_genF( radix, /*?object?*/opt )
             ,   x1   = arr[ index( Ntop, shift, mul, 1 ) ]
             ,   f1   =  1 / sNk( 4 * N, 1 )
             ;
-            ret = [ real  ?  cplx.evalnow( f0 * (x0 + x1), 0 )  :  cmul.evalnow( cplx.evalnow( f0, 0 ), cadd.evalnow( x0, x1 ) ),
-                    real  ?  cplx.evalnow( f1 * (x0 - x1), 0 )  :  cmul.evalnow( cplx.evalnow( f1, 1 ), csub.evalnow( x0, x1 ) )
+            ret = [ real  ?  cplx( f0 * (x0 + x1), 0 )  :  cmul( cplx( f0, 0 ), cadd( x0, x1 ) ),
+                    real  ?  cplx( f1 * (x0 - x1), 0 )  :  cmul( cplx( f1, 1 ), csub( x0, x1 ) )
                   ];
         }
         else
@@ -338,16 +338,16 @@ function dft_msr_genF( radix, /*?object?*/opt )
             for (var k = 0; k < N_4; k++)
             {
                 var  t  = tNk( N, k )
-                ,    tc = conj.evalnow( t )
-                ,  tz   = cmul.evalnow( t,   z[ k ] )
-                ,  tczp = cmul.evalnow( tc, zp[ k ] )
-                ,  sum  = cadd.evalnow( tz, tczp )
-                , idiff = cmul.evalnow( cplx.evalnow( 0, 1 ), csub.evalnow( tz, tczp ) )
+                ,    tc = conj( t )
+                ,  tz   = cmul( t,   z[ k ] )
+                ,  tczp = cmul( tc, zp[ k ] )
+                ,  sum  = cadd( tz, tczp )
+                , idiff = cmul( cplx( 0, 1 ), csub( tz, tczp ) )
                 ;  
-                ret[ k ]           = cmul.evalnow( cadd.evalnow( u[ k ], sum ),         cplx.evalnow( sNk( N, k ) / sNk( 4*N, k ),           0 ) );
-                ret[ k +     N_2 ] = cmul.evalnow( csub.evalnow( u[ k ], sum ),         cplx.evalnow( sNk( N, k ) / sNk( 4*N, k + N_2 ),     0 ) );
-                ret[ k +     N_4 ] = cmul.evalnow( csub.evalnow( u[ k + N_4 ], idiff ), cplx.evalnow( sNk( N, k ) / sNk( 4*N, k + N_4 ),     0 ) );
-                ret[ k + 3 * N_4 ] = cmul.evalnow( cadd.evalnow( u[ k + N_4 ], idiff ), cplx.evalnow( sNk( N, k ) / sNk( 4*N, k + 3 * N_4 ), 0 ) );
+                ret[ k ]           = cmul( cadd( u[ k ], sum ),         cplx( sNk( N, k ) / sNk( 4*N, k ),           0 ) );
+                ret[ k +     N_2 ] = cmul( csub( u[ k ], sum ),         cplx( sNk( N, k ) / sNk( 4*N, k + N_2 ),     0 ) );
+                ret[ k +     N_4 ] = cmul( csub( u[ k + N_4 ], idiff ), cplx( sNk( N, k ) / sNk( 4*N, k + N_4 ),     0 ) );
+                ret[ k + 3 * N_4 ] = cmul( cadd( u[ k + N_4 ], idiff ), cplx( sNk( N, k ) / sNk( 4*N, k + 3 * N_4 ), 0 ) );
             }
         }
         
@@ -367,14 +367,14 @@ function dft_msr_genF( radix, /*?object?*/opt )
     function wNk( N, k )
     {
         var cache = N in wNk  ?  wNk[ N ]  :  (wNk[ N ] = {});
-        return k in cache  ?  cache[ k ]  :  (cache[ k ] = cpol.evalnow( 1, -2 * Math.PI * k / N ));
+        return k in cache  ?  cache[ k ]  :  (cache[ k ] = cpol( 1, -2 * Math.PI * k / N ));
     }
 
 
     function wsNk( N, k )
     {
         var cache = N in wsNk  ?  wsNk[ N ]  :  (wsNk[ N ] = {});
-        return k in cache  ?  cache[ k ]  :  (cache[ k ] = cmul.evalnow( wNk( N, k ), cplx.evalnow( sNk( N / 4, Math.abs( k ) ), 0 ) ) );
+        return k in cache  ?  cache[ k ]  :  (cache[ k ] = cmul( wNk( N, k ), cplx( sNk( N / 4, Math.abs( k ) ), 0 ) ) );
     }
 
     function sNk( N, k )
@@ -403,7 +403,7 @@ function dft_msr_genF( radix, /*?object?*/opt )
     function tNk( N, k )
     {
         var cache = N in tNk  ?  tNk[ N ]  :  (tNk[ N ] = {});
-        return k in cache  ?  cache[ k ]  :  (cache[ k ] = cmul.evalnow( wNk( N, k ), cplx.evalnow( sNk( N / 4, k ) / sNk( N, k ), 0 ) ));
+        return k in cache  ?  cache[ k ]  :  (cache[ k ] = cmul( wNk( N, k ), cplx( sNk( N / 4, k ) / sNk( N, k ), 0 ) ));
     }
     
 }
