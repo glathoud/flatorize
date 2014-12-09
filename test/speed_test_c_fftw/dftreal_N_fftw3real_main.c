@@ -9,9 +9,21 @@ extern const int   epsilon;
 extern const double x_randreal[];
 extern const double X_randreal[][2];
 
-int main()
+int main( int argc, char ** argv )
 {
   int i;
+
+  int niter = NITER;
+  int concise = 0;
+
+  if (argc > 1)  
+  {
+    float tmp;
+    sscanf( argv[ 1 ], "%g", &tmp );  /* Permit 1.234e5 notation */
+    niter = (int)(tmp);
+    concise = 1;
+  }
+
 
   /* Prepare input (need to copy because `x_randreal` has `const`) */
 
@@ -29,11 +41,11 @@ int main()
   
   /* Prepare FFTW plan*/
 
-  PLAN_DURATION_BEGIN;
+  PLAN_DURATION_BEGIN( concise );
 
   fftw_plan p = fftw_plan_dft_r2c_1d(N, x_in, X, FFTW_ESTIMATE);
 
-  PLAN_DURATION_END;
+  PLAN_DURATION_END( concise );
   
   /* --- Sanity check --- */
 
@@ -59,12 +71,12 @@ int main()
   
   /* --- Performance test --- */
 
-  TEST_DURATION_BEGIN;
+  TEST_DURATION_BEGIN( concise );
 
-  for (i = NITER ; i-- ; )
+  for (i = niter ; i-- ; )
     fftw_execute( p );
 
-  TEST_DURATION_END;
+  TEST_DURATION_END( concise );
   
   /* --- Cleanup --- */
   free( x_in );

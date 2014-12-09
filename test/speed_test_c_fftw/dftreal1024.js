@@ -27,9 +27,10 @@ if ('undefined' !== typeof load)
     
     // Export to the global namespace
 
-    this.dftreal1024_getCodeC         = dftreal1024_getCodeC;
-    this.dftreal1024_speed_test_flatorize = dftreal1024_speed_test_flatorize;
+    this.dftreal1024_getCodeC                   = dftreal1024_getCodeC;
+    this.dftreal1024_speed_test_flatorize       = dftreal1024_speed_test_flatorize;
     this.dftreal1024_speed_test_flatorize_asmjs = dftreal1024_speed_test_flatorize_asmjs;
+    this.dftreal1024_speed_test_naive           = dftreal1024_speed_test_naive;
 
     // Implementation (function declaration)
 
@@ -206,5 +207,73 @@ if ('undefined' !== typeof load)
         } );
 
     }
+
+
+    
+    function dftreal1024_speed_test_naive( /*?dom node?*/button, /*?string?*/output_dom_node_id )
+    {
+        if (button)
+            button.setAttribute( 'disabled', 'disabled' );
+
+        var      me = dftreal1024_speed_test_naive
+        ,   dftsize = DFTSIZE
+        , hermihalf = HERMIHALF
+        ;
+
+        // create implementation if necessary
+
+        if (!me.dftrealflat)
+        {
+            generate_small_functions();
+
+            var radix = Math.round( Math.log( dftsize ) / Math.log( 2 ) );
+
+            me.dftrealflat = dft_msr_naive_genF( radix, { real : true, hermihalf : hermihalf } );
+
+            // Unit test the implementation
+
+            var  o    = get_dftreal_sin_input_output_for_check( dftsize, hermihalf )
+            , freq    = me.dftrealflat( o.input )
+            , error_v = flattened( freq ).map( function ( x, i ) { return Math.abs( x - this[ i ] ) }
+                                               , flattened( o.expected ) )
+            , error   = Math.max.apply( Math, error_v )
+            ;
+
+            if (error_v.some( isNaN )  ||  isNaN( error ))
+                throw new Error( 'isNaN: DFT MSR naive implementation failed the unit test.' );
+
+            if (error_v > 1e-9)
+                throw new Error( 'Bug: DFT MSR naive implementation failed the unit test.' );
+            
+            // Prepare some input values
+
+            me.input = new Array( dftsize ).join( ',' ).split( ',' ).map( Math.random );
+        }
+
+        return speed_test( {
+
+            impl  : me.dftrealflat
+            , arg : [ me.input ]
+            
+            , button             : button
+            , output_dom_node_id : output_dom_node_id
+
+            , mix : {
+                dftsize     : dftsize
+                , hermihalf : hermihalf
+            }
+
+        } );
+
+    }
+        
+        
+    // --- Details
+
+    function flattened( arr )
+    {
+        return arr.reduce( function (a,b) { return a.concat( b ); } );
+    }
+
     
 })();

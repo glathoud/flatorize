@@ -133,7 +133,8 @@ def sh_speed_test( filename, min_duration_sec = 1.0, verbose_prefix = None):
     n = 1
     while True:
         bin_out = sh_call( '{0} {1}'.format( filename, n ) )
-        duration_sec = float( bin_out )
+        last_line = list( filter( lambda s: s, map( lambda s: s.strip(), bin_out.split( os.linesep ) ) ) )[ -1 ]
+        duration_sec = float( last_line )
         assert not math.isnan( duration_sec )
 
         if 1.0 < duration_sec:

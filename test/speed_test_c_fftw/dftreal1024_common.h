@@ -2,7 +2,7 @@
 #include "test_duration_macro.h"
 #include "aligned_malloc_macro.h"
 
-static const int NITER = 1e6;
+static const int NITER = 1e4;
 
 static const int N = 1024;
 

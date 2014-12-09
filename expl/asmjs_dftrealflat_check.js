@@ -55,15 +55,13 @@ function asmjs_dftrealflat_check( /*integer, e.g. 16 or 1024*/dftsize, /*?boolea
         new ArrayBuffer( dftrealflat_asmjsGen.buffer_bytes )
     ;
 
-        /* xxx
     // --- (independent) sanity check: naive, non-flatorized implementation
 
     var radix      = Math.round( Math.log( dftsize ) / Math.log( 2 ) )
-    ,   naive_impl = dft_msr_genF( radix, { real : true, hermihalf : hermihalf } )
+    ,   naive_impl = dft_msr_naive_genF( radix, { real : true, hermihalf : hermihalf } )
     ,   naive_freq = naive_impl( info.input.arr )
     ;
     check_error( naive_freq, info.output.freq );
-*/
 
     // --- Compile the asm.js code
     var dftrealflat_asmjsO = dftrealflat_asmjsGen( 
