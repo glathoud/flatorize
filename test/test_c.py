@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import json, math, os, pprint, re, stat, sys, traceback
+import json, math, os, pprint, re, stat, sys, time, traceback
 
 from common import *
 
@@ -132,10 +132,14 @@ def assert_test( name, info, outdir, verbose ):
     filename_test_c   = filename_base + '_test.c'
 
     extless = os.path.splitext( filename_test_c )[ 0 ]
-    filename_test_sh  = extless + '.sh'
-    filename_test_bin = extless + '.bin'
+    filename_test_sh  = extless + '.gcc.sh'
+    filename_test_bin = extless + '.gcc.bin'
 
-    pathless_test_bin = os.path.split( filename_test_bin )[ 1 ]
+    filename_test_clang_sh  = extless + '.clang.sh'
+    filename_test_clang_bin = extless + '.clang.bin'
+
+    pathless_test_bin       = os.path.split( filename_test_bin )[ 1 ]
+    pathless_test_clang_bin = os.path.split( filename_test_clang_bin )[ 1 ]
 
     # Generate implementation files (.h and .c)
 
@@ -156,20 +160,49 @@ def assert_test( name, info, outdir, verbose ):
 
     # Generate compiler script (.sh)
 
-    if verbose:
-        print( INDENT * 3 + 'Write: ' + filename_test_sh )
-    open( filename_test_sh, 'wb' ).write(
-        test_compile_sh_code( info, filename_h, filename_c, filename_test_c ).encode( ENCODING ) 
-        )
-    os.chmod( filename_test_sh, stat.S_IRWXU )
+    for fn_sh,clang in ( (filename_test_sh,False,), (filename_test_clang_sh,True,),):
+        if verbose:
+            print()
+            print( INDENT * 3 + 'Write: ' + fn_sh )
+        open( fn_sh, 'wb' ).write(
+            test_compile_sh_code( info, filename_h, filename_c, filename_test_c, clang = clang ).encode( ENCODING ) 
+            )
+        os.chmod( fn_sh, stat.S_IRWXU )
 
     # Call compiler script
 
     if verbose:
-        print( INDENT * 3 + 'Call "compiler script" == compile + unit test + speed test' )
+        print()
+        print( INDENT * 3 + 'Call "compiler script" == compile + unit test + speed test (gcc)' )
+        sys.stdout.flush()
+        compile_gcc_start = time.time()
 
     call_sh_assert_ok( filename_test_sh, filename_test_bin, verbose = verbose )
     
+    if verbose:
+        compile_gcc_duration_sec = time.time() - compile_gcc_start
+        print( 'done in {0:.3} seconds'.format( compile_gcc_duration_sec ) )
+        
+
+
+    if verbose:
+        print()
+        print( INDENT * 3 + 'Call "compiler script" == compile + unit test + speed test (clang)' )
+        sys.stdout.flush()
+        compile_clang_start = time.time()
+
+    call_sh_assert_ok( filename_test_clang_sh, filename_test_clang_bin, verbose = verbose )
+
+    if verbose:
+        compile_clang_duration_sec = time.time() - compile_clang_start
+        print( 'done in {0:.3} seconds'.format( compile_clang_duration_sec ) )
+            
+        
+    return {
+        'compile_gcc_duration_sec' :   compile_gcc_duration_sec,
+        'compile_clang_duration_sec' : compile_clang_duration_sec,
+        }
+
 
 
 def call_sh_assert_ok( filename_test_sh, filename_test_bin, verbose=True ):
@@ -182,7 +215,9 @@ def call_sh_assert_ok( filename_test_sh, filename_test_bin, verbose=True ):
     pathless_test_sh  = pathless_from( filename_test_sh )
     pathless_test_bin = pathless_from( filename_test_bin )
     
+    sh_start = time.time()
     sh_out = sh_call( pathless_test_sh )
+    sh_duration_sec = time.time() - sh_start
 
     line_must_be_ok = False
     line_must_be_a_number = False
@@ -248,6 +283,8 @@ def call_sh_assert_ok( filename_test_sh, filename_test_bin, verbose=True ):
         print( INDENT * 4 + '- speed test: ok' )
     
     os.chdir( wd )
+
+    return sh_duration_sec
 
 def test_c_code( info, filename_h ):
 
@@ -543,14 +580,20 @@ def format_value( v, t ):
 
 
 
-def test_compile_sh_code( info, filename_h, filename_c, filename_test_c ):
+def test_compile_sh_code( info, filename_h, filename_c, filename_test_c, clang=False ):
 
-    filename_s = os.path.splitext( filename_c )[ 0 ] + '.s'
-    filename_o = os.path.splitext( filename_c )[ 0 ] + '.o'
+    dot = '.clang.' if clang else '.gcc.'
 
-    filename_test_bin = os.path.splitext( filename_test_c )[ 0 ] + '.bin'
+    common_o = 'common' + dot + 'o'
+
+    filename_s = os.path.splitext( filename_c )[ 0 ] + dot + 's'
+    filename_o = os.path.splitext( filename_c )[ 0 ] + dot + 'o'
+
+    filename_test_bin = os.path.splitext( filename_test_c )[ 0 ] + dot + 'bin'
 
     filename_test_bin_tail = os.path.split( filename_test_bin )[ 1 ]
+
+    compilo = 'clang' if clang else 'gcc -malign-double'
 
     return '''#!/usr/bin/env sh
 
@@ -559,13 +602,12 @@ set -v
 # Compiling
 # The same optimization flags as used by in FFTW3.3.3
 #
-gcc -malign-double -g -O3 -fomit-frame-pointer -mtune=native -fstrict-aliasing -fno-schedule-insns -ffast-math    -c -o common.o    common.c
+''' + compilo + ''' -g -O3 -fomit-frame-pointer -mtune=native -fstrict-aliasing -fno-schedule-insns -ffast-math    -c -o ''' + common_o + '''    common.c
 #
 #
-gcc -malign-double -g -O3 -fomit-frame-pointer -mtune=native -fstrict-aliasing -fno-schedule-insns -ffast-math    -c -o ''' + filename_o + '''    ''' + filename_c + '''
+''' + compilo + ''' -g -O3 -fomit-frame-pointer -mtune=native -fstrict-aliasing -fno-schedule-insns -ffast-math    -c -o ''' + filename_o + '''    ''' + filename_c + '''
 #
-# Difference with GCC: for gcc -malign-double I had to add the -lm tag for math.h
-gcc -malign-double -lrt -lm -o ''' + filename_test_bin + '    common.o ' + filename_o + ' ' + filename_test_c + '''
+''' + compilo + ''' -lrt -lm -o ''' + filename_test_bin + '    ' + common_o + ' ' + filename_o + ' ' + filename_test_c + '''
 #
 # Unit test
 #

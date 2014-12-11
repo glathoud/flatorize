@@ -126,9 +126,15 @@ def speed_test_v8_c( verbose = True ):
     filename_test_c   = filename_base + '_test.c'
 
     extless = os.path.splitext( filename_test_c )[ 0 ]
-    filename_test_bin = extless + '.bin'
 
-    return sh_speed_test( filename_test_bin, verbose_prefix = verbose  and   'speed_test_v8_c done, speed in clang: ' )
+    ret = {}
+
+    for compilname,clang in ( ('gcc',False,), ('clang',True,), ):
+        filename_test_bin = extless + ('.clang' if clang else '.gcc') + '.bin'
+        
+        ret[ compilname ] = sh_speed_test( filename_test_bin, verbose_prefix = verbose  and   'speed_test_v8_c done, speed in C ' + (('(' + compilname + '): ').ljust( 14, ' ')) )
+
+    return ret
    
 if __name__ == '__main__':
     speed_test_v8_c( verbose = True )

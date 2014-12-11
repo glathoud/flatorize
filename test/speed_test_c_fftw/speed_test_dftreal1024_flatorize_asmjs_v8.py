@@ -37,7 +37,7 @@ def speed_test_dftreal1024_flatorize_asmjs_v8( verbose = True ):
         pprint.pprint( outobj )
         print()
 
-    return outobj
+    return { 'flatorize_asmjs_v8' : outobj }
 
 if __name__ == '__main__':
     speed_test_dftreal1024_flatorize_asmjs_v8( verbose = True )

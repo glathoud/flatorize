@@ -5,7 +5,7 @@ sys.path.append( '..' )
 
 from common import *
 
-def speed_test_dftreal1024_fftw3( verbose = True ):
+def speed_test_dftreal1024_fftw3real( verbose = True ):
 
     if verbose:
         print()
@@ -41,8 +41,8 @@ def speed_test_dftreal1024_fftw3( verbose = True ):
         print( 'Measure the speed of the FFTW3 implementation...' )
         sys.stdout.flush()
 
-    return sh_speed_test( filename, verbose_prefix = verbose  and  '' )
+    return { 'fftw3real_gcc' : sh_speed_test( filename, verbose_prefix = verbose  and  '' ) }
 
 if __name__ == '__main__':
-    speed_test_dftreal1024_fftw3( verbose = True )
+    speed_test_dftreal1024_fftw3real( verbose = True )
     

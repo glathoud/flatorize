@@ -11,6 +11,8 @@ ASMJS_TEST_OUTPUT = 'asmjs_test_output'
 
 BEGIN = 'begin'
 
+DURATION_SEC = 'duration_sec'
+
 ENCODING  = 'utf-8'
 END       = 'end'
 
@@ -21,6 +23,8 @@ HAS_SIMPLE_OUTPUT = 'has_simple_output'
 
 IS_INPUT  = 'is_input'
 IS_OUTPUT = 'is_output'
+
+ITER_PER_SEC = 'iter_per_sec'
 
 MESSAGE   = 'message'
 
@@ -144,10 +148,10 @@ def sh_speed_test( filename, min_duration_sec = 1.0, verbose_prefix = None):
         
     iter_per_sec = n / duration_sec
 
-    ret = (iter_per_sec,n,duration_sec,)
+    ret = { ITER_PER_SEC : iter_per_sec, N : n, DURATION_SEC : duration_sec, }
 
     if isinstance( verbose_prefix, str ):
-        print( verbose_prefix + '{0} iterations/second = {1} iterations / {2} seconds'.format( *ret ) )
+        print( verbose_prefix + ('{' + ITER_PER_SEC + '} iterations/second = {' + N + '} iterations / {' + DURATION_SEC + '} seconds').format( **ret ) )
     
     return ret
 

@@ -60,8 +60,12 @@ def speed_test_dftreal1024_flatorize_c( verbose = True ):
     extless         = extless_from( filename_h )
     filename_c      = extless + '.c'
     filename_speed_test_c   = extless + '_speed_test.c'
-    filename_speed_test_sh  = extless + '_speed_test.sh'
-    filename_speed_test_bin = extless + '_speed_test.bin'
+
+    filename_speed_test_sh  = extless + '_speed_test.gcc.sh'
+    filename_speed_test_bin = extless + '_speed_test.gcc.bin'
+
+    filename_speed_test_clang_sh  = extless + '_speed_test.clang.sh'
+    filename_speed_test_clang_bin = extless + '_speed_test.clang.bin'
 
     srcdir = os.path.join( '..', SRCDIR )
     copy_src( srcdir, outdir, verbose_prefix = INDENT  if  verbose  else  None)
@@ -79,18 +83,35 @@ def speed_test_dftreal1024_flatorize_c( verbose = True ):
         print( INDENT + 'About to write: ' + filename_speed_test_c )
     open( filename_speed_test_c, 'wb' ).write( test_c_code( info, pathless_from( filename_h ) ).encode( ENCODING ) )
     
-    if verbose:
-        print( INDENT + 'About to write: ' + filename_speed_test_sh )
-    open( filename_speed_test_sh, 'wb' ).write( test_compile_sh_code( info, pathless_from( filename_h ), pathless_from( filename_c ), pathless_from( filename_speed_test_c ) ).encode( ENCODING )  )
-    os.chmod( filename_speed_test_sh, stat.S_IRWXU )
+    for fn_sh,clang in (( filename_speed_test_sh, False,), ( filename_speed_test_clang_sh, True,),):
+        if verbose:
+            print( INDENT + 'About to write: ' + fn_sh )
+        open( fn_sh, 'wb' ).write( test_compile_sh_code( info, pathless_from( filename_h ), pathless_from( filename_c ), pathless_from( filename_speed_test_c ), clang = clang ).encode( ENCODING )  )
+        os.chmod( fn_sh, stat.S_IRWXU )
 
     #
 
     if verbose:
         print()
-        print('Compile and check')
+        print('Compile and check (gcc)')
+        sys.stdout.flush()
 
-    call_sh_assert_ok( filename_speed_test_sh, filename_speed_test_bin, verbose = verbose )
+    gcc_compicheck_dur_sec = call_sh_assert_ok( filename_speed_test_sh, filename_speed_test_bin, verbose = verbose )
+
+    if verbose:
+        print("done in {0:.3} seconds".format( gcc_compicheck_dur_sec ))
+
+    #
+
+    if verbose:
+        print()
+        print('Compile and check (clang)')
+        sys.stdout.flush()
+
+    clang_compicheck_dur_sec = call_sh_assert_ok( filename_speed_test_clang_sh, filename_speed_test_clang_bin, verbose = verbose )
+
+    if verbose:
+        print("done in {0:.3} seconds".format( clang_compicheck_dur_sec ))
 
     #
 
@@ -99,7 +120,11 @@ def speed_test_dftreal1024_flatorize_c( verbose = True ):
         print('Run the speed test')
         print()
 
-    return sh_speed_test( filename_speed_test_bin, verbose_prefix = verbose  and  '' )
+    ret = {}
+    for fn_bin,compilname in ( (filename_speed_test_bin,'gcc',), (filename_speed_test_clang_bin, 'clang',),):
+        ret[ 'flatorize_c_' + compilname ] = sh_speed_test( fn_bin, verbose_prefix = verbose  and  (compilname + ': ').ljust(10,' ') )
+
+    return ret
 
 if __name__ == '__main__':
     speed_test_dftreal1024_flatorize_c( verbose = True )
