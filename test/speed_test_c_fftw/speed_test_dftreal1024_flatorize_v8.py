@@ -37,7 +37,7 @@ def speed_test_dftreal1024_flatorize_v8( verbose = True ):
         pprint.pprint( outobj )
         print()
 
-    return { 'flatorize_v8' : outobj }
+    return { 'flatorize_v8' : { RESULT : outobj, META : meta_v8() } }
 
 if __name__ == '__main__':
     speed_test_dftreal1024_flatorize_v8( verbose = True )

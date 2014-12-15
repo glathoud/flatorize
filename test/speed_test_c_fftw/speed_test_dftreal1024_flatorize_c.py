@@ -122,7 +122,10 @@ def speed_test_dftreal1024_flatorize_c( verbose = True ):
 
     ret = {}
     for fn_bin,compilname in ( (filename_speed_test_bin,'gcc',), (filename_speed_test_clang_bin, 'clang',),):
-        ret[ 'flatorize_c_' + compilname ] = sh_speed_test( fn_bin, verbose_prefix = verbose  and  (compilname + ': ').ljust(10,' ') )
+        ret[ 'flatorize_c_' + compilname ] = {
+            RESULT : sh_speed_test( fn_bin, verbose_prefix = verbose  and  (compilname + ': ').ljust(10,' ') )
+            , META : meta( compilname )
+            }
 
     return ret
 

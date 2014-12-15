@@ -27,6 +27,7 @@ IS_OUTPUT = 'is_output'
 ITER_PER_SEC = 'iter_per_sec'
 
 MESSAGE   = 'message'
+META      = 'meta'
 
 N_FAILURE = 'n_failure'
 N_SUCCESS = 'n_success'
@@ -36,8 +37,12 @@ NAME = 'name'
 
 OK   = 'ok'
 
+RESULT = 'result'
+
 SIMPLE_ERROR = 'error'
 SIMPLE_IN_VARARR = 'simple_in_vararr'
+
+SYSTEM = 'system'
 
 TESTDIR        = 'test'
 TESTDIR_RX_STR = r'\/(' + TESTDIR + '(\/.*)?)?$'
@@ -116,17 +121,43 @@ def get_test_dirname( somename ):
 
     return os.path.join( js_wd, TESTDIR, somename )
 
+
+def meta( situation ):
+    
+    ret = {
+        SYSTEM : sh_call( 'uname -a', local=False )
+        }
+    
+    if situation == 'v8':
+        ret[ situation ] = d8_call( 'print(version())' ).strip()
+    elif situation == 'gcc' or situation == 'clang':
+        ret[ situation ] = sh_call( situation + ' --version', local=False ).strip()
+    else:
+        raise Exception( 'meta: unrecognized situation "{0}"'.format( situation ) )
+
+    return ret
+
+def meta_v8():
+    return meta( 'v8' )
+
+def meta_gcc():
+    return meta( 'gcc' )
+
+def meta_clang():
+    return meta( 'clang' )
+
+
 def pathless_from( filename ):
     return os.path.split( filename )[ 1 ]
 
-def sh_call( filename ):
+def sh_call( filename, local=True ):
 
     wd = os.getcwd()
 
     path,name = os.path.split( os.path.abspath( filename ) )
     
     os.chdir( path )
-    outstr = subprocess.check_output( './' + name, shell=True, stderr=subprocess.STDOUT, universal_newlines = True )
+    outstr = subprocess.check_output( ('./' if local else '') + name, shell=True, stderr=subprocess.STDOUT, universal_newlines = True )
     os.chdir( wd )
     
     return outstr

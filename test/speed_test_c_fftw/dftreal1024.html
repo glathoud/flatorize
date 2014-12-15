@@ -15,31 +15,38 @@
     <script type="text/javascript" src="../../modifsplitradix.js"></script>
     <script type="text/javascript" src="../../speed_test.js"></script>
     <script type="text/javascript" src="dftreal1024.js"></script>
+    <script type="text/javascript" src="yak.js"></script>
     
   </head>
   <body>
     <h1>DFTREAL1024 use case: FFTW vs. flatorize_asmjs</h1>
 
-
-    <button onclick="dftreal1024_speed_test_naive(this,'dftreal1024_speed_test_naive_output')">Measure the speed of naive</button>
-
-    <pre><code id="dftreal1024_speed_test_naive_output"></code></pre>
-
-    
-    <hr>
-
-
-    <button onclick="dftreal1024_speed_test_flatorize(this,'dftreal1024_speed_test_flatorize_output')">Measure the speed of flatorize</button>
-
-    <pre><code id="dftreal1024_speed_test_flatorize_output"></code></pre>
+    <script type="text/javascript">yak.paste("dftreal1024.yak.js");</script>
     
 
-    <hr>
+    <script type="text/yak.js">
+[
+    { hr : null }
+    , { 'h3 id="test-browser"' : 'To run speed tests in the browser' }
+].concat(
+    [ 'naive', 'flatorize', 'flatorize_asmjs' ].map( function ( testname ) {
+        
+        var fname = 'dftreal1024_speed_test_' + testname
+        , outname = 'dftreal1024_speed_test_' + testname + '_output'
+        ;
+
+        return [ 
+            { h4 : testname }
+            , yak.o( 'button onclick="' + fname + '(this,\'' + outname + '\')"', 'Measure the speed of ' + testname )
+            , { pre : yak.o( 'code id="' + outname + '"', '' ) }
+        ];
+    }).reduce( yak.f( '.concat(k)' ))
+)
+    </script>
+    
 
 
-    <button onclick="dftreal1024_speed_test_flatorize_asmjs(this,'dftreal1024_speed_test_flatorize_asmjs_output')">Measure the speed of flatorize_asmjs</button>
-
-    <pre><code id="dftreal1024_speed_test_flatorize_asmjs_output"></code></pre>
+    <script type="text/javascript">yak.parse();</script>
     
   </body>
 </html>

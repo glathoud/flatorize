@@ -41,7 +41,11 @@ def speed_test_dftreal1024_fftw3real( verbose = True ):
         print( 'Measure the speed of the FFTW3 implementation...' )
         sys.stdout.flush()
 
-    return { 'fftw3real_gcc' : sh_speed_test( filename, verbose_prefix = verbose  and  '' ) }
+    return { 'fftw3real_gcc' : { 
+            RESULT : sh_speed_test( filename, verbose_prefix = verbose  and  '' )
+             , META : meta_gcc()
+            }
+             }
 
 if __name__ == '__main__':
     speed_test_dftreal1024_fftw3real( verbose = True )

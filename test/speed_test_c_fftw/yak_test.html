@@ -1,0 +1,44 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>yak_test</title>
+
+    <script type="text/javascript" src="yak.js"></script>
+  </head>
+  <body>
+    <h1>yak_test</h1>
+
+    <script type="text/yak.js">
+    [
+        { p : [ 'Summary: ', { ul : 'wrote plain HTML > got fed up writing closing tags and having too little page structure dynamics > generated HTML using frameworks > too many features > kludge accumulated over time > wrote plain HTML again > got fed up again > wrote - wait first wrote YAK.'.split( '>' ).map( yak.f( '{ li : v }' ) ) }
+        , { hr : null }
+        , { p : 'Bonjour' }
+        , { p : (function define( n ) {
+            return n > 0  
+                ?  { blockquote : [ 'Y.A.K. means Yet Another (', define( n - 1 ), ')' ] }
+            : 'yaK'
+            ;  
+        }( 10 ))
+          }
+        , { p : 'Aurevoir' }
+    ]
+    </script>
+
+
+    <script type="text/javascript" id="yak-paste-object">yak.paste([ 
+      { hr : null }
+      , { p : [ 'Call yak.paste with an', { strong : 'object' }, ':' ] }
+      , { pre : { code : document.getElementById( 'yak-paste-object' ).textContent } }
+      , { hr : null}
+      ]);</script>
+
+    <script type="text/javascript" id="yak-paste-filename">yak.paste("yak_test.yak.js");</script>
+    
+    <script type="text/yak.js">
+      [ { p : 'By Guillaume Lathoud, December 2014.' } ]
+    </script>
+    
+    <script type="text/javascript">yak.parse();</script>
+    
+  </body>
+</html>
