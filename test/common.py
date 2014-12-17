@@ -11,6 +11,8 @@ ASMJS_TEST_OUTPUT = 'asmjs_test_output'
 
 BEGIN = 'begin'
 
+CPUINFO = 'cpuinfo'
+
 DURATION_SEC = 'duration_sec'
 
 ENCODING  = 'utf-8'
@@ -125,8 +127,9 @@ def get_test_dirname( somename ):
 def meta( situation ):
     
     ret = {
-        SYSTEM : sh_call( 'uname -a', local=False )
-        }
+        SYSTEM : sh_call( 'uname -a', local=False ),
+        CPUINFO : sh_call( 'cat', opt='/proc/cpuinfo', local=False ),
+    }
     
     if situation == 'v8':
         ret[ situation ] = d8_call( 'print(version())' ).strip()
@@ -150,14 +153,14 @@ def meta_clang():
 def pathless_from( filename ):
     return os.path.split( filename )[ 1 ]
 
-def sh_call( filename, local=True ):
+def sh_call( filename, opt='', local=True ):
 
     wd = os.getcwd()
 
     path,name = os.path.split( os.path.abspath( filename ) )
     
     os.chdir( path )
-    outstr = subprocess.check_output( ('./' if local else '') + name, shell=True, stderr=subprocess.STDOUT, universal_newlines = True )
+    outstr = subprocess.check_output( ('./' if local else '') + name + ' ' + opt, shell=True, stderr=subprocess.STDOUT, universal_newlines = True )
     os.chdir( wd )
     
     return outstr
