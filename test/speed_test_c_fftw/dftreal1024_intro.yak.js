@@ -1,5 +1,5 @@
 [
-    { p : 'We measure the speed of various implementations on the DFTREAL1024 use case: compute the first 513 complex numbers of the Discrete Fourier Transform&nbsp;(DFT) of a vector of 1024 real numbers (a 513-long output is enough because of the hermitian symmetry).' }
+    { p : 'We measure the speed of various implementations on the DFTREAL1024 use case: compute the first 513 complex numbers of the Discrete Fourier Transform (DFT) of a vector of 1024 real numbers (a 513-long output is enough because of the hermitian symmetry).' }
     , { p : ' To run the speed tests you need to install on your machine:' }
     , { ul : [ 'Python 3', 'The V8 JavaScript engine', 'GCC', 'clang' ].map( yak.f( '{li:v+"."}') ) }
     , { p : 'and then run in your command line:' }
