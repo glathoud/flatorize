@@ -6,4 +6,4 @@ Top entry points:
 
 `<environment_name>` should loosely describe your CPU, machine and operating system, e.g. I used "i5_t420s_ubuntu14.04" for an Intel i5 CPU in a Thinkpad T420s with the Ubuntu 14.04 operating system.
 
-[./dftreal1024.html](dftreal1024.html) to show all results as well as more detailed explanations.
+[./dftreal1024.html](dftreal1024.html) to show all results, as well as more detailed explanations.
