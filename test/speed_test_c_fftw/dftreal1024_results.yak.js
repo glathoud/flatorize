@@ -36,7 +36,7 @@
         arr.sort( function ( a, b ) { return a.iter_per_sec - b.iter_per_sec; } );
         
         return [ 
-            { p : '> Result file: ' + filename }
+            { p : [ yak.html( '&ndash; Result file: ' ), filename ] }
 
             , { pre : { code : 'environment_name:' } }
             , { blockquote : { pre : { code : environment_name } } }

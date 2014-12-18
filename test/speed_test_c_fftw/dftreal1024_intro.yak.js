@@ -25,9 +25,9 @@
             { code : x.name }
             , ': '
             , { ul : [
-                { li : (i < 1  ?  'Algorithm: '  :  '') + x.algorithm }
-                , { li : (i < 1  ?  'Language: '  :  '') + x.language }
-                , { li : (i < 1  ?  'Support: '  :  '') + x.support }
+                { li : [ (i < 1  ?  'Algorithm: '  :  ''), x.algorithm ] }
+                , { li : [ (i < 1  ?  'Language: '  :  ''), x.language ] }
+                , { li : [ (i < 1  ?  'Support: '  :  ''),  x.support ] }
                 , { li : (i < 1  ?  [ 'Description: ' ]  :  []).concat( x.description ) }
             ]}
 

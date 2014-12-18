@@ -1,6 +1,6 @@
 [
     { name : 'naive_v8'
-      , algorithm : 'MSR (Modified Split-Radix)'
+      , algorithm : [ 'MSR (', { 'a href="fft-newsplit-2007-johnson-frigo.pdf"' : 'Modified Split-Radix' }, ')' ]
       , language : 'JavaScript'
       , support : 'V8 engine'
       , description : [
@@ -13,7 +13,7 @@
         , language : 'JavaScript'
         , support : 'V8 engine'
         , description : [
-            'Flatorized JavaScript implementation of ', { code : 'naive_v8' }, '. Flatorization eliminates the many recursive function calls. The test runs on the V8 JavaScript engine.'
+            { 'a href="../../index.html"' : 'Flatorized' }, ' JavaScript implementation of ', { code : 'naive_v8' }, '. Flatorization eliminates the many recursive function calls. The test runs on the V8 JavaScript engine.'
         ]
       }
 
@@ -22,7 +22,7 @@
         , language : 'JavaScript'
         , support : 'V8 engine'
         , description : [
-            { code : 'asm.js' }, ' variant of the flatorized JavaScript implementation of ', { code : 'naive_v8' }, '. Flatorization eliminates the many recursive function calls, and the generated code is ', { code : 'asm.js' }, '-compatible, heavily using typed arrays for further speedup. The test runs on the V8 JavaScript engine.'
+            { 'a href="../../asmjs.html"' : [ { code : 'asm.js' }, ' variant' ] }, ' of the flatorized JavaScript implementation of ', { code : 'naive_v8' }, '. Flatorization eliminates the many recursive function calls, and the generated code is ', { code : 'asm.js' }, '-compatible, heavily using typed arrays for further speedup. The test runs on the V8 JavaScript engine.'
         ]
       }
 
@@ -31,16 +31,16 @@
         , language : 'C'
         , support : 'clang, GCC'
         , description : [
-            { code : 'C' }, ' variant of the flatorized implementation of ', { code : 'naive_v8' }, '. Flatorization eliminates the many recursive function calls, and the generated code looks similar to the ', { code : 'asm.js' }, ' variant. Both clang and GCC are tested.'
+            { 'a href="../../c.html"' : [ { code : 'C' }, ' variant' ] }, ' of the flatorized implementation of ', { code : 'naive_v8' }, '. Flatorization eliminates the many recursive function calls, and the generated code looks similar to the ', { code : 'asm.js' }, ' variant. Both clang and GCC are tested.'
         ]
       }
 
     , { name : 'fftw3real_gcc'
-        , algorithm : 'FFTW3.3.4 (MSR + several other local algorithms, dynamically chosen for the given platform)'
+        , algorithm : [ { 'a href="http://www.fftw.org"' : 'FFTW3.3.4' }, ' (MSR + several other local algorithms, dynamically chosen for the given platform)' ]
         , language : 'C'
         , support : 'GCC'
         , description : [
-            'State-of-the-art algorithm & implementation of the Discrete Fourier Transform, includes many local, dynamic optimizations (e.g. replace MSR with locally faster algorithm at the deeper levels of recursion). The local optimizations (choice of algorithm) are made dynamically to each platform. FFTW should give a good idea of the fastest achievable speed to date.'
+            'State-of-the-art algorithm & implementation of the Discrete Fourier Transform, includes many local, dynamic optimizations (e.g. replace MSR with locally faster algorithms at the deeper levels of recursion). The local optimizations (choice of algorithm) are made dynamically to each platform. FFTW should give a good idea of the fastest achievable speed to date.'
         ]
       }
 
