@@ -25,6 +25,7 @@
     yak.e         = yak_e;
     yak.eval      = yak_eval;
     yak.f         = yak_f;
+    yak.html      = yak_html;
     yak.o         = yak_o;
     yak.read      = yak_read;
     yak.readeval  = yak_readeval;
@@ -56,6 +57,9 @@
                     'Nothing else.' 
             );
         }
+
+        if (simple_or_object instanceof yak_html)
+            return simple_or_object.html;
 
         if (simple_or_object instanceof Array)
             return simple_or_object.map( yak ).join( '\n' );
@@ -111,6 +115,15 @@
         return new Function( 'v', 'k', 'return (' + yak_e( codestring ) + ');' );
     }
 
+    function yak_html( html )
+    // Wrapper to indicate ready HTML -> will not be escaped.
+    {
+        if (!(this instanceof yak_html))
+            return new yak_html( html );
+
+        this.html = html;
+    }
+    
     function yak_o( k, v )
     {
         var ret = {};
