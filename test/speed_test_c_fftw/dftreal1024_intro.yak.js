@@ -18,6 +18,19 @@
 
     , { h3 : 'The various implementations are:' }
 
-    , { ul : yak.readeval( 'dftreal1024_impl_desc.json' ).map( yak.f( '{ li : JSON.stringify(v+"xxx")}' )) }
+    , { ul : yak.readeval( 'dftreal1024_impl_desc.array.js' ).map( function ( x, i ) {
 
+        return { li : [
+        
+            { code : x.name }
+            , ': '
+            , { ul : [
+                { li : (i < 1  ?  'Algorithm: '  :  '') + x.algorithm }
+                , { li : (i < 1  ?  'Language: '  :  '') + x.language }
+                , { li : (i < 1  ?  'Support: '  :  '') + x.support }
+                , { li : (i < 1  ?  [ 'Description: ' ]  :  []).concat( x.description ) }
+            ]}
+
+        ] };
+    }) }
 ]
