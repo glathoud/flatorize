@@ -9,9 +9,13 @@
     )
     ;
 
+    // --- Details
+
     function one_table( filename )
     {
-        var o   = yak.readeval( filename )
+        var top = yak.readeval( filename )
+        , environment_name = top.environment_name
+        ,   o      = top.result
         ,   cs  = extract_cpuinfo_system( o )
         ,   arr = Object.keys( o ).map( extract_name_and_speed, o )
         , nlmax = Math.max.apply( Math, arr.map( yak.f( '.name.length' ) ) )
@@ -32,7 +36,11 @@
         arr.sort( function ( a, b ) { return a.iter_per_sec - b.iter_per_sec; } );
         
         return [ 
-            { p : 'Result file: ' + filename }
+            { p : '> Result file: ' + filename }
+
+            , { pre : { code : 'environment_name:' } }
+            , { blockquote : { pre : { code : environment_name } } }
+
             , { pre : { code : 'system:' }}
             , { blockquote : { pre : { code : cs.system } } }
 
@@ -57,8 +65,6 @@
             return new Array( 1 + n ).join( c );
         }
     }
-
-    // --- Details
 
     function extract_cpuinfo_system( o )
     {

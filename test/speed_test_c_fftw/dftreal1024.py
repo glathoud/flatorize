@@ -2,21 +2,20 @@
 
 import glob, json, os, sys
 
-sys.path.append( '..' )
-
-from common import *
-
 from speed_test_dftreal1024_all import speed_test_dftreal1024_all
+
+sys.path.append( '..' )
+from common import *
 
 OUTDIR_RESULTS = 'dftreal1024.results'
 OUTFILE_RESULTLIST   = OUTDIR_RESULTS + '.list.json'
 
-def dftreal1024_write_json( testname = None, verbose = True ):
+def dftreal1024_write_json( environment_name = None, verbose = True ):
 
-    if not testname:
-        testname = os.path.splitext( os.path.split( __file__ )[ 1 ] )[ 0 ]
+    if not environment_name:
+        environment_name = os.path.splitext( os.path.split( __file__ )[ 1 ] )[ 0 ]
         
-    pathless = testname + '.json'
+    pathless = environment_name + '.json'
 
     dirname = OUTDIR_RESULTS
     if not os.path.exists( dirname ):
@@ -27,7 +26,13 @@ def dftreal1024_write_json( testname = None, verbose = True ):
     if verbose:
         print( 'Running the speed tests' )
 
-    obj = speed_test_dftreal1024_all( verbose_level = 1 if verbose else 0 )
+    result = speed_test_dftreal1024_all( verbose_level = 1 if verbose else 0 )
+
+    obj = {
+        RESULT : result
+        , ENVIRONMENT_NAME : environment_name
+        , FILENAME : filename
+        }
 
     if verbose:
         print( 'Writing: ' + filename )
@@ -47,6 +52,6 @@ def dftreal1024_write_json( testname = None, verbose = True ):
 if __name__ == '__main__':
 
     if 2 > len( sys.argv ):
-        print( 'Usage: ' + os.path.split( __file__ )[ 1 ] + ' <testname>', file=sys.stderr )
+        print( 'Usage: ' + os.path.split( __file__ )[ 1 ] + ' <environment_name>', file=sys.stderr )
     else:
-        dftreal1024_write_json( testname = sys.argv[ 1 ] )
+        dftreal1024_write_json( environment_name = sys.argv[ 1 ] )

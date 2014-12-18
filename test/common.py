@@ -17,7 +17,9 @@ DURATION_SEC = 'duration_sec'
 
 ENCODING  = 'utf-8'
 END       = 'end'
+ENVIRONMENT_NAME = 'environment_name'
 
+FILENAME      = 'filename'
 FUN_DECL_CODE = 'funDeclCode'
 
 HAS_ARRAY = 'has_array'
@@ -48,7 +50,7 @@ SYSTEM = 'system'
 
 TESTDIR        = 'test'
 TESTDIR_RX_STR = r'\/(' + TESTDIR + '(\/.*)?)?$'
-
+TESTNAME       = 'testname'
 TYPED_IN_VAR = 'typed_in_var'
 
 TYPED_OUT_VARNAME = 'typed_out_varname'
