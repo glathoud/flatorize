@@ -35,7 +35,18 @@
     {
         var t = typeof simple_or_object;
 
-        if ('string' === t  ||  'boolean' === t  ||  'number' === t)
+        if ('string' === t)
+        {
+            return simple_or_object
+                .replace( /&/g, '&amp;' )            
+                .replace( /</g, '&lt;' )
+                .replace( />/g, '&gt;' )            
+                .replace( /"/g, '&quot;' )
+                .replace( /'/g, '&apos;' )
+            ;
+        }
+
+        if ('boolean' === t  ||  'number' === t)
             return simple_or_object + '';
 
         if ('object' !== t)

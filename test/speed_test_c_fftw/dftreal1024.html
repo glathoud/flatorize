@@ -3,6 +3,8 @@
   <head>
     <title>DFTREAL1024 use case: FFTW vs. flatorize_asmjs</title>
 
+    <link rel="stylesheet" type="text/css" href="../../prettify/prettify.css">
+
     <script type="text/javascript" src="../../flatorize.js"></script>
     <script type="text/javascript" src="../../flatorize_type_util.js"></script>
     <script type="text/javascript" src="../../flatorize_asmjs.js"></script>
@@ -21,13 +23,13 @@
   <body>
     <h1>DFTREAL1024 use case: FFTW vs. flatorize_asmjs</h1>
 
-    <script type="text/javascript">yak.paste("dftreal1024.yak.js");</script>
-    
+
+    <script type="text/javascript">yak.paste("dftreal1024_intro.yak.js");</script>
 
     <script type="text/yak.js">
 [
     { hr : null }
-    , { 'h3 id="test-browser"' : 'To run speed tests in the browser' }
+    , { 'h3 id="test-browser"' : 'You can also run the speed tests directly here in the browser:' }
 ].concat(
     [ 'naive', 'flatorize', 'flatorize_asmjs' ].map( function ( testname ) {
         
@@ -41,14 +43,20 @@
             , { pre : yak.o( 'code id="' + outname + '"', '' ) }
         ];
     }).reduce( yak.f( '.concat(k)' ))
+    , { hr : null }
 )
     </script>
     
 
+    <script type="text/javascript">yak.paste("dftreal1024.yak.js");</script>
+    
+
+
 
     <script type="text/javascript">yak.parse();</script>
 
-
+    <script type="text/javascript" src="../../prettify/prettify.js"></script>
+    <script type="text/javascript">setTimeout( prettyPrint );</script>
     <script type="text/javascript" src="../../ga.js"></script>
     
   </body>
