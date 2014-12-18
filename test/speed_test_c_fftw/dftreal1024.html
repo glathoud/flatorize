@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
   <head>
-    <title>DFTREAL1024 use case: FFTW vs. flatorize_asmjs</title>
+    <title>DFTREAL1024 use case: FFTW vs. flatorize_asmjs vs flatorize_c vs ...</title>
 
     <link rel="stylesheet" type="text/css" href="../../prettify/prettify.css">
 
@@ -21,35 +21,14 @@
     
   </head>
   <body>
-    <h1>DFTREAL1024 use case: FFTW vs. flatorize_asmjs</h1>
+    <h1>DFTREAL1024 use case: FFTW vs. flatorize_asmjs vs flatorize_c vs ...</h1>
 
 
     <script type="text/javascript">yak.paste("dftreal1024_intro.yak.js");</script>
-
-    <script type="text/yak.js">
-[
-    { hr : null }
-    , { 'h3 id="test-browser"' : 'You can also run the speed tests directly here in the browser:' }
-].concat(
-    [ 'naive', 'flatorize', 'flatorize_asmjs' ].map( function ( testname ) {
-        
-        var fname = 'dftreal1024_speed_test_' + testname
-        , outname = 'dftreal1024_speed_test_' + testname + '_output'
-        ;
-
-        return [ 
-            { h4 : testname }
-            , yak.o( 'button onclick="' + fname + '(this,\'' + outname + '\')"', 'Measure the speed of ' + testname )
-            , { pre : yak.o( 'code id="' + outname + '"', '' ) }
-        ];
-    }).reduce( yak.f( '.concat(k)' ))
-    , { hr : null }
-)
-    </script>
-    
-
-    <script type="text/javascript">yak.paste("dftreal1024.yak.js");</script>
-    
+    <hr/>
+    <script type="text/javascript">yak.paste("dftreal1024_results.yak.js");</script>
+    <hr/>
+    <script type="text/javascript">yak.paste("dftreal1024_browser.yak.js");</script>    
 
 
 
