@@ -1,4 +1,4 @@
-Main entry points:
+Top entry points:
 
 [./dftreal1024.py](dftreal1024.py) to run the speed tests, and write results to the directory `dftreal1024.results`.
 
