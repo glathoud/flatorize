@@ -24,7 +24,9 @@
     <h1>DFTREAL1024 speed tests: FFTW vs. flatorize_asmjs vs flatorize_c vs ...</h1>
 
     <p><em>by <a href="http://glat.info">Guillaume Lathoud</a>, December 2014</em></p>
-
+    
+    <p>Contents:</p>
+    <div id="contents"></div>
     <script type="text/javascript">yak.paste("dftreal1024_intro.yak.js");</script>
     <hr/>
     <script type="text/javascript">yak.paste("dftreal1024_results.yak.js");</script>
@@ -34,6 +36,9 @@
 
 
     <script type="text/javascript">yak.parse();</script>
+
+    <script type="text/javascript" src="dftreal1024_contents.js"></script>
+    <script type="text/javascript">document.getElementById("contents").innerHTML = dftreal1024_contents();</script>
 
     <script type="text/javascript" src="../../prettify/prettify.js"></script>
     <script type="text/javascript">setTimeout( prettyPrint );</script>

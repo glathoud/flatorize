@@ -1,11 +1,12 @@
 (function () {
 
     return [
-        { h3 : 'Results for each environment' }
+        { 'h3 id="results"' : 'Results for each environment' }
     ].concat(
         yak.readeval( 'dftreal1024.results.list.json' )
+            .sort()
             .map( one_table )
-            .reduce( yak.f( '.concat( [ { hr:null } ] ).concat( k )' ) )
+            .reduce( yak.f( '.concat(k)' ) )
     )
     ;
 
@@ -36,7 +37,8 @@
         arr.sort( function ( a, b ) { return a.iter_per_sec - b.iter_per_sec; } );
         
         return [ 
-            { p : [ yak.html( '&ndash; Result file: ' ), filename ] }
+            { hr : null }
+            , { p : [ 'Result file: ', filename ] }
 
             , { pre : { code : 'environment_name:' } }
             , { blockquote : { pre : { code : environment_name } } }
