@@ -10,6 +10,7 @@ ASMJS_TEST_INPUT  = 'asmjs_test_input'
 ASMJS_TEST_OUTPUT = 'asmjs_test_output'
 
 BEGIN = 'begin'
+BITS  = 'bits'
 
 CPUINFO = 'cpuinfo'
 
@@ -126,12 +127,15 @@ def get_test_dirname( somename ):
     return os.path.join( js_wd, TESTDIR, somename )
 
 
-def meta( situation ):
+def meta( situation, bitsname = None ):
     
     ret = {
         SYSTEM : sh_call( 'uname -a', local=False ),
         CPUINFO : sh_call( 'cat', opt='/proc/cpuinfo', local=False ),
     }
+
+    if bitsname != None:
+        ret[ BITS ] = bitsname
     
     if situation == 'v8':
         ret[ situation ] = d8_call( 'print(version())' ).strip()

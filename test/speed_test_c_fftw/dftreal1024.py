@@ -26,7 +26,9 @@ def dftreal1024_write_json( environment_name = None, verbose = True ):
     if verbose:
         print( 'Running the speed tests' )
 
+    old_wd = os.getcwd()
     result = speed_test_dftreal1024_all( verbose_level = 1 if verbose else 0 )
+    os.chdir( old_wd )
 
     obj = {
         RESULT : result

@@ -16,6 +16,7 @@ def speed_test_dftreal1024_all( verbose_level = 1 ):
                             )
                     )
     
+    filename_li.sort()
 
     for filename in filename_li:
 

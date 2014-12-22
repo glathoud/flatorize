@@ -132,14 +132,23 @@ def assert_test( name, info, outdir, verbose ):
     filename_test_c   = filename_base + '_test.c'
 
     extless = os.path.splitext( filename_test_c )[ 0 ]
-    filename_test_sh  = extless + '.gcc.sh'
-    filename_test_bin = extless + '.gcc.bin'
 
-    filename_test_clang_sh  = extless + '.clang.sh'
-    filename_test_clang_bin = extless + '.clang.bin'
+    filename_test_gcc32_sh  = extless + '.gcc32.sh'
+    filename_test_gcc32_bin = extless + '.gcc32.bin'
 
-    pathless_test_bin       = os.path.split( filename_test_bin )[ 1 ]
-    pathless_test_clang_bin = os.path.split( filename_test_clang_bin )[ 1 ]
+    filename_test_gcc64_sh  = extless + '.gcc64.sh'
+    filename_test_gcc64_bin = extless + '.gcc64.bin'
+
+    filename_test_clang32_sh  = extless + '.clang32.sh'
+    filename_test_clang32_bin = extless + '.clang32.bin'
+
+    filename_test_clang64_sh  = extless + '.clang64.sh'
+    filename_test_clang64_bin = extless + '.clang64.bin'
+
+    pathless_test_gcc32_bin = os.path.split( filename_test_gcc32_bin )[ 1 ]
+    pathless_test_gcc64_bin = os.path.split( filename_test_gcc64_bin )[ 1 ]
+    pathless_test_clang32_bin = os.path.split( filename_test_clang32_bin )[ 1 ]
+    pathless_test_clang64_bin = os.path.split( filename_test_clang64_bin )[ 1 ]
 
     # Generate implementation files (.h and .c)
 
@@ -161,49 +170,65 @@ def assert_test( name, info, outdir, verbose ):
     # Generate compiler script (.sh)
 
     for fn_sh,clang in ( (filename_test_sh,False,), (filename_test_clang_sh,True,),):
-        if verbose:
-            print()
-            print( INDENT * 3 + 'Write: ' + fn_sh )
-        open( fn_sh, 'wb' ).write(
-            test_compile_sh_code( info, filename_h, filename_c, filename_test_c, clang = clang ).encode( ENCODING ) 
-            )
-        os.chmod( fn_sh, stat.S_IRWXU )
+        for bits64 in (False,True,):
+            if verbose:
+                print()
+                print( INDENT * 3 + 'Write: ' + fn_sh )
+            open( fn_sh, 'wb' ).write(
+                test_compile_sh_code( 
+                    info, filename_h, filename_c, filename_test_c, clang = clang, bits64 = bits64 
+                    ).encode( ENCODING ) 
+                )
+            os.chmod( fn_sh, stat.S_IRWXU )
 
     # Call compiler script
 
-    if verbose:
-        print()
-        print( INDENT * 3 + 'Call "compiler script" == compile + unit test + speed test (gcc)' )
-        sys.stdout.flush()
-        compile_gcc_start = time.time()
+    ret = {}
 
-    call_sh_assert_ok( filename_test_sh, filename_test_bin, verbose = verbose )
-    
-    if verbose:
-        compile_gcc_duration_sec = time.time() - compile_gcc_start
-        print( 'done in {0:.3} seconds'.format( compile_gcc_duration_sec ) )
+    for clang in (False,True,):
+
+        compilname = 'clang' if clang else 'gcc'
         
+        for bits64 in (False,True,):
 
+            bitsname = '64' if bits64 else '32'
 
-    if verbose:
-        print()
-        print( INDENT * 3 + 'Call "compiler script" == compile + unit test + speed test (clang)' )
-        sys.stdout.flush()
-        compile_clang_start = time.time()
+            cbname = compilname + bitsname
 
-    call_sh_assert_ok( filename_test_clang_sh, filename_test_clang_bin, verbose = verbose )
-
-    if verbose:
-        compile_clang_duration_sec = time.time() - compile_clang_start
-        print( 'done in {0:.3} seconds'.format( compile_clang_duration_sec ) )
+            if verbose:
+                print()
+                print( 
+                    INDENT * 3 + 'Call "compiler script" == compile + unit test + speed test (' + cbname +')'
+                    )
+                sys.stdout.flush()
             
+            compile_start = time.time()
+
+            if clang:
+                if bits64:
+                    fn_test_sh  = filename_test_clang64_sh
+                    fn_test_bin = filename_test_clang64_bin
+                else:
+                    fn_test_sh  = filename_test_clang32_sh
+                    fn_test_bin = filename_test_clang32_bin
+            else:
+                if bits64:
+                    fn_test_sh  = filename_test_gcc64_sh
+                    fn_test_bin = filename_test_gcc64_bin
+                else:
+                    fn_test_sh  = filename_test_gcc32_sh
+                    fn_test_bin = filename_test_gcc32_bin
+
+            call_sh_assert_ok( fn_test_sh, fn_test_bin, verbose = verbose )
+
+            compile_duration_sec = time.time() - compile_start
+            
+            if verbose:
+                print( 'done in {0:.3} seconds'.format( compile_duration_sec ) )
         
-    return {
-        'compile_gcc_duration_sec' :   compile_gcc_duration_sec,
-        'compile_clang_duration_sec' : compile_clang_duration_sec,
-        }
+            ret[ 'compile_' + cbname + '_duration_sec' ] = compile_duration_sec
 
-
+    return ret
 
 def call_sh_assert_ok( filename_test_sh, filename_test_bin, verbose=True ):
 
@@ -580,9 +605,11 @@ def format_value( v, t ):
 
 
 
-def test_compile_sh_code( info, filename_h, filename_c, filename_test_c, clang=False ):
+def test_compile_sh_code( info, filename_h, filename_c, filename_test_c, clang=False, bits64=True ):
 
-    dot = '.clang.' if clang else '.gcc.'
+    bits = '64' if bits64 else '32'
+
+    dot  = ( '.clang' if clang else '.gcc' ) + bits + '.'
 
     common_o = 'common' + dot + 'o'
 
@@ -593,7 +620,8 @@ def test_compile_sh_code( info, filename_h, filename_c, filename_test_c, clang=F
 
     filename_test_bin_tail = os.path.split( filename_test_bin )[ 1 ]
 
-    compilo = 'clang' if clang else 'gcc -malign-double'
+    compilo = ('clang' if clang else 'gcc -malign-double') + ' -m' + bits
+
 
     return '''#!/usr/bin/env sh
 
