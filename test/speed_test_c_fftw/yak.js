@@ -196,7 +196,7 @@
   
     function yak_readeval ( filename )
     { 
-        return yak_eval( yak_read( filename ) );
+        return yak_eval( yak_read( filename ) + '\n/*src: ' + filename + ' */' );
     }
     
 })();

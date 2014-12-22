@@ -96,6 +96,9 @@
             
             for (var mk in meta) { if (!(mk in cs)) {
             
+                if (mk === 'bits')
+                    continue
+
                 var mv = meta[ mk ].replace( /^\s+|\s+$/g, '' );
                 
                 if (!(mk in set))
