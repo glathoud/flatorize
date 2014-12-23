@@ -6,6 +6,11 @@ static const int NITER = 1e6;
 
 static const double EPSILON = 1e-5;
 
+const double* get_x_randreal( const int dftsize );
+const double* get_X_randreal( const int dftsize );
+
+void dftreal_loopy( const int dftsize, const double * xreal_in, double* X_out );
+
 double getPI();
 
 static const double x_randreal_1024[] = {

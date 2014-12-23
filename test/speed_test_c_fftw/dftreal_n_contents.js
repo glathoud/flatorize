@@ -1,6 +1,8 @@
-function dftreal1024_contents()
+function dftreal_n_contents( dftsize )
 {
-    if (!('_c_html' in dftreal1024_contents))
+    var cache = (dftreal_n_contents._cache || (dftreal_n_contents._cache = {}));
+
+    if (!(dftsize in cache))
     {
         var h3_arr = document.getElementsByTagName( 'h3' )
         ,    c_arr = []
@@ -28,10 +30,10 @@ function dftreal1024_contents()
             }
         }
 
-        dftreal1024_contents._c_html = yak( { ul : c_arr.map( content_line ).map( yak.f( '{ li : v }' )) } );
+        cache[ dftsize ] = yak( { ul : c_arr.map( content_line ).map( yak.f( '{ li : v }' )) } );
     }
     
-    return dftreal1024_contents._c_html;
+    return cache[ dftsize ];
 
     function content_line( x )
     {

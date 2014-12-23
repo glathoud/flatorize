@@ -1,9 +1,9 @@
-(function () {
-
+function ( dftsize ) 
+{
     return [
         { 'h3 id="results"' : 'Results for each environment' }
     ].concat(
-        yak.readeval( 'dftreal1024.results.list.json' )
+        yak.readeval( 'dftreal' + dftsize + '.results.list.json' )
             .sort()
             .map( one_table )
             .reduce( yak.f( '.concat(k)' ) )
@@ -95,7 +95,7 @@
             ;
             
             for (var mk in meta) { if (!(mk in cs)) {
-            
+                
                 if (mk === 'bits')
                     continue
 
@@ -157,4 +157,4 @@
         return yak.o( 'blockquote id="' + domid + '"style="display:none"', { pre : { code : content } } )
     }
 
-})()
+}

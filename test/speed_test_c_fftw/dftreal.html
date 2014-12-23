@@ -1,0 +1,87 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <script type="text/javascript">
+var DFTSIZE = 1024;  // Default
+(function () {
+    var   mo = document.location.search.match( /[\?&]dftsize=(\d+)/ )  // e.g. ...URL...?dftsize=512
+    , custom = parseFloat( mo  &&  mo[ 1 ] )
+    ;
+    if (!isNaN( custom )  &&  isFinite( custom ))
+        DFTSIZE = custom;
+})();
+
+document.write('\x3Ctitle\x3EDFTREAL' + DFTSIZE + ' speed tests: FFTW vs. flatorize_asmjs vs flatorize_c vs ...\x3C/title\x3E');
+    </script>
+
+    <link rel="stylesheet" type="text/css" href="../../prettify/prettify.css">
+
+    <script type="text/javascript" src="../../flatorize.js"></script>
+    <script type="text/javascript" src="../../flatorize_type_util.js"></script>
+    <script type="text/javascript" src="../../flatorize_asmjs.js"></script>
+    <script type="text/javascript" src="../../flatorize_c.js"></script>
+    <script type="text/javascript" src="../../examples.js"></script>
+    <script type="text/javascript" src="../../expl.js"></script>
+    <script type="text/javascript" src="../../expl/dftreal_flatorize.js"></script>
+    <script type="text/javascript" src="../../expl/asmjs_dftrealflat_check.js"></script>
+    <script type="text/javascript" src="../../log.js"></script>
+    <script type="text/javascript" src="../../modifsplitradix.js"></script>
+    <script type="text/javascript" src="../../speed_test.js"></script>
+    <script type="text/javascript" src="dftreal_n.js"></script>
+    <script type="text/javascript" src="yak.js"></script>
+    
+  </head>
+  <body>
+
+    <p style="position: fixed; background: white; top: 0; left: 0; width: 100%; padding: 24px 12px 24px 12px; margin: 0; border: none; background: linear-gradient(top, white 0%, white 80%, rgba(0,0,0,0) 100%);">[&larr;<a href="../../index.html">Back to the main article</a>]
+      <script type="text/javascript">
+        document.write([null,1024,512,256,128,64,32,16].map(function (n) {
+        
+          if (n == null)
+             return '';
+        
+          if (n === DFTSIZE)
+             return yak( { strong : [ '[', n, ']' ] } );
+        
+          return yak( [ '[', yak.o( 'a href="' + location.pathname + '?dftsize=' + n + '"'
+                             , n
+                           ), ']' ] );
+        }).join('&nbsp;&nbsp;&nbsp;'));
+      </script>
+    </p>
+
+    
+    <p style="position: fixed; bottom : 10px; right: 10px; border: solid 1px black; background-color: rgba(255,255,255,0.75)">
+      <a href="#top" style="padding: 12px 12px">Back to the top</a>
+    </p>
+
+    <h2 id="top">&nbsp;</h2>
+    <h2>&nbsp;</h2>
+
+    <h1>DFTREAL<script type="text/javascript">document.write(DFTSIZE)</script> speed tests: FFTW vs. flatorize_asmjs vs flatorize_c vs ...</h1>
+
+    <p><em>by <a href="http://glat.info">Guillaume Lathoud</a>, December 2014</em></p>
+
+
+    
+    <p>Contents:</p>
+    <div id="contents"></div>
+    <script type="text/javascript">yak.paste("dftreal_n_intro.yak.js", [ DFTSIZE ] );</script>
+    <hr/>
+    <script type="text/javascript">yak.paste("dftreal_n_results.yak.js", [ DFTSIZE ] );</script>
+    <hr/>
+    <script type="text/javascript">yak.paste("dftreal_n_browser.yak.js", [ DFTSIZE ] );</script>    
+
+
+
+    <script type="text/javascript">yak.parse();</script>
+
+    <script type="text/javascript" src="dftreal_n_contents.js"></script>
+    <script type="text/javascript">document.getElementById("contents").innerHTML = dftreal_n_contents();</script>
+
+    <script type="text/javascript" src="../../prettify/prettify.js"></script>
+    <script type="text/javascript">setTimeout( prettyPrint );</script>
+    <script type="text/javascript" src="../../ga.js"></script>
+    
+  </body>
+</html>

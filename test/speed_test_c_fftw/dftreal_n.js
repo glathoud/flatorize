@@ -15,34 +15,32 @@ if ('undefined' !== typeof load)
     
     // How you can load me from the base directory:
     // 
-    //    load( "test/test_c_fftw/dftreal1024.js" );
+    //    load( "test/test_c_fftw/dftreal_n.js" );
     // 
     // example of use: ./dftreal1024_v8.py
 }
 
 (function () {
 
-    var DFTSIZE   = 1024;
     var HERMIHALF = true;
     
     // Export to the global namespace
 
-    this.dftreal1024_getCodeC                   = dftreal1024_getCodeC;
-    this.dftreal1024_speed_test_flatorize       = dftreal1024_speed_test_flatorize;
-    this.dftreal1024_speed_test_flatorize_asmjs = dftreal1024_speed_test_flatorize_asmjs;
-    this.dftreal1024_speed_test_naive           = dftreal1024_speed_test_naive;
+    this.dftreal_n_getCodeC                   = dftreal_n_getCodeC;
+    this.dftreal_n_speed_test_flatorize       = dftreal_n_speed_test_flatorize;
+    this.dftreal_n_speed_test_flatorize_asmjs = dftreal_n_speed_test_flatorize_asmjs;
+    this.dftreal_n_speed_test_naive           = dftreal_n_speed_test_naive;
 
     // Implementation (function declaration)
 
-    function dftreal1024_getCodeC()
+    function dftreal_n_getCodeC( dftsize )
     {
-        var me = dftreal1024_getCodeC;
+        var me = dftreal_n_getCodeC;
 
         if (!me._cO)
         {
-            var dftsize = DFTSIZE
-            , hermihalf = HERMIHALF
-            ,      name = 'dftreal' + dftsize + 'flat' + (hermihalf  ?  '_hermihalf'  :  '')
+            var hermihalf = HERMIHALF
+            ,        name = 'dftreal' + dftsize + 'flat' + (hermihalf  ?  '_hermihalf'  :  '')
             ;
             
             generate_small_functions();
@@ -80,13 +78,12 @@ if ('undefined' !== typeof load)
 
 
 
-    function dftreal1024_speed_test_flatorize( /*?dom node?*/button, /*?string?*/output_dom_node_id )
+    function dftreal_n_speed_test_flatorize( dftsize, /*?dom node?*/button, /*?string?*/output_dom_node_id )
     {
         if (button)
             button.setAttribute( 'disabled', 'disabled' );
 
-        var      me = dftreal1024_speed_test_flatorize
-        ,   dftsize = DFTSIZE
+        var      me = dftreal_n_speed_test_flatorize
         , hermihalf = HERMIHALF
         ,      name = 'dftreal' + dftsize + 'flat' + (hermihalf  ?  '_hermihalf'  :  '')
         ;
@@ -122,6 +119,8 @@ if ('undefined' !== typeof load)
                 dftsize     : dftsize
                 , hermihalf : hermihalf
             }
+            
+            , dftsize : dftsize
 
         } );
 
@@ -129,13 +128,12 @@ if ('undefined' !== typeof load)
         
         
 
-    function dftreal1024_speed_test_flatorize_asmjs( /*?dom node?*/button, /*?string?*/output_dom_node_id )
+    function dftreal_n_speed_test_flatorize_asmjs( dftsize, /*?dom node?*/button, /*?string?*/output_dom_node_id )
     {
         if (button)
             button.setAttribute( 'disabled', 'disabled' );
 
-        var      me = dftreal1024_speed_test_flatorize_asmjs
-        ,   dftsize = DFTSIZE
+        var      me = dftreal_n_speed_test_flatorize_asmjs
         , hermihalf = HERMIHALF
         ,      name = 'dftreal' + dftsize + 'flat' + (hermihalf  ?  '_hermihalf'  :  '')
         ;
@@ -204,19 +202,20 @@ if ('undefined' !== typeof load)
                 dftsize     : dftsize
                 , hermihalf : hermihalf
             }
+
+            , dftsize : dftsize
         } );
 
     }
 
 
     
-    function dftreal1024_speed_test_naive( /*?dom node?*/button, /*?string?*/output_dom_node_id )
+    function dftreal_n_speed_test_naive( dftsize, /*?dom node?*/button, /*?string?*/output_dom_node_id )
     {
         if (button)
             button.setAttribute( 'disabled', 'disabled' );
 
-        var      me = dftreal1024_speed_test_naive
-        ,   dftsize = DFTSIZE
+        var      me = dftreal_n_speed_test_naive
         , hermihalf = HERMIHALF
         ;
 
@@ -263,6 +262,7 @@ if ('undefined' !== typeof load)
                 , hermihalf : hermihalf
             }
 
+            , dftsize : dftsize
         } );
 
     }

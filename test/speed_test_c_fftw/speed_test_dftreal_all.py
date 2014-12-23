@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-import glob, importlib, os, pprint
+import glob, importlib, os, pprint, sys
 
-def speed_test_dftreal1024_all( verbose_level = 1 ):
+def speed_test_dftreal_all( dftsize, verbose_level = 1 ):
 
     verbose          = verbose_level > 0
     verbose_detailed = verbose_level > 1
@@ -12,7 +12,7 @@ def speed_test_dftreal1024_all( verbose_level = 1 ):
     me = os.path.split( __file__ )[ 1 ]
 
     filename_li = list( filter( lambda s: s != me,
-                                glob.glob( 'speed_test_dftreal1024_*.py' )
+                                glob.glob( 'speed_test_dftreal_*.py' )
                             )
                     )
     
@@ -28,7 +28,7 @@ def speed_test_dftreal1024_all( verbose_level = 1 ):
         module = importlib.import_module( name )
         impl   = getattr( module, name )
 
-        ret.update( impl( verbose = verbose_detailed ) )
+        ret.update( impl( dftsize = dftsize, verbose = verbose_detailed ) )
 
 
 
@@ -43,4 +43,4 @@ def speed_test_dftreal1024_all( verbose_level = 1 ):
     
 
 if __name__ == '__main__':
-    speed_test_dftreal1024_all()
+    speed_test_dftreal_all( int( sys.argv[ 1 ] ) )

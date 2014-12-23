@@ -32,10 +32,13 @@
 
     yak.isBrowser = isBrowser;
 
-    function yak( simple_or_object )
+    function yak( simple_or_object, optargs )
     {
         var t = typeof simple_or_object;
 
+        if ('function' === t)
+            return yak( simple_or_object.apply( null, optargs ) );
+        
         if ('string' === t)
         {
             return simple_or_object
@@ -164,12 +167,15 @@
         }
     }
   
-    function yak_paste( filename_or_object )
+    function yak_paste( filename_or_object, optargs )
     {
-        var markup = yak( 'string' === typeof filename_or_object
-                          ?  yak_readeval( filename_or_object )
-                          :  filename_or_object
-                        );
+        var object = 'string' === typeof filename_or_object
+            ?  yak_readeval( filename_or_object )
+            :  filename_or_object
+        
+        , markup = yak( object, optargs )
+        ;
+        
         if (isBrowser)
             document.write( markup );
         else

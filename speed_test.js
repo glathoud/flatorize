@@ -14,6 +14,8 @@ function speed_test( cfg )
     ,   output_dom_node_id = cfg.output_dom_node_id  ||  null  // optional string
 
     ,   mix = cfg.mix  ||  {}  // optional values to pass through to the result (V8 use case).
+
+    ,   dftsize = cfg.dftsize  ||  null
     ;
     // Checks
     impl.call.a;
@@ -99,7 +101,7 @@ function speed_test( cfg )
             if ('undefined' !== typeof setTimeout)
             {
                 // Browser
-                var msg = 'dftreal1024: asmjs implementation: ' + iter_per_sec + ' iter / seconds = ' + N + ' iterations / ' + duration_sec + ' seconds';
+                var msg = 'dftreal' + (dftsize  ||  '') + ' speed: ' + iter_per_sec + ' iter / seconds = ' + N + ' iterations / ' + duration_sec + ' seconds';
                 
                 log( msg );
                 

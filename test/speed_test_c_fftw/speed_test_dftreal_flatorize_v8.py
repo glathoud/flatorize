@@ -5,18 +5,18 @@ sys.path.append( '..' )
 
 from common import *
 
-def speed_test_dftreal1024_naive_v8( verbose = True ):
+def speed_test_dftreal_flatorize_v8( dftsize, verbose = True ):
 
     jscode_li = [
-        'load(\'test/speed_test_c_fftw/dftreal1024.js\');',
+        'load(\'test/speed_test_c_fftw/dftreal_n.js\');',
         'log=function(){}; /*no logging*/',
-        'var o = dftreal1024_speed_test_naive();',
+        'var o = dftreal_n_speed_test_flatorize( {0} );'.format( dftsize ),
         'print(JSON.stringify(o));',
         ]
     
     if verbose:
         print()
-        print( 'dftreal1024_v8_test.py: start V8, let it load "dftreal1024.js", and run "dftreal1024_speed_test_naive()".' )
+        print( __file__ + ': start V8, let it load "dftreal_n.js", and run "dftreal_n_speed_test_flatorize({0})".'.format( dftsize ) )
         print()
         print( os.linesep.join( '  ' + line  for  line in jscode_li ) )
         print()
@@ -37,8 +37,8 @@ def speed_test_dftreal1024_naive_v8( verbose = True ):
         pprint.pprint( outobj )
         print()
 
-    return { 'naive_v8' : { RESULT : outobj, META : meta_v8() } }
+    return { 'flatorize_v8' : { RESULT : outobj, META : meta_v8() } }
 
 if __name__ == '__main__':
-    speed_test_dftreal1024_naive_v8( verbose = True )
+    speed_test_dftreal_flatorize_v8( dftsize = int( sys.argv[ 1 ] ), verbose = True )
     

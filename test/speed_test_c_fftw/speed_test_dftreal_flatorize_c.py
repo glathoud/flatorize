@@ -12,20 +12,21 @@ from test_c import CUSTOM_INIT_C_CODE, INDENT, PREFIX_INPUT_DATA, SRCDIR, STRUCT
 from test_c import call_sh_assert_ok, copy_src, test_c_code, test_compile_sh_code
 
 
-OUTDIR = 'speed_test_dftreal1024_flatorize_c.outdir'
+def OUTDIR( dftsize ):
+    return 'speed_test_dftreal_flatorize_c.{0}.outdir'.format( dftsize )
 
-def speed_test_dftreal1024_flatorize_c( verbose = True ):
+def speed_test_dftreal_flatorize_c( dftsize, verbose = True ):
 
     jscode_li = [
-        'load(\'test/speed_test_c_fftw/dftreal1024.js\');',
+        'load(\'test/speed_test_c_fftw/dftreal_n.js\');',
         'log=function(){}; /*no logging*/',
-        'var o = dftreal1024_getCodeC();',
+        'var o = dftreal_n_getCodeC( {0} );'.format( dftsize ),
         'print(JSON.stringify(o));',
         ]
     
     if verbose:
         print()
-        print( 'start V8, let it load "dftreal1024.js", and run "dftreal1024_getCodeC()".' )
+        print( __file__ + ': start V8, let it load "dftreal_n.js", and run "dftreal_n_getCodeC( {0} )".'.format( dftsize ) )
         print()
         print( os.linesep.join( INDENT + line  for  line in jscode_li ) )
         print()
@@ -41,11 +42,11 @@ def speed_test_dftreal1024_flatorize_c( verbose = True ):
 
     input_name = 'arr'
 
-    info[ CUSTOM_INIT_C_CODE ] = INDENT + 'memcpy( ' + info[ STRUCT_NAME_INSTANCE ] + '->' + input_name + ', x_randreal_1024, ' + info[ STRUCT_NAME_INSTANCE ] + '->' + input_name.upper() + '_NBYTES );'
+    info[ CUSTOM_INIT_C_CODE ] = INDENT + 'memcpy( ' + info[ STRUCT_NAME_INSTANCE ] + '->' + input_name + ', get_x_randreal( {0} ), '.format( dftsize ) + info[ STRUCT_NAME_INSTANCE ] + '->' + input_name.upper() + '_NBYTES );'
 
     #
 
-    outdir = OUTDIR
+    outdir = OUTDIR( dftsize )
 
     if verbose:
         print()
@@ -177,5 +178,5 @@ def speed_test_dftreal1024_flatorize_c( verbose = True ):
     return ret
 
 if __name__ == '__main__':
-    speed_test_dftreal1024_flatorize_c( verbose = True )
-    
+    speed_test_dftreal_flatorize_c( int( sys.argv[ 1 ] ), verbose = True )
+

@@ -1,9 +1,7 @@
 #include <math.h>
 #include <stdlib.h>
-#include <time.h>
-#include "common.h"
 
-double getPI() { return 2.0 * (double)(acos( 1.0 )); }  /* M_PI widely used... but not standard (yet?) */
+#include "fftw3real_common.h"
 
 const double*  get_x_randreal( const int dftsize )
 {
@@ -88,4 +86,10 @@ void dftreal_loopy( const int dftsize, const double * xreal_in, double* X_out )
       one_out++;
     }
   
+}
+
+
+double getPI()
+{
+  return 2 * acos( 0 );
 }

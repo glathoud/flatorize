@@ -2,35 +2,47 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <fftw3.h>
+#include <fftw3.h>  /* sudo apt-get install fftw3 -> not enough, go to www.fftw.org */
 
-extern const int   NITER;
-extern const int   N;
-extern const int   epsilon;
-extern const double x_randreal[];
-extern const double X_randreal[][2];
+#include "fftw3real_common.h"
+
+extern const int     epsilon;
+extern const double* get_x_randreal( const int dftsize );
+extern const double* get_X_randreal( const int dftsize );
 
 int main( int argc, char ** argv )
 {
+  if (argc < 3)
+    {
+      fprintf( stderr, "\nUsage parameters: <N> <NITER> (e.g. 1024 1e5)\n");
+      return -1;
+    }
+  
   int i;
 
-  int niter = NITER;
-  int concise = 0;
+  float tmp;
+  int N, NITER;
+  int concise = 1;
+  
+  sscanf( argv[ 1 ], "%g", &tmp );  /* Permit 1.234e5 notation */
+  N = (int)(tmp);
 
-  if (argc > 1)  
-  {
-    float tmp;
-    sscanf( argv[ 1 ], "%g", &tmp );  /* Permit 1.234e5 notation */
-    niter = (int)(tmp);
-    concise = 1;
-  }
+  sscanf( argv[ 2 ], "%g", &tmp );  /* Permit 1.234e5 notation */
+  NITER = (int)(tmp);
 
-
-
+  
   double * x_in = (double *) malloc( N * sizeof( double ) );
   const int N_out = (N >> 1) + 1;
   fftw_complex * X    = (fftw_complex*) fftw_malloc( N_out * sizeof( fftw_complex ));
 
+  const double* x_randreal = get_x_randreal( N );
+  const double* X_randreal = get_X_randreal( N );
+
+  if (!x_randreal  ||  !X_randreal)
+    {
+      fprintf( stderr, "\nERROR: unrecognized dftsize %d (could not get both x_randreal and X_randreal)\n", N );
+      return -1;
+    }
 
   /* Prepare FFTW plan*/
 
@@ -51,15 +63,17 @@ int main( int argc, char ** argv )
   int ok_all = 1;
   for (i = 0; i < N_out; i++)
     {
-      const double* result_i = X[ i ];
-      const double* expected_i = X_randreal[ i ];
+      const double* result_i   = X[ i ];
+      const double* expected_i = X_randreal + (i << 1);
+
       double  delta_0 = fabs( result_i[ 0 ] - expected_i[ 0 ] );
       double  delta_1 = fabs( result_i[ 1 ] - expected_i[ 1 ] );
+
       int ok = EPSILON > delta_0  &&  EPSILON > delta_1;
-      /*printf( "%d: %g %g, %g %g, %g %g -> ok: %d\n", i, result_i[ 0 ], result_i[ 1 ], expected_i[ 0 ], expected_i[ 1 ], delta_0, delta_1, ok );*/
+      
       ok_all &= ok;
     }
-  /* printf("ok_all: %d\n", ok_all); */
+
   if (!ok_all)
     {
       fprintf( stderr, "\nERROR: buggy implementation!\n");
@@ -70,7 +84,7 @@ int main( int argc, char ** argv )
 
   TEST_DURATION_BEGIN( concise );
 
-  for (i = niter ; i-- ; )
+  for (i = NITER ; i-- ; )
     fftw_execute( p );
 
   TEST_DURATION_END( concise );
