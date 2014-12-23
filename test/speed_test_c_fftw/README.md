@@ -12,3 +12,19 @@ Top entry points:
  * by default `dftsize=1024`.
  * for other values try to append `?dftsize=<dftsize>` to the URL, e.g. `dftreal.html?dftsize=512`.
 
+= Note =
+
+http://stackoverflow.com/questions/23498237/compile-program-for-32bit-on-64bit-linux-os-causes-fatal-error
+
+
+
+To compile 32 bit binaries on 64 bit Linux version, you have to Install libx32gcc development package and 32 bit GNU C Library
+
+try this
+
+sudo apt-get install libx32gcc-4.8-dev
+
+and
+
+sudo apt-get install libc6-dev-i386
+
