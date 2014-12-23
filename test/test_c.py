@@ -630,12 +630,12 @@ set -v
 # Compiling
 # The same optimization flags as used by in FFTW3.3.3
 #
-''' + compilo + ''' -O3 -fomit-frame-pointer -mtune=native -fstrict-aliasing -fno-schedule-insns -ffast-math    -c -o ''' + common_o + '''    common.c
+''' + compilo + ''' -O3 -fomit-frame-pointer -mtune=native -fstrict-aliasing -fno-schedule-insns -ffast-math     -c -o ''' + common_o + '''    common.c   -lm
 #
 #
-''' + compilo + ''' -O3 -fomit-frame-pointer -mtune=native -fstrict-aliasing -fno-schedule-insns -ffast-math    -c -o ''' + filename_o + '''    ''' + filename_c + '''
+''' + compilo + ''' -O3 -fomit-frame-pointer -mtune=native -fstrict-aliasing -fno-schedule-insns -ffast-math     -c -o ''' + filename_o + '''    ''' + filename_c + '''   -lm
 #
-''' + compilo + ''' -lrt -lm -o ''' + filename_test_bin + '    ' + common_o + ' ' + filename_o + ' ' + filename_test_c + '''
+''' + compilo + ''' -lrt -o ''' + filename_test_bin + '    ' + common_o + ' ' + filename_o + ' ' + filename_test_c + '''  -lm
 #
 # Unit test
 #
