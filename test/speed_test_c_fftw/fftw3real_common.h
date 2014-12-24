@@ -2,7 +2,7 @@
 #include "fftw3real_test_duration_macro.h"
 #include "fftw3real_aligned_malloc_macro.h"
 
-static const double EPSILON = 1e-5;
+static const double EPSILON = 1e-3;
 
 const double* get_x_randreal( const int dftsize );
 const double* get_X_randreal( const int dftsize );
