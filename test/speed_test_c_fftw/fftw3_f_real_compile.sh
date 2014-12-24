@@ -10,7 +10,7 @@ fi
     
 
 set -v
-export OUTDIR='fftw3real.outdir'
+export OUTDIR='fftw3_f_real.outdir'
 mkdir -p $OUTDIR
 rm -f $OUTDIR/*
 #
