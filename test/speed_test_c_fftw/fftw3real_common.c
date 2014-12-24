@@ -58,6 +58,34 @@ const double* get_X_randreal( const int dftsize )
 }
 
 
+const float* get_x_randreal_f( const int dftsize )
+{
+  /* xxx add cache */
+  const double* d  = get_x_randreal( dftsize );
+  float* ret = (float*)(malloc( dftsize * sizeof( float ) ) );
+  
+  int i;
+  for ( i = dftsize; i--;)
+    ret[ i ] = (float)(d[ i ]);
+
+  return ret;
+}
+
+const float* get_X_randreal_f( const int dftsize )
+{
+  /* xxx add cache */
+  const double* d  = get_X_randreal( dftsize );
+  float* ret = (float*)(malloc( dftsize * 2 * sizeof( float ) ) );
+  
+  int i;
+  for ( i = dftsize * 2; i--;)
+    ret[ i ] = (float)(d[ i ]);
+
+  return ret;
+}
+
+
+
 void dftreal_loopy( const int dftsize, const double * xreal_in, double* X_out )
 {
   int k, n;
