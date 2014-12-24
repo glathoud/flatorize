@@ -36,9 +36,16 @@ function ( dftsize )
         
         arr.sort( function ( a, b ) { return a.iter_per_sec - b.iter_per_sec; } );
         
+        var anchor_id = environment_name.replace( /\W/g, '_' );
+
         return [ 
             { hr : null }
-            , { p : [ 'Result file: ', filename ] }
+            , yak.o( 'p id="' + anchor_id + '"', [ 
+                'Result file: '
+                , filename
+                , ' '
+                , yak.o( 'a href="#' + anchor_id + '"', '#' )
+            ] )
 
             , { pre : { code : 'environment_name:' } }
             , { blockquote : { pre : { code : environment_name } } }
