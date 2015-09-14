@@ -7,8 +7,8 @@
 #include "fftw3real_common.h"
 
 extern const int     epsilon;
-extern const double* get_x_randreal( const int dftsize );
-extern const double* get_X_randreal( const int dftsize );
+extern const double* get_x_randreal_64bit( const int dftsize );
+extern const double* get_X_randreal_64bit( const int dftsize );
 
 int main( int argc, char ** argv )
 {
@@ -30,13 +30,13 @@ int main( int argc, char ** argv )
   sscanf( argv[ 2 ], "%g", &tmp );  /* Permit 1.234e5 notation */
   NITER = (int)(tmp);
 
-  
+
   double * x_in = (double *) malloc( N * sizeof( double ) );
   const int N_out = (N >> 1) + 1;
   fftw_complex * X    = (fftw_complex*) fftw_malloc( N_out * sizeof( fftw_complex ));
 
-  const double* x_randreal = get_x_randreal( N );
-  const double* X_randreal = get_X_randreal( N );
+  const double* x_randreal = get_x_randreal_64bit( N );
+  const double* X_randreal = get_X_randreal_64bit( N );
 
   if (!x_randreal  ||  !X_randreal)
     {
@@ -44,22 +44,27 @@ int main( int argc, char ** argv )
       return -1;
     }
 
+
+  /* Prepare input (need to copy because `x_randreal` has `const`) */
+
+  for (i = 0; i < N; i++)
+    {
+      x_in[ i ] = x_randreal[ i ];
+    }
+
+
   /* Prepare FFTW plan*/
 
   PLAN_DURATION_BEGIN( concise );
- 
-  fftw_plan p = fftw_plan_dft_r2c_1d(N, x_in, X, FFTW_MEASURE);
+
+  fftw_plan p = fftw_plan_dft_r2c_1d(N, x_in, X, FFTW_ESTIMATE);
 
   PLAN_DURATION_END( concise );
-
-  /* Prepare input (need to copy because `x_randreal` has `const`) */
-  for (i = 0; i < N; i++)
-      x_in[ i ] = x_randreal[ i ];
   
   /* --- Sanity check --- */
 
   fftw_execute( p );
-  
+
   int ok_all = 1;
   for (i = 0; i < N_out; i++)
     {
@@ -70,7 +75,7 @@ int main( int argc, char ** argv )
       double  delta_1 = fabs( result_i[ 1 ] - expected_i[ 1 ] );
 
       int ok = EPSILON > delta_0  &&  EPSILON > delta_1;
-      
+
       ok_all &= ok;
     }
 

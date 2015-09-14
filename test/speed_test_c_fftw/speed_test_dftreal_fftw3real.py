@@ -8,7 +8,11 @@ from common import *
 def speed_test_dftreal_fftw3real( dftsize, verbose = True ):
     ret = {}
 
-    for prefix in ('fftw3', 'fftw3_f_',):
+    for one in ({ PREFIX : 'fftw3real_64bit_', PRECISION : PRECISION_DOUBLE, },
+                { PREFIX : 'fftw3real_32bit_', PRECISION : PRECISION_SINGLE, }, ):
+
+        prefix    = one[ PREFIX ]
+        precision = one[ PRECISION ]
 
         if verbose:
             print()
@@ -24,7 +28,7 @@ def speed_test_dftreal_fftw3real( dftsize, verbose = True ):
 
         #
 
-        outstr = sh_call( prefix + 'real_compile.sh', opt = str( dftsize ) )
+        outstr = sh_call( prefix + 'compile.sh', opt = str( dftsize ) )
 
         # Make sure it really worked
 
@@ -58,9 +62,10 @@ def speed_test_dftreal_fftw3real( dftsize, verbose = True ):
             print( 'Measure the speed of the ' + prefix + ' implementation...' )
             sys.stdout.flush()
 
-        ret[ prefix + 'real_gcc' ] = { 
+        ret[ prefix + 'gcc' ] = { 
                 RESULT  : sh_speed_test( '{0} {1}'.format( filename, dftsize ), verbose_prefix = verbose  and  '' )
                  , META : meta_gcc()
+                , PARAM : { PRECISION : precision }
                 }
 
         if verbose:

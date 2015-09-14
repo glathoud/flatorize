@@ -3,7 +3,7 @@
 
 #include "fftw3real_common.h"
 
-const double*  get_x_randreal( const int dftsize )
+const double*  get_x_randreal_64bit( const int dftsize )
 {
   if (dftsize <= 1024)
     return (const double*)(x_randreal_1024);
@@ -19,7 +19,7 @@ typedef struct X_TRUTH {
 
 X_TRUTH _X_TRUTH_cache = { 1024, (double*)(X_randreal_1024), NULL };
 
-const double* get_X_randreal( const int dftsize )
+const double* get_X_randreal_64bit( const int dftsize )
 {
   if (dftsize == 1024)
     return (const double*)(X_randreal_1024);
@@ -58,10 +58,10 @@ const double* get_X_randreal( const int dftsize )
 }
 
 
-const float* get_x_randreal_f( const int dftsize )
+const float* get_x_randreal_32bit( const int dftsize )
 {
   /* xxx add cache */
-  const double* d  = get_x_randreal( dftsize );
+  const double* d  = get_x_randreal_64bit( dftsize );
   float* ret = (float*)(malloc( dftsize * sizeof( float ) ) );
   
   int i;
@@ -71,10 +71,10 @@ const float* get_x_randreal_f( const int dftsize )
   return ret;
 }
 
-const float* get_X_randreal_f( const int dftsize )
+const float* get_X_randreal_32bit( const int dftsize )
 {
   /* xxx add cache */
-  const double* d  = get_X_randreal( dftsize );
+  const double* d  = get_X_randreal_64bit( dftsize );
   float* ret = (float*)(malloc( dftsize * 2 * sizeof( float ) ) );
   
   int i;

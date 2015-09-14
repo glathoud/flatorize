@@ -1,14 +1,13 @@
 #include <math.h>
-#include "fftw3real_test_duration_macro.h"
-#include "fftw3real_aligned_malloc_macro.h"
+#include "test_duration_macro.h"
+#include "aligned_malloc_macro.h"
 
-static const double EPSILON = 1e-3;
+static const int NITER = 1e6;
 
-const double* get_x_randreal_64bit( const int dftsize );
-const double* get_X_randreal_64bit( const int dftsize );
+static const double EPSILON = 1e-5;
 
-const float* get_x_randreal_32bit( const int dftsize );
-const float* get_X_randreal_32bit( const int dftsize );
+const double* get_x_randreal( const int dftsize );
+const double* get_X_randreal( const int dftsize );
 
 void dftreal_loopy( const int dftsize, const double * xreal_in, double* X_out );
 

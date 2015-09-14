@@ -6,21 +6,21 @@ sys.path.append( '..' )
 from common import *
 
 # reuse constants
-from test_c import CUSTOM_INIT_C_CODE, INDENT, PREFIX_INPUT_DATA, SRCDIR, STRUCT_NAME_INSTANCE
+from test_d import CUSTOM_INIT_D_CODE, INDENT, PREFIX_INPUT_DATA, SRCDIR, STRUCT_NAME_INSTANCE
 
 # reuse test code generation tool
-from test_c import call_sh_assert_ok, copy_src, test_c_code, test_compile_sh_code
+from test_d import call_sh_assert_ok, copy_src, test_d_code, test_compile_sh_code
 
 
 def OUTDIR( dftsize ):
-    return 'speed_test_dftreal_flatorize_c.{0}.outdir'.format( dftsize )
+    return 'speed_test_dftreal_flatorize_d.{0}.outdir'.format( dftsize )
 
-def speed_test_dftreal_flatorize_c( dftsize, verbose = True ):
+def speed_test_dftreal_flatorize_d( dftsize, verbose = True ):
 
     ret = {}
 
-    for one in ({ PREFIX : 'flatorize_c_64bit_', PRECISION : PRECISION_DOUBLE, },
-                { PREFIX : 'flatorize_c_32bit_', PRECISION : PRECISION_SINGLE, },
+    for one in ({ PREFIX : 'flatorize_d_64bit_', PRECISION : PRECISION_DOUBLE, },
+                { PREFIX : 'flatorize_d_32bit_', PRECISION : PRECISION_SINGLE, },
                 ):
 
         prefix    = one[ PREFIX ]
@@ -32,13 +32,13 @@ def speed_test_dftreal_flatorize_c( dftsize, verbose = True ):
         jscode_li = [
             'load(\'test/speed_test_c_fftw/dftreal_n.js\');',
             'log=function(){}; /*no logging*/',
-            'var o = dftreal_n_getCodeC( {0}, {{precision:\'{1}\'}} );'.format( dftsize, precision ),
+            'var o = dftreal_n_getCodeD( {0}, {{precision:\'{1}\'}} );'.format( dftsize, precision ),
             'print(JSON.stringify(o));',
             ]
 
         if verbose:
             print()
-            print( __file__ + ': start V8, let it load "dftreal_n.js", and run "dftreal_n_getCodeC( {0} )".'.format( dftsize ) )
+            print( __file__ + ': start V8, let it load "dftreal_n.js", and run "dftreal_n_getCodeD( {0} )".'.format( dftsize ) )
             print()
             print( os.linesep.join( INDENT + line  for  line in jscode_li ) )
             print()
@@ -54,7 +54,7 @@ def speed_test_dftreal_flatorize_c( dftsize, verbose = True ):
 
         input_name = 'arr'
 
-        info[ CUSTOM_INIT_C_CODE ] = INDENT + 'memcpy( ' + info[ STRUCT_NAME_INSTANCE ] + '->' + input_name + ', get_x_randreal( {0} ), '.format( dftsize ) + info[ STRUCT_NAME_INSTANCE ] + '->' + input_name.upper() + '_NBYTES );'
+        info[ CUSTOM_INIT_D_CODE ] = INDENT + 'memcpy( ' + info[ STRUCT_NAME_INSTANCE ] + '->' + input_name + ', get_x_randreal( {0} ), '.format( dftsize ) + info[ STRUCT_NAME_INSTANCE ] + '->' + input_name.upper() + '_NBYTES );'
 
         #
 
@@ -71,16 +71,12 @@ def speed_test_dftreal_flatorize_c( dftsize, verbose = True ):
 
         filename_h      = os.path.abspath( os.path.join( outdir, info[ 'cfg' ][ 'helper_h_name' ] ) )
         extless         = extless_from( filename_h )
-        filename_c      = extless + '.c'
-        filename_speed_test_c   = extless + '_speed_test.c'
+        filename_d      = extless + '.d'
+        filename_speed_test_d   = extless + '_speed_test.d'
 
-        tmp = extless + '_speed_test.gcc'
-        filename_speed_test_gcc_sh  = { False : tmp + '32.sh',  True : tmp + '64.sh' }
-        filename_speed_test_gcc_bin = { False : tmp + '32.bin', True : tmp + '64.bin' }
-
-        tmp = extless + '_speed_test.clang'
-        filename_speed_test_clang_sh  = { False : tmp + '32.sh',  True : tmp + '64.sh' }
-        filename_speed_test_clang_bin = { False : tmp + '32.bin', True : tmp + '64.bin' }
+        tmp = extless + '_speed_test.dmd'
+        filename_speed_test_dmd_sh  = { False : tmp + '32.sh',  True : tmp + '64.sh' }
+        filename_speed_test_dmd_bin = { False : tmp + '32.bin', True : tmp + '64.bin' }
 
         srcdir = os.path.join( '..', SRCDIR )
         copy_src( srcdir, outdir, verbose_prefix = INDENT  if  verbose  else  None)
@@ -91,17 +87,17 @@ def speed_test_dftreal_flatorize_c( dftsize, verbose = True ):
         open( filename_h, 'wb' ).write( info[ 'helper_h_dfltcode' ].encode( ENCODING ) )
 
         if verbose:
-            print( INDENT + 'About to write: ' + filename_c )
-        open( filename_c, 'wb' ).write( info[ 'helper_c_dfltcode' ].encode( ENCODING ) )
+            print( INDENT + 'About to write: ' + filename_d )
+        open( filename_d, 'wb' ).write( info[ 'helper_d_dfltcode' ].encode( ENCODING ) )
 
         if verbose:
-            print( INDENT + 'About to write: ' + filename_speed_test_c )
-        open( filename_speed_test_c, 'wb' ).write( test_c_code( info, pathless_from( filename_h ) ).encode( ENCODING ) )
+            print( INDENT + 'About to write: ' + filename_speed_test_d )
+        open( filename_speed_test_d, 'wb' ).write( test_d_code( info, pathless_from( filename_h ) ).encode( ENCODING ) )
 
 
-        for fn_sh_map,clang in (( filename_speed_test_gcc_sh, False,), ( filename_speed_test_clang_sh, True,),):
+        for fn_sh_map,dlang in (( filename_speed_test_dmd_sh, False,), ( filename_speed_test_dlang_sh, True,),):
 
-            compilname = 'clang' if clang else 'gcc'
+            compilname = 'dlang' if dlang else 'dmd'
 
             cbname = compilname + bitsname
 
@@ -109,7 +105,7 @@ def speed_test_dftreal_flatorize_c( dftsize, verbose = True ):
 
             if verbose:
                 print( INDENT + 'About to write: ' + fn_sh )
-            open( fn_sh, 'wb' ).write( test_compile_sh_code( info, pathless_from( filename_h ), pathless_from( filename_c ), pathless_from( filename_speed_test_c ), clang = clang, bits64 = bits64 ).encode( ENCODING )  )
+            open( fn_sh, 'wb' ).write( test_compile_sh_code( info, pathless_from( filename_h ), pathless_from( filename_d ), pathless_from( filename_speed_test_d ), dlang = dlang, bits64 = bits64 ).encode( ENCODING )  )
             os.chmod( fn_sh, stat.S_IRWXU )
 
             #
@@ -120,14 +116,14 @@ def speed_test_dftreal_flatorize_c( dftsize, verbose = True ):
                 sys.stdout.flush()
 
             fn_bin = (
-                filename_speed_test_clang_bin if clang else filename_speed_test_gcc_bin
+                filename_speed_test_dlang_bin if dlang else filename_speed_test_dmd_bin
                 )[ bits64 ]
 
 
             success = False
             old_wd  = os.getcwd()
             try:
-                gcc_compicheck_dur_sec = call_sh_assert_ok( fn_sh, fn_bin, verbose = verbose )
+                dmd_compicheck_dur_sec = call_sh_assert_ok( fn_sh, fn_bin, verbose = verbose )
                 success = True
             except Exception as e:
                 os.chdir( old_wd )
@@ -142,7 +138,7 @@ def speed_test_dftreal_flatorize_c( dftsize, verbose = True ):
 
             if success:
                 if verbose:
-                    print("done in {0:.3} seconds".format( gcc_compicheck_dur_sec ))
+                    print("done in {0:.3} seconds".format( dmd_compicheck_dur_sec ))
                     print()
 
 
@@ -153,7 +149,7 @@ def speed_test_dftreal_flatorize_c( dftsize, verbose = True ):
             print('Run the speed test')
             print()
 
-        for fn_bin_map,compilname in ( (filename_speed_test_gcc_bin,'gcc',), (filename_speed_test_clang_bin, 'clang',),):
+        for fn_bin_map,compilname in ( (filename_speed_test_dmd_bin,'dmd',),):
 
             cbname   = compilname + bitsname
 
@@ -184,5 +180,5 @@ def speed_test_dftreal_flatorize_c( dftsize, verbose = True ):
     return ret
 
 if __name__ == '__main__':
-    speed_test_dftreal_flatorize_c( int( sys.argv[ 1 ] ), verbose = True )
+    speed_test_dftreal_flatorize_d( int( sys.argv[ 1 ] ), verbose = True )
 

@@ -7,8 +7,8 @@
 #include "fftw3real_common.h"
 
 extern const int     epsilon;
-extern const float* get_x_randreal_f( const int dftsize );
-extern const float* get_X_randreal_f( const int dftsize );
+extern const double* get_x_randreal_64bit( const int dftsize );
+extern const double* get_X_randreal_64bit( const int dftsize );
 
 int main( int argc, char ** argv )
 {
@@ -31,12 +31,12 @@ int main( int argc, char ** argv )
   NITER = (int)(tmp);
 
   
-  float * x_in = (float *) malloc( N * sizeof( float ) );
+  double * x_in = (double *) malloc( N * sizeof( double ) );
   const int N_out = (N >> 1) + 1;
-  fftwf_complex * X    = (fftwf_complex*) fftwf_malloc( N_out * sizeof( fftwf_complex ));
+  fftw_complex * X    = (fftw_complex*) fftw_malloc( N_out * sizeof( fftw_complex ));
 
-  const float* x_randreal = get_x_randreal_f( N );
-  const float* X_randreal = get_X_randreal_f( N );
+  const double* x_randreal = get_x_randreal_64bit( N );
+  const double* X_randreal = get_X_randreal_64bit( N );
 
   if (!x_randreal  ||  !X_randreal)
     {
@@ -48,7 +48,7 @@ int main( int argc, char ** argv )
 
   PLAN_DURATION_BEGIN( concise );
  
-  fftwf_plan p = fftwf_plan_dft_r2c_1d(N, x_in, X, FFTW_MEASURE);
+  fftw_plan p = fftw_plan_dft_r2c_1d(N, x_in, X, FFTW_MEASURE);
 
   PLAN_DURATION_END( concise );
 
@@ -58,16 +58,16 @@ int main( int argc, char ** argv )
   
   /* --- Sanity check --- */
 
-  fftwf_execute( p );
+  fftw_execute( p );
   
   int ok_all = 1;
   for (i = 0; i < N_out; i++)
     {
-      const float* result_i   = X[ i ];
-      const float* expected_i = X_randreal + (i << 1);
+      const double* result_i   = X[ i ];
+      const double* expected_i = X_randreal + (i << 1);
 
-      float  delta_0 = fabs( result_i[ 0 ] - expected_i[ 0 ] );
-      float  delta_1 = fabs( result_i[ 1 ] - expected_i[ 1 ] );
+      double  delta_0 = fabs( result_i[ 0 ] - expected_i[ 0 ] );
+      double  delta_1 = fabs( result_i[ 1 ] - expected_i[ 1 ] );
 
       int ok = EPSILON > delta_0  &&  EPSILON > delta_1;
       
@@ -85,14 +85,14 @@ int main( int argc, char ** argv )
   TEST_DURATION_BEGIN( concise );
 
   for (i = NITER ; i-- ; )
-    fftwf_execute( p );
+    fftw_execute( p );
 
   TEST_DURATION_END( concise );
   
   /* --- Cleanup --- */
   free( x_in );
-  fftwf_destroy_plan( p );
-  fftwf_free( X );
+  fftw_destroy_plan( p );
+  fftw_free( X );
   
   /* printf("\nDone.\n"); */
   return 0;

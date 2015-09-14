@@ -1,15 +1,19 @@
 /*global passed asmjs_complex_numbers_check matmulrows_zip_342_asmjsGen ArrayBuffer window Float32Array*/
 
 var passed, passed_asmjsgen_info;
-function asmjs_dftrealflat_check( /*integer, e.g. 16 or 1024*/dftsize, /*?boolean?*/hermihalf )
+function asmjs_dftrealflat_check( /*integer, e.g. 16 or 1024*/dftsize, /*?boolean?*/hermihalf, /*?object?*/opt )
 {
-    var NAME = 'asmjs_dftreal' + dftsize + 'flat' + (hermihalf  ?  '_hermihalf'  :  '') + '_check';
+    var precision = opt  &&  opt.precision  ||  'double'
+    ,   ERROR_MAX = precision === 'double'  ?  1e-10  :  precision === 'float'  ?  1e-4  :  null.unsupported_precision;
+    ;
+    
+    var NAME = 'asmjs_dftreal' + dftsize + 'flat' + (hermihalf  ?  '_hermihalf'  :  '') + '_' + precision + '_check';
 
     (passed  ||  (passed = {}))[ NAME ] = false;
 
     // "DFT REAL" example
 
-    var NAME_FLAT     = 'dftreal' + dftsize + 'flat' + (hermihalf  ?  '_hermihalf'  :  '')
+    var NAME_FLAT     = 'dftreal' + dftsize + 'flat' + (hermihalf  ?  '_hermihalf'  :  '') + '_' + precision
     ,   NAME_ASMJSGEN = NAME_FLAT + '_asmjsGen'
 
     ,   dftrealflat          = this[ NAME_FLAT ]
@@ -17,7 +21,7 @@ function asmjs_dftrealflat_check( /*integer, e.g. 16 or 1024*/dftsize, /*?boolea
     ;
     if (typeof dftrealflat === 'undefined')
     {
-        expl_dftreal_flatorize( dftsize, hermihalf );       
+        expl_dftreal_flatorize( dftsize, hermihalf, opt );       
         dftrealflat = expl_dftreal_flatorize[ NAME_FLAT ];
     }
 
@@ -134,8 +138,8 @@ function asmjs_dftrealflat_check( /*integer, e.g. 16 or 1024*/dftsize, /*?boolea
             function (delta) { return Math.abs( delta ); } 
         ) )
         ;
-        if (1e-10 < error)
-            throw new Error( NAME + ' failed!' );
+        if (ERROR_MAX < error)
+            throw new Error( NAME + ' failed! Observed error: ' + error );
     }
 
     function get_error( obtained_flat, expected_flat )

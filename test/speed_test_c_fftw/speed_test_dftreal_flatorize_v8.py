@@ -37,7 +37,7 @@ def speed_test_dftreal_flatorize_v8( dftsize, verbose = True ):
         pprint.pprint( outobj )
         print()
 
-    return { 'flatorize_v8' : { RESULT : outobj, META : meta_v8() } }
+    return { 'flatorize_64bit_v8' : { RESULT : outobj, META : meta_v8(), PARAM : { PRECISION : PRECISION_DOUBLE } } }
 
 if __name__ == '__main__':
     speed_test_dftreal_flatorize_v8( dftsize = int( sys.argv[ 1 ] ), verbose = True )

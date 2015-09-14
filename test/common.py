@@ -2,6 +2,9 @@
 
 import glob, json, math, os, re, shutil, subprocess, sys
 
+D8 = 'd8'
+#D8 = '/home/alpstein/software/v8/out/native/d8'
+
 ARRAY_COUNT       = 'array_count'
 ARRAY_NAME2INFO   = 'array_name2info'
 ARRAY_TYPE        = 'array_type'
@@ -42,6 +45,14 @@ NAME = 'name'
 
 OK   = 'ok'
 
+PARAM = 'param'
+
+PRECISION        = 'precision'
+PRECISION_SINGLE = 'float'
+PRECISION_DOUBLE = 'double'
+
+PREFIX = 'prefix'
+
 RESULT = 'result'
 
 SIMPLE_ERROR = 'error'
@@ -71,7 +82,7 @@ def d8_call( jscode ):
     
     os.chdir( js_wd )
     try:
-        outstr = subprocess.check_output( 'd8 -e "' + jscode + '"', shell=True, stderr=subprocess.STDOUT, universal_newlines = True )
+        outstr = subprocess.check_output( D8 + ' -e "' + jscode + '"', shell=True, stderr=subprocess.STDOUT, universal_newlines = True )
     except Exception as e:
         print(e.output)
         raise e

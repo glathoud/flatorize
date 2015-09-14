@@ -18,7 +18,7 @@ function ( dftsize )
         , environment_name = top.environment_name
         ,   o      = top.result
         ,   cs  = extract_cpuinfo_system( o )
-        ,   arr = Object.keys( o ).map( extract_name_and_speed, o )
+        ,   arr = Object.keys( o ).map( extract_name_and_precision_and_speed, o )
         , nlmax = Math.max.apply( Math, arr.map( yak.f( '.name.length' ) ) )
         , sparr = arr.map( yak.f( '.iter_per_sec' ) )
         , spmin = Math.min.apply( Math, sparr )
@@ -36,8 +36,15 @@ function ( dftsize )
         
         arr.sort( function ( a, b ) { return a.iter_per_sec - b.iter_per_sec; } );
         
-        var anchor_id = environment_name.replace( /\W/g, '_' );
+        var  anchor_id = environment_name.replace( /\W/g, '_' )
+        , cb_float_id = anchor_id + '_32bit'
+        , cb_double_id = anchor_id + '_64bit'
+        ,  onchange_fn = 'cb_onchange_' + anchor_id
+        ,    output_id = 'output_' + anchor_id
+        ;
 
+        window[ onchange_fn ] = precision_cb_onchange;
+        
         return [ 
             { hr : null }
             , yak.o( 'p id="' + anchor_id + '"', [ 
@@ -60,18 +67,43 @@ function ( dftsize )
             , show_hide_content( otherinfo_dom_id, extra_meta )
             
             , { pre : { code : 'results: speed in iterations per second (log scale ; the further right, the faster):' } }
-            , { blockquote : { pre : { code : yak.html( arr.map( one_log_line ).join( '\n' ) ) } } }
+            , { p : [ 'Precision: '
+                      , { label :
+                          yak.o( 'input type="checkbox" id="' + cb_float_id + '" checked="checked" onchange="' + onchange_fn +'()"'
+                                 , 'float (32 bits)'
+                               )
+                        }
+                      , { label :
+                          yak.o( 'input type="checkbox" id="' + cb_double_id + '" checked="checked" onchange="' + onchange_fn +'()"'
+                                 , 'double (64 bits)'
+                               )
+                        }
+                    ] }
+            , { blockquote : { pre : yak.o( 'code id="' + output_id + '"'
+                                            , yak.html( arr.map( one_log_line ).join( '' ) )
+                                          )
+                             }
+              }
         ];
 
         function one_log_line( x )
         {
             var ndash = 2 + Math.round( 48 * (Math.log( x.iter_per_sec ) - log_spmin) / log_delta);
-            return sRep( '&mdash;', ndash ) + ' ' + Math.round( x.iter_per_sec ) + '   ' + x.name;
+            return '<span class="precision_' + x.precision + '">' + sRep( '&mdash;', ndash ) + ' ' + Math.round( x.iter_per_sec ) + '   ' + x.name + '</span>\n';
         }
 
         function sRep( c, n )
         {
             return new Array( 1 + n ).join( c );
+        }
+
+        function precision_cb_onchange()
+        {
+            var hide_float = !document.getElementById( cb_float_id ).checked
+            ,   hide_double = !document.getElementById( cb_double_id ).checked
+            ,   output_node = document.getElementById( output_id )
+            ;
+            output_node.className = (hide_float  ?  'hide_precision_float'  :  '') + ' ' + (hide_double  ?  'hide_precision_double'  :  '');
         }
     }
 
@@ -127,18 +159,21 @@ function ( dftsize )
         }
     }
 
-    function extract_name_and_speed( k )
+    function extract_name_and_precision_and_speed( k )
     {
         (k  ||  null).substring.call.a;
 
         var          v = this[ k ]
-        , iter_per_sec = v.result.iter_per_sec 
+        , iter_per_sec = v.result.iter_per_sec
+        ,    precision = v.param.precision
         ;
         (iter_per_sec  ||  null).toPrecision.call.a;
+        (precision  ||  null).toString.call.a;
         
         return { 
             name : k
             , iter_per_sec : iter_per_sec
+            , precision : precision
         };
     }
 

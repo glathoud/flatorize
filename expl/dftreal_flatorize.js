@@ -1,8 +1,10 @@
 if ('undefined' === typeof dft_msr_exprgenF  &&  'undefined' !== typeof load)
     load( 'modifsplitradix.js' );
 
-function expl_dftreal_flatorize( /*integer, e.g. 16 or 1024*/dftsize, /*?boolean?*/hermihalf )
+function expl_dftreal_flatorize( /*integer, e.g. 16 or 1024*/dftsize, /*?boolean?*/hermihalf, /*?object?*/opt )
 {
+    var precision = opt  &&  opt.precision  ||  'double';
+    
     // Give external access, for example to display source code.
     // Example of use: ../index.html
 
@@ -17,7 +19,7 @@ function expl_dftreal_flatorize( /*integer, e.g. 16 or 1024*/dftsize, /*?boolean
     var dftrealflat = flatorize( 
         // note the :[type] declarations, ignored by `flatorize`
         // but useful later in asm.js or C contexts
-        'arr:[' + dftsize + ' double]->freq:[' + (hermihalf  ?  1 + (dftsize >> 1)  :  dftsize) + ' [2 double]]'
+        'arr:[' + dftsize + ' ' + precision + ']->freq:[' + (hermihalf  ?  1 + (dftsize >> 1)  :  dftsize) + ' [2 ' + precision + ']]'
         , dft_msr_exprgenF( power, { real: true, hermihalf : !!hermihalf } )
     )
     ;
@@ -32,9 +34,9 @@ function expl_dftreal_flatorize( /*integer, e.g. 16 or 1024*/dftsize, /*?boolean
 
     // More exports
 
-    E[ 'dftreal' + dftsize + 'flat' + (hermihalf  ?  '_hermihalf'  :  '') ] = dftrealflat;
+    E[ 'dftreal' + dftsize + 'flat' + (hermihalf  ?  '_hermihalf'  :  '') + '_' + precision ] = dftrealflat;
 
     // For `expl_run`
 
-    return { name : 'sinfreq', obtained : sinfreq, expected : io.expected };
+    return { name : 'sinfreq', obtained : sinfreq, expected : io.expected, precision : precision };
 }

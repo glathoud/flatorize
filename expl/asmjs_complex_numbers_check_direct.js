@@ -71,7 +71,7 @@ function asmjs_complex_numbers_check_direct()
         function (delta) { return Math.abs( delta ); } 
     ) )
     ;
-    if (1e-5 < error)
+    if (1e-4 < error)
         throw new Error( NAME + ' failed!' );
 
     (passed  ||  (passed = {}))[ NAME ] = true;

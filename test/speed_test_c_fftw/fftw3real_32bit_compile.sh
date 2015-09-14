@@ -10,7 +10,7 @@ fi
     
 
 set -v
-export OUTDIR='fftw3real.outdir'
+export OUTDIR='fftw3real_32bit.outdir'
 mkdir -p $OUTDIR
 rm -f $OUTDIR/*
 #
@@ -18,8 +18,8 @@ rm -f $OUTDIR/*
 #
 gcc -O3 -fomit-frame-pointer -mtune=native -malign-double -fstrict-aliasing -fno-schedule-insns -ffast-math  -lm -lrt   -c -o $OUTDIR/fftw3real_common.o    fftw3real_common.c  # Same optimization flags as used by in FFTW3.3.3  +  -lrt for the time tests
 
-gcc -o $OUTDIR/fftw3real.bin          $OUTDIR/fftw3real_common.o fftw3real_main.c -lfftw3 -lm  -lrt
-gcc -o $OUTDIR/fftw3real_measure.bin          $OUTDIR/fftw3real_common.o fftw3real_measure_main.c -lfftw3 -lm -lrt
+gcc -o $OUTDIR/fftw3real.bin          $OUTDIR/fftw3real_common.o fftw3real_32bit_main.c -lfftw3f -lm  -lrt
+gcc -o $OUTDIR/fftw3real_measure.bin          $OUTDIR/fftw3real_common.o fftw3real_32bit_measure_main.c -lfftw3f -lm -lrt
 #
 # Testing
 #
