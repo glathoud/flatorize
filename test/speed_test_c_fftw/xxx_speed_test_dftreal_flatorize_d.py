@@ -92,54 +92,54 @@ def speed_test_dftreal_flatorize_d( dftsize, verbose = True ):
 
         if verbose:
             print( INDENT + 'About to write: ' + filename_speed_test_d )
-        open( filename_speed_test_d, 'wb' ).write( test_d_code( info, pathless_from( filename_h ) ).encode( ENCODING ) )
+        open( filename_speed_test_d, 'wb' ).write( test_d_code( info, pathless_from( filename_h ), pathless_from( filename_d ) ).encode( ENCODING ) )
 
 
-        for fn_sh_map,dlang in (( filename_speed_test_dmd_sh, False,), ( filename_speed_test_dlang_sh, True,),):
+        fn_sh_map = filename_speed_test_dmd_sh
 
-            compilname = 'dlang' if dlang else 'dmd'
+        compilname = 'dmd'
 
-            cbname = compilname + bitsname
+        cbname = compilname + bitsname
 
-            fn_sh = fn_sh_map[ bits64 ]
+        fn_sh = fn_sh_map[ bits64 ]
 
-            if verbose:
-                print( INDENT + 'About to write: ' + fn_sh )
-            open( fn_sh, 'wb' ).write( test_compile_sh_code( info, pathless_from( filename_h ), pathless_from( filename_d ), pathless_from( filename_speed_test_d ), dlang = dlang, bits64 = bits64 ).encode( ENCODING )  )
-            os.chmod( fn_sh, stat.S_IRWXU )
+        if verbose:
+            print( INDENT + 'About to write: ' + fn_sh )
+        open( fn_sh, 'wb' ).write( test_compile_sh_code( info, pathless_from( filename_h ), pathless_from( filename_d ), pathless_from( filename_speed_test_d ), bits64 = bits64 ).encode( ENCODING )  )
+        os.chmod( fn_sh, stat.S_IRWXU )
 
-            #
+        #
 
-            if verbose:
-                print()
-                print('Compile and check (' + cbname + ')')
-                sys.stdout.flush()
+        if verbose:
+            print()
+            print('Compile and check (' + cbname + ')')
+            sys.stdout.flush()
 
-            fn_bin = (
-                filename_speed_test_dlang_bin if dlang else filename_speed_test_dmd_bin
-                )[ bits64 ]
+        fn_bin = (
+            filename_speed_test_dmd_bin
+            )[ bits64 ]
 
 
-            success = False
-            old_wd  = os.getcwd()
-            try:
-                dmd_compicheck_dur_sec = call_sh_assert_ok( fn_sh, fn_bin, verbose = verbose )
-                success = True
-            except Exception as e:
-                os.chdir( old_wd )
-                if not bits64:
-                    raise e
-                else:
-                    print( '64-bit support may be missing' )
-                    print()
-
+        success = False
+        old_wd  = os.getcwd()
+        try:
+            dmd_compicheck_dur_sec = call_sh_assert_ok( fn_sh, fn_bin, verbose = verbose )
+            success = True
+        except Exception as e:
             os.chdir( old_wd )
+            if not bits64:
+                raise e
+            else:
+                print( '64-bit support may be missing' )
+                print()
+
+        os.chdir( old_wd )
 
 
-            if success:
-                if verbose:
-                    print("done in {0:.3} seconds".format( dmd_compicheck_dur_sec ))
-                    print()
+        if success:
+            if verbose:
+                print("done in {0:.3} seconds".format( dmd_compicheck_dur_sec ))
+                print()
 
 
         #

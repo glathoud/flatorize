@@ -115,7 +115,7 @@ if ('undefined' !== typeof load)
             var c_cfg = Object.create( info.cfg );
             c_cfg.helper_h_name = name + '.h';
 
-            me._cO = flatorize.getCodeC( c_cfg );
+            me._cO = flatorize.getCodeD( c_cfg );
 
             // Remove functions (not interesting for JSON)
             delete me._cO.helper_h;

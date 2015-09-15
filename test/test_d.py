@@ -153,7 +153,7 @@ def assert_test( name, info, outdir, verbose ):
 
     if verbose:
         print( INDENT * 3 + 'Write: ' + filename_test_d )
-    open( filename_test_d, 'wb' ).write( test_d_code( info, filename_h ).encode( ENCODING ) )
+    open( filename_test_d, 'wb' ).write( test_d_code( info, filename_h, filename_d ).encode( ENCODING ) )
 
     # Generate compiler script (.sh)
 
@@ -176,9 +176,7 @@ def assert_test( name, info, outdir, verbose ):
 
     compilname = 'dmd'
 
-    bitsname = '64'
-
-    cbname = compilname + bitsname
+    cbname = compilname
 
     if verbose:
         print()
@@ -284,7 +282,7 @@ def call_sh_assert_ok( filename_test_sh, filename_test_bin, verbose=True ):
 
     return sh_duration_sec
 
-def test_d_code( info, filename_h ):
+def test_d_code( info, filename_h, filename_d ):
 
     array_name = None
     array_type = None
@@ -295,26 +293,18 @@ def test_d_code( info, filename_h ):
         
 
     return '''
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "common.h"
-#include "''' + filename_h + '''"
+import common, common_decl, core.stdc.string, std.datetime, std.format, std.math, std.stdio;
+import ''' + os.path.splitext( os.path.split( filename_h )[ 1 ] )[ 0 ] + ',' + os.path.splitext( os.path.split( filename_d )[ 1 ] )[ 0 ] + ''';
 
-extern const int   epsilon;
-
-extern ''' + info[ FUN_DECL_CODE ] + ''';
-
-int main( int argc, char **argv )
+int main( string[] args )
 {
   float tmp;
   int   n_iter_speed = 0;
 
-  if (argc > 1)  
+  if (args.length > 1)  
   {
-    sscanf( argv[ 1 ], "%g", &tmp );  /* Permit 1.234e5 notation */
-    n_iter_speed = (int)(tmp);
+    formattedRead( args[ 1 ], "%s", &tmp );  /* Permit 1.234e5 notation */
+    n_iter_speed = cast(int)(tmp);
   }
 
   ''' + comment_d_code( '--- Input(s) ---') + '''
@@ -326,11 +316,12 @@ int main( int argc, char **argv )
 
   ''' + comment_d_code( '--- Expected output ---' ) + '''
           
-  const ''' +(scalar_expected_output_init_d_code( info )  if  not array_expected_output_name( info )  else  (array_type + ' ' + array_expected_output_name( info ) + '[] = { ' + os.linesep + arrayinit_d_code( info, expected_output_alone = True )) + os.linesep + INDENT + '};')) + '''
+  const ''' +(scalar_expected_output_init_d_code( info )  if  not array_expected_output_name( info )  else  (array_type + ' ' + array_expected_output_name( info ) + '[] = [ ' + os.linesep + arrayinit_d_code( info, expected_output_alone = True )) + os.linesep + INDENT + '];')) + '''
 
 
   /* --- Unit test (mandatory) --- */
 
+  ''' + declare_output_d_code( info ) + '''
   ''' + call_once_d_code( info ) + '''
   
   ''' + unit_test_output_d_code( info )
@@ -341,15 +332,16 @@ int main( int argc, char **argv )
 
   if (n_iter_speed > 0)
   {
-    TEST_DURATION_BEGIN;
+    auto begin_time = Clock.currTime();
   
-    int i;
-    for (i = n_iter_speed ; i-- ; )
+    int iter;
+    for (iter = n_iter_speed ; iter-- ; )
     {
       ''' + call_once_d_code( info ) + '''
     }
  
-    TEST_DURATION_END;
+    auto end_time = Clock.currTime();
+    writeln(((end_time - begin_time).total!"nsecs") / 1e9);
   }
   else
   {
@@ -474,9 +466,9 @@ def infostruct_init_d_code( info ):
             name = x[ NAME ]
             if name in a_n2i:
                 ret.append( '' )
-                ret.append( 'const ' + array_type + ' ' + PREFIX_INPUT_DATA + name + '[] = {' )
+                ret.append( 'const ' + array_type + ' ' + PREFIX_INPUT_DATA + name + '[] = [' )
                 ret.append( arrayinit_d_code( info, expected_output_alone = False, one_name = name ) )
-                ret.append( '};' )
+                ret.append( '];' )
 
 
     ret.extend( [
@@ -484,7 +476,7 @@ def infostruct_init_d_code( info ):
             '',
             info[ STRUCT_NAME_TYPE ] + '* ' + info[ STRUCT_NAME_INSTANCE ] + ' = ' + info[ NAME ] + '_malloc();',
             '', 
-            info[ ARRAY_TYPE ] + '* ' + ARRAY_NAME + ' = ' + info[ STRUCT_NAME_INSTANCE ] + '->' + ARRAY_NAME + ';',
+            info[ ARRAY_TYPE ] + '* ' + ARRAY_NAME + ' = cast(' + info[ ARRAY_TYPE ] + '*)(&(' + info[ STRUCT_NAME_INSTANCE ] + '.' + ARRAY_NAME + '));',
             '',
             ] )
 
@@ -492,7 +484,7 @@ def infostruct_init_d_code( info ):
         for x in info[ ASMJS_TEST_INPUT ]:
             name = x[ NAME ]
             if name in a_n2i:
-                ret.append( 'memcpy( ' + info[ STRUCT_NAME_INSTANCE ] + '->' + name + ', ' + PREFIX_INPUT_DATA + name + ', ' + info[ STRUCT_NAME_INSTANCE ] + '->' + name.upper() + '_NBYTES );' )
+                ret.append( 'memcpy( ' + info[ STRUCT_NAME_INSTANCE ] + '.' + name + ', cast(' + info[ ARRAY_TYPE ] + '*)(' + PREFIX_INPUT_DATA + name + '), ' + info[ STRUCT_NAME_INSTANCE ] + '.' + name.upper() + '_NBYTES );' )
 
     return ret
 
@@ -511,10 +503,14 @@ def scalar_expected_output_init_d_code( info ):
     
     return x_type + ' ' + PREFIX_EXPECTED_OUTPUT + x[ NAME ] + ' = ' + format_value( x[ VALUE ], x_type ) + ';'
 
+def declare_output_d_code( info ):
+
+    return (info[ TYPED_OUT_VARTYPE ] + ' ' + PREFIX_OUTPUT + info[ TYPED_OUT_VARNAME ] + ';')  if  info[ HAS_SIMPLE_OUTPUT ]  else  '' 
+
 def call_once_d_code( info ):
 
     return (
-        ((info[ TYPED_OUT_VARTYPE ] + ' ' + PREFIX_OUTPUT + info[ TYPED_OUT_VARNAME ] + ' = ')  if  info[ HAS_SIMPLE_OUTPUT ]  else  '') + 
+        ((PREFIX_OUTPUT + info[ TYPED_OUT_VARNAME ] + ' = ')  if  info[ HAS_SIMPLE_OUTPUT ]  else  '') + 
         info[ NAME ] + '( ' + ', '.join( 
             [ PREFIX_INPUT + s  for s in info[ SIMPLE_IN_VARARR ] ] + 
             ([ ARRAY_NAME, ]  if  info[ HAS_ARRAY]  else  [])
@@ -537,7 +533,7 @@ def unit_test_output_d_code( info ):
         o_type = info[ TYPED_OUT_VARTYPE ]
 
         lines.append( o_type + ' ' + SIMPLE_ERROR + ' = fabs( ' + one_expected + ' - ' + one_out + ' );'  )
-        lines.append( 'if (' + SIMPLE_ERROR + ' > EPSILON) { fprintf( stderr, "Wrong output: %g, expected: %g, error: %g\\n", ' + one_out + ', ' + one_expected + ', ' + SIMPLE_ERROR + ' ); return -1; }')
+        lines.append( 'if (isNaN(' + SIMPLE_ERROR + ')  ||  ' + SIMPLE_ERROR + ' > EPSILON) { stderr.writefln( "Wrong output: %g, expected: %g, error: %g", ' + one_out + ', ' + one_expected + ', ' + SIMPLE_ERROR + ' ); return -1; }')
         
 
     else:
@@ -545,7 +541,7 @@ def unit_test_output_d_code( info ):
         xi = info[ ARRAY_NAME2INFO ][ x[ NAME ] ]
 
         one_expected = PREFIX_EXPECTED_OUTPUT + o_name
-        one_out      = info[ STRUCT_NAME_INSTANCE ] + '->' + info[ TYPED_OUT_VARNAME ]
+        one_out      = info[ STRUCT_NAME_INSTANCE ] + '.' + info[ TYPED_OUT_VARNAME ]
 
         o_type = info[ ARRAY_TYPE ]
 
@@ -555,7 +551,7 @@ def unit_test_output_d_code( info ):
         lines.append( INDENT * 2 + o_type + ' ' + SIMPLE_ERROR + ' = fabs( ' + one_expected + '[i] - ' + one_out + '[i] );' )
         lines.append( INDENT * 2 + 'if (' + SIMPLE_ERROR + ' > EPSILON)' )
         lines.append( INDENT * 2 + '{' )
-        lines.append( INDENT * 3 + 'fprintf( stderr, "Wrong output[%d]: %g, expected[%d]: %g, error: %g\\n", i, ' + one_out + '[i], i, ' + one_expected + '[i], ' + SIMPLE_ERROR + ' );' )
+        lines.append( INDENT * 3 + 'stderr.writefln( "Wrong output[%d]: %g, expected[%d]: %g, error: %g\\n", i, ' + one_out + '[i], i, ' + one_expected + '[i], ' + SIMPLE_ERROR + ' );' )
         lines.append( INDENT * 3 + 'return -1;')
         lines.append( INDENT * 2 + '}' )
         lines.append( INDENT + '}' )
@@ -578,13 +574,16 @@ def format_value( v, t ):
 
 
 
-def test_compile_sh_code( info, filename_h, filename_d, filename_test_d, bits64=True ):
+def test_compile_sh_code( info, filename_h, filename_d, filename_test_d, bits64 = None ):
 
-    bits = '64'
+    dot  = '.dmd' + ('' if bits64 is None else ('64' if bits64 else '32')) + '.'
 
-    dot  = '.dmd' + bits + '.'
+    common_decl_o = 'common_decl' + dot + 'o'
 
     common_o = 'common' + dot + 'o'
+
+    filename_decl_d = os.path.splitext( filename_d )[ 0 ] + '_decl.d'
+    filename_decl_o = os.path.splitext( filename_d )[ 0 ] + '_decl' + dot + 'o'
 
     filename_s = os.path.splitext( filename_d )[ 0 ] + dot + 's'
     filename_o = os.path.splitext( filename_d )[ 0 ] + dot + 'o'
@@ -602,12 +601,16 @@ set -v
 #
 # Compiling
 #
+''' + compilo + ''' -c -of''' + common_decl_o + '''    common_decl.d
+#
 ''' + compilo + ''' -c -of''' + common_o + '''    common.d
 #
 #
+''' + compilo + ''' -c -of''' + filename_decl_o + '''    ''' + filename_decl_d + '''
+#
 ''' + compilo + ''' -c -of''' + filename_o + '''    ''' + filename_d + '''
 #
-''' + compilo + ''' -of''' + filename_test_bin + '    ' + common_o + ' ' + filename_o + ' ' + filename_test_d + ''' 
+''' + compilo + ''' -of''' + ' '.join( ( filename_test_bin, ' ', common_decl_o, common_o, filename_decl_o, filename_o, ' ', filename_test_d, ) ) + ''' 
 #
 # Unit test
 #

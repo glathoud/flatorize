@@ -68,7 +68,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
     // // ...  the remaining dependencies of `exprgen_fun` can be flatorized here ...
     // 
     // // Now we have all flatorized all dependencies of `exprgen_fun`, so we can generate code
-    // var o = flatorize.getCodeD( { name: "functionname", switcher: switcherfun } );
+   // var o = flatorize.getCodeD( { name: "functionname", switcher: switcherfun } );
     // }}}
     {
         var topFunName = cfg.name;   // Mandatory
@@ -229,7 +229,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
         var declArr = fixed.simple_in_vararr.map( decl_in_var );
         
         if (fixed.single_common_array_btd)
-            declArr.push( '/*input and/or output array(s):*/ ' + decl( fixed.sca_name + '[' + fixed.count + ']', fixed.sca_type, /*notconst:*/true ) );
+            declArr.push( '/*input and/or output array(s):*/ ' + decl( fixed.sca_name, fixed.sca_type + '*', /*notconst:*/true ) );
         
         arr.push( declArr.join( ', ' ) );
 
@@ -383,22 +383,10 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
                         ''
                         , '};'
                     ] )
-                    .concat( [ 
-                        ''
-                        , helper_init_decl( fixed, opt ) + ';'
-                        , helper_done_decl( fixed, opt ) + '; ' + line_comment_code( please_please( fixed ) )
-                    ] )
             );
             
 
         }
-
-        lines.push(
-            '' 
-            , line_comment_code( generated_text( fixed ) )
-            , ''
-            , funDeclCodeD( fixed ) + ';'
-        );
 
         return lines.join( '\n' );
     }
@@ -436,7 +424,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
             lines = lines
                 .concat(
                     [
-                        'import core.memory;'
+                        'import core.memory, std.stdio, core.stdc.stdlib;'
                         , 'import ' + helper_h_name.replace (/\.d$/,'') + '; ' + line_comment_code( 'customizable, or customized, through `opt.helper_h_name`' )
                         , ''
                         , ''
@@ -503,9 +491,13 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
         (sca_type  ||  null).substring.call.a;
 
         return [
-            line_comment_code( 'Constant values: individual array sizes' )
-            , 'static const ' + STRUCT_NAME + ' ' + INIT + ' = { ' + 
-                arr.map( function ( name ) {
+        ]
+            .concat( [
+                ''
+                , STRUCT_NAME + '* ' + RET + ' = new ' + STRUCT_NAME
+                , '('
+                , line_comment_code( 'Constant values: individual array sizes' )
+                , arr.map( function ( name ) {
                     var info = an2i[ name ]
                     ,   n    = info.n
                     ,   type = info.type
@@ -516,17 +508,14 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
                         info.n + ''
                         , info.n + ' * ' + type + '.sizeof'
                     ];
-                } ).reduce( concat_two_arrays ).join( ', ' ) + ' };'
-        ]
-            .concat( [
-                ''
-                , STRUCT_NAME + '* ' + RET + ' = GC.calloc( ' + STRUCT_NAME + '.sizeof );' 
-                , 'if (NULL == ' + RET + ')'
+                } ).reduce( concat_two_arrays ).join( ', ' )
+                , ');'
+                , ''
+                , 'if (null == ' + RET + ')'
                 , '{'
-                , indent( 'printf( "Memory allocation failed: `' + STRUCT_NAME + '`.\\n" );' )
+                , indent( 'stderr.writeln( "Memory allocation failed: `' + STRUCT_NAME + '`." );' )
                 , indent( 'exit( 1 );' )
                 , '}'
-                , 'memcpy( ' + RET + ', &' + INIT + ', ' + STRUCT_NAME + '.sizeof );'
             ] )
             .concat( fixed.array_in_vararr.map( array_convenience ) )
             .concat( fixed.typed_out_varname in fixed.array_name2info  
@@ -543,7 +532,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
         {
             var info = an2i[ name ];
             
-            return RET + '.' + name + ' = ' + RET + '.' + sca_name + ' + ' + info.begin + ';'
+            return RET + '.' + name + ' = cast(' + info.type + '*)(' + RET + '.' + sca_name + ') + ' + info.begin + ';'
         }
     }
     
@@ -581,7 +570,7 @@ if ('undefined' === typeof flatorize.type_util  &&  'function' === typeof load)
             , '{'
         ]
             .concat( [
-                'free( ' + struct_name + ' );'
+                // not needed (check in depth "new" in D -> should be garbaged, but cannot predict when) 'free( ' + struct_name + ' );'
             ].map( indent ) )
             .concat( [
                 '}'

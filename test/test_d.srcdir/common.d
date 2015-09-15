@@ -59,7 +59,6 @@ void dftreal_loopy( const int dftsize, const double * xreal_in, double* X_out )
   double * one_out = X_out;
   double toto = 0;
   double sum_r, sum_i;
-  // xxx  double creal, cimag;
   
   
   for ({k = 0;

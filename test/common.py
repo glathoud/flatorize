@@ -2,8 +2,8 @@
 
 import glob, json, math, os, re, shutil, subprocess, sys
 
-D8 = 'd8'
-#D8 = '/home/alpstein/software/v8/out/native/d8'
+#D8 = 'd8'
+D8 = '/home/alpstein/software/v8/out/native/d8'
 
 ARRAY_COUNT       = 'array_count'
 ARRAY_NAME2INFO   = 'array_name2info'
