@@ -152,6 +152,8 @@ def meta( situation, bitsname = None ):
         ret[ situation ] = d8_call( 'print(version())' ).strip()
     elif situation == 'gcc' or situation == 'clang':
         ret[ situation ] = sh_call( situation + ' --version', local=False ).strip()
+    elif situation in ('dmd', 'gdc', 'ldc2', ):
+        ret[ situation ] = sh_call( situation + ' --version', local=False ).strip()
     else:
         raise Exception( 'meta: unrecognized situation "{0}"'.format( situation ) )
 

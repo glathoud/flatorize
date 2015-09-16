@@ -290,11 +290,13 @@ def test_d_code( info, filename_h, filename_d ):
     if info[ HAS_ARRAY ]:
         array_name = ARRAY_NAME
         array_type = info[ ARRAY_TYPE ]
-        
+
+
+    d_module_name = os.path.splitext( os.path.split( filename_d )[ 1 ] )[ 0 ]
 
     return '''
 import common, common_decl, core.stdc.string, std.datetime, std.format, std.math, std.stdio;
-import ''' + os.path.splitext( os.path.split( filename_h )[ 1 ] )[ 0 ] + ',' + os.path.splitext( os.path.split( filename_d )[ 1 ] )[ 0 ] + ''';
+import ''' + os.path.splitext( os.path.split( filename_h )[ 1 ] )[ 0 ] + ',' + d_module_name + ''';
 
 int main( string[] args )
 {
@@ -337,7 +339,7 @@ int main( string[] args )
     int iter;
     for (iter = n_iter_speed ; iter-- ; )
     {
-      ''' + call_once_d_code( info ) + '''
+      ''' + call_once_d_code( info, d_module_name ) + '''
     }
  
     auto end_time = Clock.currTime();
@@ -507,10 +509,11 @@ def declare_output_d_code( info ):
 
     return (info[ TYPED_OUT_VARTYPE ] + ' ' + PREFIX_OUTPUT + info[ TYPED_OUT_VARNAME ] + ';')  if  info[ HAS_SIMPLE_OUTPUT ]  else  '' 
 
-def call_once_d_code( info ):
+def call_once_d_code( info, module_name=None ):
 
     return (
-        ((PREFIX_OUTPUT + info[ TYPED_OUT_VARNAME ] + ' = ')  if  info[ HAS_SIMPLE_OUTPUT ]  else  '') + 
+        ((PREFIX_OUTPUT + info[ TYPED_OUT_VARNAME ] + ' = ')  if  info[ HAS_SIMPLE_OUTPUT ]  else  '') +
+        ('' if not module_name else (module_name + '.')) +
         info[ NAME ] + '( ' + ', '.join( 
             [ PREFIX_INPUT + s  for s in info[ SIMPLE_IN_VARARR ] ] + 
             ([ ARRAY_NAME, ]  if  info[ HAS_ARRAY]  else  [])
@@ -574,16 +577,16 @@ def format_value( v, t ):
 
 
 
-def test_compile_sh_code( info, filename_h, filename_d, filename_test_d, bits64 = None ):
+def test_compile_sh_code( info, filename_h, filename_d, filename_test_d, compilname = 'dmd', bits64 = None ):
 
-    dot  = '.dmd' + ('' if bits64 is None else ('64' if bits64 else '32')) + '.'
+    dot  = '.' + compilname + ('' if bits64 is None else ('64' if bits64 else '32')) + '.'
 
     common_decl_o = 'common_decl' + dot + 'o'
 
     common_o = 'common' + dot + 'o'
 
-    filename_decl_d = os.path.splitext( filename_d )[ 0 ] + '_decl.d'
-    filename_decl_o = os.path.splitext( filename_d )[ 0 ] + '_decl' + dot + 'o'
+    filename_decl_d = re.sub( r'\.h$', '_decl.d', filename_h )
+    filename_decl_o = os.path.splitext( filename_decl_d )[ 0 ] + dot + 'o'
 
     filename_s = os.path.splitext( filename_d )[ 0 ] + dot + 's'
     filename_o = os.path.splitext( filename_d )[ 0 ] + dot + 'o'
@@ -592,8 +595,21 @@ def test_compile_sh_code( info, filename_h, filename_d, filename_test_d, bits64 
 
     filename_test_bin_tail = os.path.split( filename_test_bin )[ 1 ]
 
-    compilo = 'dmd'
+    compilo = compilname
 
+    optim_flags = (
+        ' -O' if compilname is 'dmd' else
+        ' -O3 -fomit-frame-pointer -mtune=native -fstrict-aliasing -fno-schedule-insns -ffast-math'     if compilname is 'gdc' else
+        ' -O3' if compilname is 'ldc2' else
+        None
+        )
+
+    of = { 'dmd'  : '-of',
+           'gdc'  : '-o ',
+           'ldc2' : '-of=',
+           }[ compilname ]
+
+    
 
     return '''#!/usr/bin/env sh
 
@@ -601,16 +617,16 @@ set -v
 #
 # Compiling
 #
-''' + compilo + ''' -c -of''' + common_decl_o + '''    common_decl.d
+''' + compilo + ''' ''' + optim_flags + ''' -c ''' + of + common_decl_o + '''    common_decl.d
 #
-''' + compilo + ''' -c -of''' + common_o + '''    common.d
+''' + compilo + ''' ''' + optim_flags + ''' -c ''' + of + common_o + '''    common.d
 #
 #
-''' + compilo + ''' -c -of''' + filename_decl_o + '''    ''' + filename_decl_d + '''
+''' + compilo + ''' ''' + optim_flags + ''' -c ''' + of + filename_decl_o + '''    ''' + filename_decl_d + '''
 #
-''' + compilo + ''' -c -of''' + filename_o + '''    ''' + filename_d + '''
+''' + compilo + ''' ''' + optim_flags + ''' -c ''' + of + filename_o + '''    ''' + filename_d + '''
 #
-''' + compilo + ''' -of''' + ' '.join( ( filename_test_bin, ' ', common_decl_o, common_o, filename_decl_o, filename_o, ' ', filename_test_d, ) ) + ''' 
+''' + compilo + ''' ''' + optim_flags + '''    ''' + of + ' '.join( ( filename_test_bin, ' ', common_decl_o, common_o, filename_decl_o, filename_o, ' ', filename_test_d, ) ) + ''' 
 #
 # Unit test
 #
