@@ -1,0 +1,187 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8" /> 
+<title>flatorize_d: Generate fast D code</title>
+<link rel="stylesheet" type="text/css" href="prettify/prettify.css">
+<link rel="stylesheet" type="text/css" href="style.css">
+<script type="text/javascript" src="log.js"></script>
+<script type="text/javascript" src="flatorize.js"></script>
+<script type="text/javascript" src="examples.js"></script>
+<script type="text/javascript">generate_small_functions();</script>
+<script type="text/javascript" src="flatorize_type_util.js"></script>
+<script type="text/javascript" src="flatorize_d.js"></script>
+<script type="text/javascript" src="modifsplitradix.js"></script>
+<!--script type="text/javascript" src="examples_c.js"></script-->
+</head>
+<body>
+
+<a href="https://github.com/glathoud/flatorize" class="print-hidden">
+  <img style="position: fixed; top: 0; right: 0; border: 0; margin: 0; padding: 0;"
+       src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"
+       alt="Fork me on GitHub">
+</a>
+
+<h2><code>flatorize_d</code>: Generate fast D code</h2>
+
+<p style="text-align:right">by <a href="http://glat.info">Guillaume Lathoud</a><span class="print">&nbsp;[1]</span>, September 2015</p>
+
+<div class="fixed-br print-hidden"><a href="#top">Back to the top</a></div>
+
+
+
+<p>This page presents a plugin method <code>flatorize.getCodeD()</code> (GitHub <a href="https://github.com/glathoud/flatorize/blob/master/flatorize_d.js">source</a>) that goes on top of <code>flatorize</code> (see the <a href="index.html">main article</a>, GitHub <a href="https://github.com/glathoud/flatorize/blob/master/flatorize.js">source</a>).</p>
+
+
+
+
+
+<p>See also:</p>
+<ul>
+<li><a href="index.html">Main article</a>.</li>
+<li><a href="asmjs.html"><code>asm.js</code> plugin</a>.</li>
+<li><a href="c.html">C plugin</a>.</li>
+<li>Unit tests for <code>asm.js</code>, C and D (source on <a href="https://github.com/glathoud/flatorize/tree/master/test">GitHub</a>).</li>
+<li><a href="test/speed_test_c_fftw/dftreal.html">Speed tests</a> of the various languages &amp; platforms (JS, <code>asm.js</code>, C, D…; <a href="https://github.com/glathoud/flatorize/tree/master/test/speed_test_c_fftw/">GitHub</a>).</li>
+</ul>
+
+
+
+
+<h3 class="anchorable" id="contents">Contents <a href="#contents" class="anchor">#</a></h3>
+
+<ul class="contents-ul"></ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h3 class="anchorable" id="c-f2">HOWTO: 2-step example <a href="#c-f2" class="anchor">#</a></h3>
+
+<p>Here is an expression definition that uses complex numbers (details in the <a href="index.html#example">main article</a>):</p>
+<pre class="prettyprint lang-js"><code>// f:
+<script type="text/javascript">document.write(f2.exprgen+"");</script></code></pre>
+
+<p>A call to <code>flatorize()</code>:</p>
+<pre class="prettyprint lang-js"><code>// note the type declarations, ignored by JavaScript but used later for C
+f2 = flatorize('a:[2 float],b:[2 float],c:[2 float]->d:[2 float]',f);
+</code></pre>
+
+<p>...generates flatorized JavaScript code:</p>
+<pre class="prettyprint lang-js"><code>// f2.getDirect():
+<script type="text/javascript">document.write(f2.getDirect()+"");</script></code></pre>
+
+<p>Then, a call to <code>flatorize.getCodeD()</code>:</p>
+<script type="text/javascript" id="script-gen-f2_c_code">var f2_obj = flatorize.getCodeD( { switcher: f2, name: "f2" } );</script>
+<pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(document.getElementById("script-gen-f2_c_code").textContent);</script></code></pre>
+
+<p>...generates <code>f2_obj.code</code>, a JavaScript string containing the D code below:</p>
+<pre class="prettyprint lang-c"><code><script type="text/javascript">document.write(f2_obj.code);</script></code></pre>
+<p class="small">(This code, as a few others below, was produced and inserted as you loaded the page.)</p>
+
+<p>Having the intermediate <code>flatorize</code>d implementation <code>f2</code> can be useful to build other <code>flatorize</code>d implementations, i.e. to write well-encapsulated, maintainable code using many small functions.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h3 class="anchorable" id="f2-shortcut">HOWTO: 1-step shortcut <a href="#f2-shortcut" class="anchor">#</a></h3>
+
+<p>If an intermediate <code>flatorize</code>d implementation is not needed, one can directly create D code in a single step:</p>
+<script type="text/javascript" id="script-gen-f2_c_direct">var f2_obj_direct = flatorize.getCodeD( { 
+  name      : 'f2'
+  , varstr  : 'a:[2 float],b:[2 float],c:[2 float]->d:[2 float]'
+  , exprgen : f2.exprgen 
+} );</script>
+<pre class="prettyprint lang-js"><code><script type="text/javascript">document.write(document.getElementById("script-gen-f2_c_direct").textContent.replace("f2.exprgen",""+f2.exprgen));</script></code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h3 class="anchorable" id="helper-code">HOWTO: generate boilerplate code<a href="#helper-code" class="anchor">#</a></h3>
+
+<p>JavaScript helper methods <code>f2_obj.helper_*()</code> generate boilerplate D code, especially useful to manage array inputs/output:</p>
+
+<p><code>f2_obj.helper_h()</code> returns a JavaScript string containing this D code:</p>
+<pre class="prettyprint lang-c"><code><script type="text/javascript">document.write(f2_obj.helper_h());</script></code></pre>
+
+
+
+<p><code>f2_obj.helper_d()</code> returns a JavaScript string containing the D code below. Instead of the default file name <code>"helper.h"</code> you can optionally specify another file name using <code>f2_obj.helper_d({ helper_h_name : "another_name.h" })</code></p>
+<pre class="prettyprint lang-c"><code id="helper_d"></code></pre>
+<script type="text/javascript">document.getElementById("helper_d").textContent = f2_obj.helper_d();</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" src="contents_ul.js"></script>
+<script type="text/javascript" src="prettify/prettify.js"></script>
+<script type="text/javascript">setTimeout( prettyPrint );</script>
+<script type="text/javascript" src="btn_anchor.js"></script>
+<script type="text/javascript" src="../MathJax/MathJax.js?config=default"></script>
+<script type="text/javascript" src="ga.js"></script>
+
+</body>
+</html>
