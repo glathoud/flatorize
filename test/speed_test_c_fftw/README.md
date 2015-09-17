@@ -12,7 +12,7 @@ Top entry points:
 
 .
 
-[./dftrel0_all.sh](dftrel0_all.sh) `<environment_name>`
+[./dftreal0_all.sh](dftreal0_all.sh) `<environment_name>`
 
 Convenience wrapper that runs `dftreal0_speed_test.py` on sizes 16, 32, 64, 128, 256 and 1024.
 
