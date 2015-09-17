@@ -2,7 +2,7 @@
 
 set -v
 cd ~/d/glathoud/
-export A=flatorize.`date +"%Y-%m-%d-%Hh%M"`.tar.gz ; tar zcf $A flatorize ; cp $A /media/alpstein/USB30FD/
+export A=flatorize.`date +"%Y-%m-%d-%Hh%M"`.tar.gz ; tar zcf $A flatorize ; cp $A /media/gl/USB30FD/
 cd -
 set +v
-ls -lrt /media/alpstein/USB30FD/ | tail -1
+ls -lrt /media/gl/USB30FD/ | tail -1
