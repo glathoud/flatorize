@@ -40,13 +40,25 @@
 <p><code>flatorize</code> lets you write well-encapsulated math code - i.e. many small functions - and automatically generates flat, <strong>very fast</strong> JavaScript code.</p>
 
 
-<p>Speedups exceed +1000% in many cases, including matrix multiplication and the Discrete Fourier Transform (<a href="#push-all">full results</a>).</p>
+<p>Speedups exceed +1000% in many cases, including matrix multiplication and the Discrete Fourier Transform (DFT).</p>
+
+<p>Additionally:</p>
+<ul>
+  <li>A plugin for <a href="asmjs.html"><code>asm.js</code></a> generates even faster JavaScript using <code>TypedArray</code>.</li>
+  <li>Plugins for the <a href="c.html">C</a> and <a href="d.html">D</a> languages are also available.
+    <ul><li>On the DFT task, <code>flatorize_d</code> runs <a href="test/speed_test_c_fftw/dftreal.html#i7_dell_ubuntu15_04">faster</a> than the state-of-the-art FFTW.</li></ul>
+  </li>
+</ul>
+
+<p>Tests on the command line:</p>
+
+<ul>
+  <li>Unit tests for <code>asm.js</code>, C and D (source on <a href="https://github.com/glathoud/flatorize/tree/master/test">GitHub</a>).</li>
+  <li><a href="test/speed_test_c_fftw/dftreal.html">Speed tests</a> of the various languages &amp; platforms (JS, <code>asm.js</code>, C, D…; <a href="https://github.com/glathoud/flatorize/tree/master/test/speed_test_c_fftw/">GitHub</a>).</li>
+</ul>
 
 <p>External links:</p>
 <ul>
-<li><a href="asmjs.html"><code>asm.js</code> plugin</a> to generate even faster code in Firefox, Chrome, V8...</li>
-<li><a href="c.html">C plugin</a> to generate very fast C code.</li>
-<li><a href="test/speed_test_c_fftw/dftreal.html">Speed tests</a> of the various solutions &amp; languages (JS, <code>asm.js</code>, C, ...).</li>
 <li>Source files on <a href="https://github.com/glathoud/flatorize">GitHub</a>.</li>
 <li>Budapest 2014 nodebp/bpjs meetup <a href="http://glat.info/bpjs2014/index.html">slides</a> &amp; <a href="http://www.youtube.com/watch?v=FxNNSvNDbW8">video</a>.</li>
 </ul>
@@ -570,7 +582,7 @@ with the original Cooley-Tukey:</p>
 <h3 class="anchorable" id="disclaimer">Disclaimer <a href="#disclaimer" class="anchor">#</a></h3>
 
 <p>By no means did I intend <code>flatorize</code> to compete with highly specialized and/or native implementations <em>of a particular task</em> (e.g. <a href="http://fftw.org">FFTW</a> to implement DFT).</p>
-<p>Rather, this simple, task-agnostic approach &ndash;&nbsp;factorizing and flattening&nbsp;&ndash; can give <em>huge enough</em> performance gains in many cases, which spares us the development and maintainance costs of  "going native".</p>
+<p>Rather, this simple, task-agnostic approach &ndash;&nbsp;factorizing and flattening&nbsp;&ndash; can give <em>huge enough</em> performance gains in many cases, which spares the development and maintainance costs of writing optimized native code by hand.</p>
 
 <hr class="section-hr">
 
@@ -613,7 +625,7 @@ the rest on <a href="https://github.com/glathoud/flatorize">github</a>.</p>
 
 <p>.</p>
 
-<p>Flatorizing DFT1024 in a tractable time &ndash; order of magnitude: 1 second &ndash; actually required a bit of work, which you can look at in the directory "<a href="OLD">OLD</a>" (<code>cplx_v*.js</code> files). The method is not specific to DFT, but rather very generic. The resulting, cleaned-up implementation: <a href="flatorize.js">flatorize.js</a>
+<p>Flatorizing DFT1024 in a tractable time &ndash; order of magnitude: 1 second &ndash; actually required a bit of work. The method is not specific to DFT, but rather very generic. The resulting, cleaned-up implementation: <a href="flatorize.js">flatorize.js</a>
 </p>
 
 <hr class="section-hr">

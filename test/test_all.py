@@ -6,6 +6,7 @@ from common import *
 
 from test_asmjs import test_asmjs
 from test_c     import test_c
+from test_d     import test_d
 
 def main( verbose = True ):
 
@@ -16,6 +17,9 @@ def main( verbose = True ):
 
     if verbose: print( os.linesep + '.' )
     result_li.extend( test_c( verbose = verbose ) )
+    
+    if verbose: print( os.linesep + '.' )
+    result_li.extend( test_d( verbose = verbose ) )
     
 
     s = summary( result_li )

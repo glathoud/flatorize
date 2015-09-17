@@ -22,6 +22,7 @@
 
     // Tools
 
+    yak.array     = yak_array;
     yak.e         = yak_e;
     yak.eval      = yak_eval;
     yak.f         = yak_f;
@@ -65,7 +66,7 @@
             return simple_or_object.html;
 
         if (simple_or_object instanceof Array)
-            return simple_or_object.map( yak ).join( '\n' );
+            return simple_or_object.map( yak ).join( '' );
 
         var karr = Object.keys( simple_or_object );
         if (karr.length !== 1)
@@ -88,6 +89,35 @@
             ?  '<' + k + '/>'  
             :  '<' + k + '>' + yak( v ) + '</' + tag + '>'
         ;
+    }
+
+    function yak_array( /*integer*/n )
+    // Return a new array of length `n` which already has all its
+    // elements (as opposed to `new Array(n)`), so that one can 
+    // write: 
+    //
+    // {{{
+    // var arr12 = yak.array( 12 ).map( function ( tmp, i ) { return i; } );
+    // // [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    // }}}
+    //
+    // or shorter:
+    //
+    // {{{
+    // var arr12 = yak.array( 12 ).map( yak.f( "k" ) );
+    // // [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    //
+    // var arr12 = yak.array( 12 ).map( yak.f( "2*k+1" ) );
+    // // [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23]
+    // }}}
+    //
+    // Difference:
+    // {{{
+    // 0 in new Array( 12 )  // false
+    // 0 in yak.array( 12 )  // true
+    // }}}
+    {
+        return Array.apply( null, Array( n ) ); // based on:  http://stackoverflow.com/a/19286846
     }
 
     function yak_e( /*expression or partial expression using `v` (left) and optionally `k` (right) variables*/codestring )
