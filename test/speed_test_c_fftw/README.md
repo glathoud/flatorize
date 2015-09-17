@@ -3,10 +3,10 @@ Top entry points:
 .
 
 [./dftreal0_speed_test.py](dftreal0_speed_test.py) `<dftsize>` `<environment_name>` to run the speed tests, and:
- * write the results into the file `dftreal1024.results/<environment_name>.json`,
- * update the result list `dftreal1024.results.list.json`.
+ * write the results into the file `dftreal<dftsize>.results/<environment_name>.json`,
+ * update the result list `dftreal<dftsize>.results.list.json`.
 
-`<dftsize>` should be a number, power of 2, e.g. `1024`.
+`<dftsize>` should be a number, power of 2, e.g. `<dftsize>`.
 
 `<environment_name>` should loosely describe your CPU, machine and operating system, e.g. I used "i5_t420s_ubuntu14.04" for an Intel i5 CPU in a Thinkpad T420s with the Ubuntu 14.04 operating system.
 
