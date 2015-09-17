@@ -1,6 +1,8 @@
 Top entry points:
 
-[./dftreal.py](dftreal.py) `<dftsize>` `<environment_name>` to run the speed tests, and:
+.
+
+[./dftreal0_speed_test.py](dftreal0_speed_test.py) `<dftsize>` `<environment_name>` to run the speed tests, and:
  * write the results into the file `dftreal1024.results/<environment_name>.json`,
  * update the result list `dftreal1024.results.list.json`.
 
@@ -8,9 +10,19 @@ Top entry points:
 
 `<environment_name>` should loosely describe your CPU, machine and operating system, e.g. I used "i5_t420s_ubuntu14.04" for an Intel i5 CPU in a Thinkpad T420s with the Ubuntu 14.04 operating system.
 
+.
+
+[./dftrel0_all.sh](dftrel0_all.sh) `<environment_name>`
+
+Convenience wrapper that runs `dftreal0_speed_test.py` on sizes 16, 32, 64, 128, 256 and 1024.
+
+.
+
 [./dftreal.html](dftreal.html) to show all results, as well as more detailed explanations.
  * by default `dftsize=1024`.
  * for other values try to append `?dftsize=<dftsize>` to the URL, e.g. `dftreal.html?dftsize=512`.
+
+.
 
 = Note =
 
