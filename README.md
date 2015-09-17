@@ -81,11 +81,11 @@ return [ [ (_1 * _g) + (_2 * _j) + (_3 * _m) + (_4 * _p), (_1 * _h) + (_2 * _k) 
 
 Speedups exceed +1000% in many cases, including matrix multiplication and the Discrete Fourier Transform (full results).
 
-A [plugin](flatorize_asmjs.js) permits to generate even faster JavaScript code using `TypedArray`, in an `asm.js`-compatible way. See [./asmjs.html](asmjs.html) (live [page](http://glat.info/flatorize/c.html))
+A [plugin](flatorize_asmjs.js) permits to generate even faster JavaScript code using `TypedArray`, in an `asm.js`-compatible way. For usage explanations, see the live [page](http://glat.info/flatorize/c.html) (page source: [./asmjs.html](asmjs.html)).
 
-A [plugin](flatorize_c.js) permits to generate fast C code as well. See [./c.html] (c.html) (live [page](http://glat.info/flatorize/c.html)).
+A [plugin](flatorize_c.js) permits to generate fast C code as well. For usage explanations, see the live [page](http://glat.info/flatorize/c.html) (source [./c.html](c.html)).
 
-A [plugin](flatorize_d.js) permits to generate fast D code as well. See [./d.html] (d.html) (live [page](http://glat.info/flatorize/d.html)).
+A [plugin](flatorize_d.js) permits to generate fast D code as well. For usage explanations, see the live [page](http://glat.info/flatorize/d.html) (source [./d.html] (d.html)).
 
 ## More
 
