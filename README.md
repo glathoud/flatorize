@@ -91,6 +91,6 @@ A [plugin](flatorize_d.js) permits to generate fast D code as well. For usage ex
 
 For more details read the article:
  * download this repository and open [./index.html](index.html)
- * or visit the live [page](http://glat.info/flatorize) including [speed tests on the Discrete Fourier Transform](http://glat.info/test/speed_test_c_fftw/dftreal.html)
+ * or visit the live [page](http://glat.info/flatorize) including [extensive speed tests on the Discrete Fourier Transform](http://glat.info/flatorize/test/speed_test_c_fftw/dftreal.html)
 
 See also the [slides](http://glat.info/bpjs2014/index.html) and [video](http://www.youtube.com/watch?v=FxNNSvNDbW8) from the Budapest 2014 nodebp/bpjs meetup.
