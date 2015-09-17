@@ -69,7 +69,7 @@ def speed_test_dftreal_flatorize_d( dftsize, verbose = True ):
 
         #
 
-        filename_h      = os.path.abspath( os.path.join( outdir, info[ 'cfg' ][ 'helper_h_name' ] ) )
+        filename_h      = os.path.abspath( os.path.join( outdir, info[ 'cfg' ][ 'helper_decl_name' ] ) )
         extless         = extless_from( filename_h )
         filename_d      = re.sub( r'_decl$', '', extless ) + '.d'
         filename_speed_test_d   = extless + '_speed_test.d'
@@ -94,7 +94,7 @@ def speed_test_dftreal_flatorize_d( dftsize, verbose = True ):
         if verbose:
             print()
             print( INDENT + 'About to write: ' + filename_h )
-        open( filename_h, 'wb' ).write( info[ 'helper_h_dfltcode' ].encode( ENCODING ) )
+        open( filename_h, 'wb' ).write( info[ 'helper_decl_dfltcode' ].encode( ENCODING ) )
 
         if verbose:
             print( INDENT + 'About to write: ' + filename_d )

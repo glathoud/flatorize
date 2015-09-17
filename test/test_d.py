@@ -69,11 +69,11 @@ def test_d( verbose=True ):
                          , '  var asmjs_info = passed_asmjsgen_info[ name ]'
                          , '  ,   cfg        = Object.create( asmjs_info.cfg )'
                          , '  ;'
-                         , '  cfg.helper_h_name = name + \'_decl.d\';'
+                         , '  cfg.helper_decl_name = name + \'_decl.d\';'
 
                          , '  var o = flatorize.getCodeD( cfg );'
 
-                         , '  delete o.helper_h; delete o.helper_d;'  # drop functions because uninteresting for JSON
+                         , '  delete o.helper_decl; delete o.helper_d;'  # drop functions because uninteresting for JSON
 
                          , '  o.' + ASMJS_TEST_INPUT + '  = asmjs_info.input;'
                          , '  o.' + ASMJS_TEST_OUTPUT + ' = asmjs_info.output;'
@@ -143,7 +143,7 @@ def assert_test( name, info, outdir, verbose ):
     if verbose:
         print()
         print( INDENT * 3 + 'Write: ' + filename_h )
-    open( filename_h, 'wb' ).write( info[ 'helper_h_dfltcode' ].encode( ENCODING ) )
+    open( filename_h, 'wb' ).write( info[ 'helper_decl_dfltcode' ].encode( ENCODING ) )
 
     if verbose:
         print( INDENT * 3 + 'Write: ' + filename_d )

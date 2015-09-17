@@ -133,12 +133,12 @@ f2 = flatorize('a:[2 float],b:[2 float],c:[2 float]->d:[2 float]',f);
 
 <p>JavaScript helper methods <code>f2_obj.helper_*()</code> generate boilerplate D code, especially useful to manage array inputs/output:</p>
 
-<p><code>f2_obj.helper_h()</code> returns a JavaScript string containing this D code:</p>
-<pre class="prettyprint lang-c"><code><script type="text/javascript">document.write(f2_obj.helper_h());</script></code></pre>
+<p><code>f2_obj.helper_decl()</code> returns a JavaScript string containing this D code:</p>
+<pre class="prettyprint lang-c"><code><script type="text/javascript">document.write(f2_obj.helper_decl());</script></code></pre>
 
 
 
-<p><code>f2_obj.helper_d()</code> returns a JavaScript string containing the D code below. Instead of the default file name <code>"helper.h"</code> you can optionally specify another file name using <code>f2_obj.helper_d({ helper_h_name : "another_name.h" })</code></p>
+<p><code>f2_obj.helper_d()</code> returns a JavaScript string containing the D code below. Instead of the default file name <code>"helper.h"</code> you can optionally specify another file name using <code>f2_obj.helper_d({ helper_decl_name : "another_name_decl.d" })</code></p>
 <pre class="prettyprint lang-c"><code id="helper_d"></code></pre>
 <script type="text/javascript">document.getElementById("helper_d").textContent = f2_obj.helper_d();</script>
 

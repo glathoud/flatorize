@@ -113,12 +113,12 @@ if ('undefined' !== typeof load)
             var info = passed_asmjsgen_info[ name_check ];
 
             var c_cfg = Object.create( info.cfg );
-            c_cfg.helper_h_name = name + '_decl.d';
+            c_cfg.helper_decl_name = name + '_decl.d';
 
             me._cO = flatorize.getCodeD( c_cfg );
 
             // Remove functions (not interesting for JSON)
-            delete me._cO.helper_h;
+            delete me._cO.helper_decl;
             delete me._cO.helper_d;
         }
         

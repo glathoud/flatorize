@@ -4,7 +4,7 @@
 
   Requires: ./flatorize.js and ./flatorize_type_util.js
   
-  Copyright 2014 Guillaume Lathoud
+  Copyright 2014, 2015 Guillaume Lathoud
   
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
