@@ -37,8 +37,7 @@ document.write('\x3Ctitle\x3EDFTREAL' + DFTSIZE + ' speed tests: FFTW vs. flator
   </head>
   <body>
 
-    <p style="position: fixed; background: white; top: 10px; right: 10px; padding: 6px 12px; margin: 0; border: solid 1px black; opacity: 0.9;">[<a href="../../index.html">Back to the main article</a>]
-      <script type="text/javascript">
+    <p style="position: fixed; background: white; top: 10px; right: 10px; padding: 6px 12px; margin: 0; border: solid 1px black; opacity: 0.9;"><script type="text/javascript">
         document.write([null,1024,512,256,128,64,32,16].map(function (n) {
         
           if (n == null)
@@ -47,11 +46,13 @@ document.write('\x3Ctitle\x3EDFTREAL' + DFTSIZE + ' speed tests: FFTW vs. flator
           if (n === DFTSIZE)
              return yak( { strong : [ '[', n, ']' ] } );
         
-          return yak( [ '[', yak.o( 'a href="' + location.pathname + '?dftsize=' + n + '"'
+          return yak( [ '[', yak.o( 'a href="' + location.pathname + '?dftsize=' + n + '" onclick="update_link_hash(this);"'
                              , n
                            ), ']' ] );
         }).join('&nbsp;&nbsp;&nbsp;'));
-      </script>
+
+        function update_link_hash( a ) { a.href=a.getAttribute('href') + location.hash; }
+      </script>&nbsp;&nbsp;&nbsp;[<a href="../../index.html">&rarr;To the main article</a>]
     </p>
 
     
