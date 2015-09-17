@@ -169,64 +169,53 @@ def assert_test( name, info, outdir, verbose ):
 
     # Generate compiler script (.sh)
 
-    for fn_sh,clang in ( (filename_test_sh,False,), (filename_test_clang_sh,True,),):
-        for bits64 in (False,True,):
-            if verbose:
-                print()
-                print( INDENT * 3 + 'Write: ' + fn_sh )
-            open( fn_sh, 'wb' ).write(
-                test_compile_sh_code( 
-                    info, filename_h, filename_c, filename_test_c, clang = clang, bits64 = bits64 
-                    ).encode( ENCODING ) 
-                )
-            os.chmod( fn_sh, stat.S_IRWXU )
+    cs_li = (
+        (filename_test_gcc32_sh,   False, False , filename_test_gcc32_bin,   ),
+        (filename_test_gcc64_sh,   False, True  , filename_test_gcc64_bin,   ),
+        (filename_test_clang32_sh, True,  False , filename_test_clang32_bin, ),
+        (filename_test_clang64_sh, True,  True  , filename_test_clang64_bin, ),
+        )
+
+    for fn_test_sh,clang,bits64,fn_test_bin in cs_li:
+        if verbose:
+            print()
+            print( INDENT * 3 + 'Write: ' + fn_test_sh )
+        open( fn_test_sh, 'wb' ).write(
+            test_compile_sh_code( 
+                info, filename_h, filename_c, filename_test_c, clang = clang, bits64 = bits64 
+                ).encode( ENCODING ) 
+            )
+        os.chmod( fn_test_sh, stat.S_IRWXU )
 
     # Call compiler script
 
     ret = {}
 
-    for clang in (False,True,):
+    for fn_test_sh,clang,bits64,fn_test_bin in cs_li:
 
         compilname = 'clang' if clang else 'gcc'
         
-        for bits64 in (False,True,):
+        bitsname = '64' if bits64 else '32'
 
-            bitsname = '64' if bits64 else '32'
+        cbname = compilname + bitsname
 
-            cbname = compilname + bitsname
+        if verbose:
+            print()
+            print( 
+                INDENT * 3 + 'Call "compiler script" == compile + unit test + speed test (' + cbname +')'
+                )
+            sys.stdout.flush()
 
-            if verbose:
-                print()
-                print( 
-                    INDENT * 3 + 'Call "compiler script" == compile + unit test + speed test (' + cbname +')'
-                    )
-                sys.stdout.flush()
-            
-            compile_start = time.time()
+        compile_start = time.time()
 
-            if clang:
-                if bits64:
-                    fn_test_sh  = filename_test_clang64_sh
-                    fn_test_bin = filename_test_clang64_bin
-                else:
-                    fn_test_sh  = filename_test_clang32_sh
-                    fn_test_bin = filename_test_clang32_bin
-            else:
-                if bits64:
-                    fn_test_sh  = filename_test_gcc64_sh
-                    fn_test_bin = filename_test_gcc64_bin
-                else:
-                    fn_test_sh  = filename_test_gcc32_sh
-                    fn_test_bin = filename_test_gcc32_bin
+        call_sh_assert_ok( fn_test_sh, fn_test_bin, verbose = verbose )
 
-            call_sh_assert_ok( fn_test_sh, fn_test_bin, verbose = verbose )
+        compile_duration_sec = time.time() - compile_start
 
-            compile_duration_sec = time.time() - compile_start
-            
-            if verbose:
-                print( 'done in {0:.3} seconds'.format( compile_duration_sec ) )
-        
-            ret[ 'compile_' + cbname + '_duration_sec' ] = compile_duration_sec
+        if verbose:
+            print( 'done in {0:.3} seconds'.format( compile_duration_sec ) )
+
+        ret[ 'compile_' + cbname + '_duration_sec' ] = compile_duration_sec
 
     return ret
 
