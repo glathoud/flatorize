@@ -74,7 +74,8 @@
 <p>External links:</p>
 <ul>
 <li><a href="c.html">C plugin</a> to generate very fast C code.</li>
-<li><a href="test/speed_test_c_fftw/dftreal.html">Speed tests</a> of the various solutions &amp; languages (JS, <code>asm.js</code>, C, ...).</li>
+<li><a href="d.html">C plugin</a> to generate very fast D code.</li>
+<li><a href="test/speed_test_c_fftw/dftreal.html">Speed tests</a> of the various solutions &amp; languages (JS, <code>asm.js</code>, C, D).</li>
 <li><a href="index.html">Back to the main article</a>.</li>
 </ul>
 
@@ -243,7 +244,7 @@ document.write(matmulrows_zip_342.getDirect()+"");</script></code></pre>
 
 <p>...generates flatorized JavaScript code:</p>
 <pre class="prettyprint lang-js"><code>// dftreal16flat.getDirect():
-<script type="text/javascript">var dftreal16flat = expl_dftreal_flatorize.dftreal16flat;
+<script type="text/javascript">var dftreal16flat = expl_dftreal_flatorize.dftreal16flat_double;
 document.write(dftreal16flat.getDirect()+"");</script></code></pre>
 
 <p>Then, a call to <code>flatorize.getAsmjs()</code>:</p>
@@ -316,7 +317,7 @@ function genflatcode_dftreal1024flat()
     var t_end = Date.now();
 
 
-    dftreal1024flat = expl_dftreal_flatorize.dftreal1024flat;
+    dftreal1024flat = expl_dftreal_flatorize.dftreal1024flat_double;
 
     write_duration( t_end - t_begin, "genflatcode_dftreal1024flat_duration" );
     

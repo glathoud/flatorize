@@ -45,9 +45,12 @@ function expl_run( f, /*?object?*/opt )
         ,   s_obtained = JSON.stringify( cut_precision( r.obtained ) )
 
         ,  ok = s_expected === s_obtained
+
+        , html_expected = html_escape( s_expected )
+        , html_obtained = html_escape( s_obtained )
         ;
         if (!doc_silent)
-            document.write( f2body( f ) + '\n// ' + r.name + ': ' + s_obtained + (ok  ?  '   // Yes!'  :  '   // NOOOO!\n//\n// expected:\n// ' + r.name + ': ' + s_expected ) );
+            document.write( f2body( f ) + '\n// ' + r.name + ': ' + html_obtained + (ok  ?  '   // Yes!'  :  '   // NOOOO!\n//\n// expected:\n// ' + r.name + ': ' + html_expected ) );
     } catch (e) {
         if (doc_silent)
             throw e;
@@ -62,7 +65,7 @@ function expl_run( f, /*?object?*/opt )
         var tof_x = typeof x;
         
         if ('number' === tof_x)
-            return '<number:' + (Math.round(x/PRECISION)*PRECISION) + '>';
+            return Math.round(x/PRECISION)*PRECISION;
 
         if ('object' === tof_x)
         {
@@ -74,5 +77,16 @@ function expl_run( f, /*?object?*/opt )
         }
         
         return x;
+    }
+
+    function html_escape( s )
+    {
+        return s
+            .replace( /&/g, '&amp;' )
+            .replace( /</g, '&lt;' )
+            .replace( />/g, '&gt;' )
+            .replace( /"/g, '&quot;' )
+            .replace( /'/g, '&apos;' )
+        ;
     }
 }
