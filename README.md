@@ -81,14 +81,16 @@ return [ [ (_1 * _g) + (_2 * _j) + (_3 * _m) + (_4 * _p), (_1 * _h) + (_2 * _k) 
 
 Speedups exceed +1000% in many cases, including matrix multiplication and the Discrete Fourier Transform (full results).
 
-A plugin permits to generate fast C code as well. See [./c.html] (c.html) (live [page](http://glat.info/flatorize/c_code.html)).
+A [plugin](flatorize_asmjs.js) permits to generate even faster JavaScript code using `TypedArray`, in an `asm.js`-compatible way. See [./asmjs.html](asmjs.html) (live [page](http://glat.info/flatorize/c.html))
 
-I am currently working on an extension for asm.js, including multidimensional arrays. See [./asmjs.html](asmjs.html) (live [page](http://glat.info/flatorize/asmjs.html)).
+A [plugin](flatorize_c.js) permits to generate fast C code as well. See [./c.html] (c.html) (live [page](http://glat.info/flatorize/c.html)).
+
+A [plugin](flatorize_d.js) permits to generate fast D code as well. See [./d.html] (d.html) (live [page](http://glat.info/flatorize/d.html)).
 
 ## More
 
 For more details read the article:
  * download this repository and open [./index.html](index.html)
- * or visit the live [page](http://glat.info/flatorize)
+ * or visit the live [page](http://glat.info/flatorize) including [speed tests on the Discrete Fourier Transform](http://glat.info/test/speed_test_c_fftw/dftreal.html)
 
 See also the [slides](http://glat.info/bpjs2014/index.html) and [video](http://www.youtube.com/watch?v=FxNNSvNDbW8) from the Budapest 2014 nodebp/bpjs meetup.
