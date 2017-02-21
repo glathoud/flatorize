@@ -121,7 +121,7 @@ if ('undefined' === typeof flatorize  &&  'function' === typeof load)
     // All arrays are supposed to have the same basic type. Throw an
     // error if it is not the case.
     //
-    // Example of use: asm.js plugin.
+    // Example of use: asm.js plugin, as well as the C, D, OCaml plugins.
     {
         var array_basictype_set = {}
         ,   array_basictype_n   = 0

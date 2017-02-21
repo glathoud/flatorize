@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+  <head>
+    <title>fastmath2d_speedtest</title>
+
+    <style type="text/css">
+      .when_shown { display: none; }
+      .shown .when_shown { display: initial; }
+      .shown .when_hidden { display: none; }
+
+      body { background-color: lightblue; }
+      section { background-color: white; }
+
+      section, .codesource {
+        border: solid 1px black; padding: 1em; margin: 1em; border-radius: 0.5em;
+      }
+
+      code { word-wrap: break-word; }
+      
+      .codesource {
+        width: 85%;
+      }
+
+    </style>
+    <!--link rel="stylesheet" type="text/css" href="../prettify/prettify.css"-->
+
+    <script type="text/javascript" src="../flatorize.js"></script>
+    <script type="text/javascript" src="fastmath2d.js"></script>
+    <script type="text/javascript" src="fastmath2d_speedtest.js"></script>
+    
+  </head>
+  <body>
+    <h1>fastmath2d_speedtest</h1>
+
+    <section>
+      <button onclick="fm2d_speedtest_flatmatmul_inplace(this.parentNode)"><code>fm2d_speedtest_flatmatmul_inplace()</code></button>
+      <pre><code class="result"></code></pre>
+      <pre><code class="generated-code"></code></pre>
+    </section>
+    
+    <section class="shown">
+
+      <button onclick="this.parentNode.classList[this.parentNode.classList.contains('shown')?'remove':'add']('shown')"><span class="when_hidden">show</span><span class="when_shown">hide</span> sources</button>
+
+      <div class="when_shown">
+                
+        <p id="src_fastmath2d_speedtest"><code>fastmath2d_speedtest.js</code> <a href="#src_fastmath2d_speedtest">#</a></p>
+
+        <object class="codesource prettyprint lang-js" data="fastmath2d_speedtest.js" type="text/javascript" style="height:600px;">
+          <a href="fastmath2d_speedtest.js">fastmath2d_speedtest.js</a>
+        </object>
+        
+        <hr/>
+        
+        <p id="src_fastmath2d"><code>fastmath2d.js</code> <a href="#src_fastmath2d">#</a></p>
+
+        <object class="codesource prettyprint lang-js" data="fastmath2d.js" type="text/javascript" style="height:2000px;">
+          <a href="fastmath2d.js">fastmath2d.js</a>
+        </object>
+        
+    </section>
+
+    <!--
+    <script type="text/javascript" src="../prettify/prettify.js"></script>
+    <script type="text/javascript">setTimeout( prettyPrint );</script>
+    -->
+
+  </body>
+</html>

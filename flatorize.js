@@ -35,6 +35,20 @@
     flatorize.now  = flatorize_now;  // Convenience wrapper around `flatorize`.
     flatorize.expr = expr;    // To build and expression.
     flatorize.part = part;    // To extract a property of an array or object.
+
+    // Tools to implement efficient math libraries,
+    // especially N-dimensional matrix calculus.
+    // 
+    // Example of use: ./lib/fastmath_2d.js
+    
+    flatorize.array_of_matrix      = array_of_matrix;
+    flatorize.empty_array          = empty_array;
+    flatorize.inplace_array_output = inplace_array_output;
+    flatorize.matrix               = matrix;
+    flatorize.matrix_of_array      = matrix_of_array;
+    flatorize.sum                  = sum;
+    flatorize.transpose            = transpose;
+    flatorize.zip                  = zip;
     
     // Extra tools, mostly used by the asm.js and C plugins 
 
@@ -65,6 +79,170 @@
         return ret;
     }
 
+    function array_of_matrix( /*any expression*/e, /*array of non-negative integers*/dim_arr )
+    //
+    // Example of use: ./lib/fastmath2d.js
+    {
+        var n = dim_arr.reduce( function (a,b) { return a*b; } )
+        , ret = new Array( n )
+
+        , dim_len     = dim_arr.length
+        , dimprod_arr = new Array( dim_len )
+        ;
+        for (var dimprod = 1
+             , dim = dim_len; dim--;)
+        {
+            dimprod_arr[ dim ] = dimprod;
+            dimprod *= dim_arr[ dim ];
+        }
+        
+        for (var i = 0; i < n; i++)
+        {
+            var e_i = e
+            ,  rest = i
+            ;
+            for (var dim = 0; dim < dim_len; dim++)
+            {
+                var dimprod = dimprod_arr[ dim ];
+                
+                e_i = flatorize.part( e_i, (rest / dimprod) | 0 );
+
+                rest = rest % dimprod;
+            }
+            ret[ i ] = e_i;
+        }
+        
+        return ret;
+    }
+
+    function empty_array( size )
+    //
+    // Example of use: ./lib/fastmath2d.js
+    {
+        return Array.apply( null, { length : size } );
+    }
+    
+    function inplace_array_output( /*any expression*/e, /*string*/outvarname )
+    //
+    // Example of use: ./lib/fastmath2d.js
+    {
+        return expr.apply(
+            flatorize
+            , e.map(
+                function ( term, i ) {
+                    return [
+                        part( outvarname, i )
+                        , '='
+                        , term
+                        , ','
+                    ];
+                }
+            )
+                .reduce( function (a,b) { return a.concat( b ); } )
+                .concat( [ outvarname ] )  // Convenience: return the variable itself
+        );
+    }
+
+
+    function matrix( /*any expression*/e, /*array of non-negative integers*/dim_arr )
+    // Create a matrix of terms, e.g. for a 2-D matrix:
+    //
+    // dim_arr: [ I, J ]
+    //
+    // e: "m"
+    //
+    // Returns:
+    // 
+    //      [ [ m[0][0], m[0][1], m[0][2], ... , m[0][J-1] ], 
+    //        [ m[1][0], m[1][1], m[1][2], ... , m[1][J-1]], 
+    //        ...
+    //        [ m[I-1][0], m[I-1][I-1], m[I-1][2], ... , m[I-1][J-1]]
+    //      ]
+    //
+    // Example of use: ./lib/fastmath2d.js
+    {
+        if (dim_arr.length === 0)
+            return e;
+        
+        var dim  = dim_arr[ 0 ]
+        ,   tail = dim_arr.slice( 1 )
+        ;
+        return empty_array( dim )
+            .map( function ( _, i ) {
+                return matrix( flatorize.part( e, i ), tail );
+            } )
+        ;
+    }
+    
+    function matrix_of_array( /*any expression*/e, /*array of non-negative integers*/dim_arr )
+    //
+    // Example of use: ./lib/fastmath2d.js
+    {
+        var dim_len  = dim_arr.length
+        ,   flat_ind = 0
+        ;
+        return create_matrix_of_array( dim_arr );
+
+        function create_matrix_of_array( rest_dim_arr )
+        {
+            var one;
+            if (rest_dim_arr.length < 1)
+            {
+                one = flatorize.part( e, flat_ind++ );
+            }
+            else
+            {
+                one = [];
+                for (var  a_end = rest_dim_arr[ 0 ]
+                     , rda_tail = rest_dim_arr.slice( 1 )
+                     
+                     , a = 0; a < a_end; a++)
+                {
+                    one.push( create_matrix_of_array( rda_tail ) );
+                }
+            }
+            return one;
+        }
+    }
+
+        
+    function sum( arr )
+    // sum( arr ) := arr[0] + arr[1] + ...
+    //
+    // Example of use: ./lib/fastmath2d.js
+    {
+        return flatorize.expr.apply( null, arr.reduce( sum_step, [] ) );
+        function sum_step( left, right ) 
+        {
+            return left.length  ?  left.concat( [ '+', right ] )  :  [ right ]; 
+        }
+    }
+    
+    function transpose( mat )
+    //
+    // Example of use: ./lib/fastmath2d.js
+    {
+        return zip.apply( null, mat );
+    }
+
+    function zip(/*...arguments...*/)
+    //
+    // Example of use: ./lib/fastmath2d.js
+    {
+        var arg = [].slice.apply( arguments );
+        if (!arg.length)
+            return [];
+        
+        var n = arg[ 0 ].length
+        , ret = new Array( n )
+        ;
+        for (var i = 0; i < n; i++)
+            ret[ i ] = arg.map( function (x) { return x[i]; } );
+        
+        return ret;
+    }
+
+    
     var exprCache, pile_exprCache;
     
     function expr()
@@ -191,7 +369,7 @@
 
         idstr2expr[ idstr ]  = exprCache.idnum2expr[ idnum ] = ret;
         
-        return ret;  // Et voilÃ  !
+        return ret;  // Et voilà !
     }
     
     function flatorize_now(/*string*/varstr, /*function*/exprgen)
@@ -521,7 +699,6 @@
                 if (!(arr instanceof Array  &&  1 < arr.length))  break;                
             }
             
-
             arr = expr_simplify_if_all_numbers( arr );
             if (!(arr instanceof Array  &&  1 < arr.length))  break;
         }
@@ -538,7 +715,7 @@
         var factorized = try_to_factorize( arr );
         if (null != factorized)
             arr = factorized;
-        
+
         return arr;
     }
 
@@ -589,30 +766,39 @@
         {
             var productArr = extract_productArr( arr );
 
-            var piArr = productArr.map( merge_minus_signs_of_product );
-            
-            var newarr = [];
-            for (var n = piArr.length
-                 , i = 0; i < n; i++
-                )
-            {
-                var pi = piArr[ i ];
-                if (i < 1)
+            if (productArr)
+            {            
+                var piArr = productArr.map( merge_minus_signs_of_product );
+                
+                var newarr = [];
+                for (var n = piArr.length
+                     , i = 0; i < n; i++
+                    )
                 {
-                    if (pi.sign < 0)
-                        newarr.push( '-' );
-                }
-                else 
-                {
-                    newarr.push( pi.sign < 0  ?  '-'  :  '+' );
-                }
-                if (pi.e[0] === '+')
-                    throw new Error('merge minus signs: unexpected "+" sign.');  // not implemented or not right
+                    var pi = piArr[ i ];
+                    if (i < 1)
+                    {
+                        if (pi.sign < 0)
+                            newarr.push( '-' );
+                    }
+                    else 
+                    {
+                        newarr.push( pi.sign < 0  ?  '-'  :  '+' );
+                    }
 
-                newarr.push.apply( newarr, pi.e );
+                    var pie0 = pi.e[ 0 ];
+                    
+                    if (pie0 === '+')
+                        throw new Error('merge minus signs: unexpected "+" sign.');  // not implemented or not right
+
+                    if (pie0 === '=')  // `extract_productArr` should have returned `undefined`
+                        null.bug;
+                    
+                    newarr.push.apply( newarr, pi.e );
+                }
+                
+                arr = newarr[ 0 ] === '+'  ?  newarr.slice( 1 )  :  newarr;
             }
-            
-            arr = newarr[ 0 ] === '+'  ?  newarr.slice( 1 )  :  newarr;
         }
         
         return arr;
@@ -936,7 +1122,7 @@
         cfg.duplicates.unshift.apply( cfg.duplicates, duplicates );
 
         for (var shift = 0, n = duplicates.length, 
-             i = 0; i < n; i++)
+                 i = 0; i < n; i++)
         {
             var idnum = duplicates[ i ]
             ,   varname
@@ -1032,7 +1218,7 @@
 
         var n, arr_nm1;
         while (n = arr.length , (arr[ n - 2 ] === '*'  &&  
-               ((arr_nm1 = arr[ n - 1 ]), 'number' === typeof arr_nm1  &&  EPSILON > Math.abs( arr_nm1 + 1)))
+                                 ((arr_nm1 = arr[ n - 1 ]), 'number' === typeof arr_nm1  &&  EPSILON > Math.abs( arr_nm1 + 1)))
               )
         {
             var arr_nm3 = arr[ n - 3 ]
@@ -1546,15 +1732,24 @@
         for (var current_product = [], n = arr.length
              , i = 0; i < n; i++)
         {
-            var x = arr[ i ];
+            var      x = arr[ i ]
+            ,   isExpr = x.__isExpr__
+            ,   isNum  = 'number' === typeof x
+            ,   isPlus = x === '+'
+            ,   isMinus = x === '-'
+            ,   isMultiply = x === '*'
+            ;
+            // Not all expressions qualify as product
+            // (e.g. an assignment ["a", "=", "b"] is
+            // not a product).
+            if (!(isExpr  ||  isNum  ||  isPlus  ||  isMinus  ||  isMultiply))
+                return;
+            
             if (i < n-1)
             {
-                var isExpr = x.__isExpr__
-                ,   isNum  = 'number' === typeof x
-                ;
                 if (!current_product.length  
-                    ?  x === '+'  ||  x === '-'  ||  isNum  ||  isExpr   // The first item may be a sign
-                    :  x === '*'  ||  isNum  ||  isExpr // in the future we may support '/' as well here, but first think about consequences elsewhere.
+                    ?  isPlus  ||  isMinus  ||  isNum  ||  isExpr   // The first item may be a sign
+                    :  isMultiply  ||  isNum  ||  isExpr // in the future we may support '/' as well here, but first think about consequences elsewhere.
                    )
                 {
                     current_product.push( x );
@@ -1710,7 +1905,7 @@
         ((tmp_idnum2usage  &&  tmp_idnum2count)  ||  null).hasOwnProperty.call.a;  // Both must be non-null objects.
 
         for (var idnum in idnum2expr) { if (!(idnum in _empty)) {
-        
+            
             if (!(tmp_idnum2count[ idnum ]))
                 continue;
 
@@ -1719,7 +1914,7 @@
             ;
             if (!(e.__isExpr__  &&  info.isNegativeSum))
                 continue;
-                
+            
             for (var i = info.terms.length; i--;)
             {
                 var term = info.terms[ i ];
