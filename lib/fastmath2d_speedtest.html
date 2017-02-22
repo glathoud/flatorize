@@ -39,6 +39,17 @@
     <h1>fastmath2d_speedtest</h1>
 
     <section>
+      <p>
+        <emph>This page provides interactive speed tests for <code>fastmath2d.js</code>, a
+          library of fast math functions for 2-D&nbsp;matrices stored as
+          flat&nbsp;(1-D) arrays of numbers.</emph>
+      </p>
+
+      <p>[to the <a href="../index.html">main article</a>, to the GitHub file <a href="https://github.com/glathoud/flatorize/blob/master/lib/fastmath2d.js">flatmat2d.js</a>]
+      </p>
+    </section>
+
+    <section>
       <p>Measure the speed of the in-place multiplication of two matrices.</p>
       <div>
         <button onclick="speedtest_flatmatmul_inplace(this.parentNode, fm2d_flatmatmul_inplace_of_ijk, {is_hand:false})">
@@ -91,7 +102,9 @@
     
     
     <section>
-        
+
+      <p>The source files used for the tests. Alternatively you can look at them on <a href="https://github.com/glathoud/flatorize/blob/master/lib/">GitHub</a>
+      
       <div class="shown">
 
         <span id="src_fastmath2d_speedtest">
@@ -100,7 +113,7 @@
         <button class="src-btn" onclick="this.parentNode.classList[this.parentNode.classList.contains('shown')?'remove':'add']('shown')"><span class="when_hidden">show</span><span class="when_shown">hide</span> source</button>
         
         <div class="when_shown">
-          <object class="codesource prettyprint lang-js" data="fastmath2d_speedtest.js" type="text/javascript" style="height:1500px;">
+          <object class="codesource prettyprint lang-js" data="fastmath2d_speedtest.js" type="text/javascript" style="height:3400px;">
             <a href="fastmath2d_speedtest.js">fastmath2d_speedtest.js</a>
           </object>
         </div>
@@ -117,7 +130,7 @@
         <button class="src-btn" onclick="this.parentNode.classList[this.parentNode.classList.contains('shown')?'remove':'add']('shown')"><span class="when_hidden">show</span><span class="when_shown">hide</span> source</button>
         
         <div class="when_shown">
-          <object class="codesource prettyprint lang-js" data="fastmath2d.js" type="text/javascript" style="height:3500px;">
+          <object class="codesource prettyprint lang-js" data="fastmath2d.js" type="text/javascript" style="height:5200px;">
             <a href="fastmath2d.js">fastmath2d.js</a>
           </object>
         </div>
