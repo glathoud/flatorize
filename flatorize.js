@@ -26,18 +26,19 @@
 // xxx the algebraic simplification functions have grown and should
 // better be placed in a separate file.
 
-(function (global) {
+var flatorize, FR;
+(function () {
 
     // ---------- Public API ----------
 
-    global.flatorize = flatorize;
-
+    FR = flatorize = flatorize_impl;
+    
     flatorize.now  = flatorize_now;  // Convenience wrapper around `flatorize`.
     flatorize.expr = expr;    // To build and expression.
     flatorize.part = part;    // To extract a property of an array or object.
 
     // Tools to implement efficient math libraries,
-    // especially N-dimensional matrix calculus.
+    // including N-dimensional matrix calculus.
     // 
     // Example of use: ./lib/fastmath_2d.js
     
@@ -46,8 +47,23 @@
     flatorize.inplace_array_output = inplace_array_output;
     flatorize.matrix               = matrix;
     flatorize.matrix_of_array      = matrix_of_array;
+
+    flatorize.op                   = op;
+    flatorize.op_add               = op.bind( null, '+' );
+    flatorize.op_sub               = op.bind( null, '-' );
+    flatorize.op_mul               = op.bind( null, '*' );
+    flatorize.op_div               = op.bind( null, '/' );
+    
     flatorize.sum                  = sum;
     flatorize.transpose            = transpose;
+
+    flatorize.vec                  = vec;
+    flatorize.vecop                = vecop;
+    flatorize.vecadd               = vecop.bind( null, '+' );
+    flatorize.vecsub               = vecop.bind( null, '-' );
+    flatorize.vecmul               = vecop.bind( null, '*' );
+    flatorize.vecdiv               = vecop.bind( null, '/' );
+
     flatorize.zip                  = zip;
     
     // Extra tools, mostly used by the asm.js and C plugins 
@@ -79,7 +95,7 @@
         return ret;
     }
 
-    function array_of_matrix( /*any expression*/e, /*array of non-negative integers*/dim_arr )
+    function array_of_matrix( /*array of non-negative integers*/dim_arr, /*any expression*/e )
     //
     // Example of use: ./lib/fastmath2d.js
     {
@@ -144,7 +160,7 @@
     }
 
 
-    function matrix( /*any expression*/e, /*array of non-negative integers*/dim_arr )
+    function matrix( /*array of non-negative integers*/dim_arr, /*any expression*/e )
     // Create a matrix of terms, e.g. for a 2-D matrix:
     //
     // dim_arr: [ I, J ]
@@ -173,8 +189,14 @@
             } )
         ;
     }
+
+    function op( /*string e.g. "+"*/operator, a, b )
+    {
+        (operator || null).substring.call.a;
+        return expr( a, operator, b );
+    }
     
-    function matrix_of_array( /*any expression*/e, /*array of non-negative integers*/dim_arr )
+    function matrix_of_array( /*array of non-negative integers*/dim_arr, /*any expression*/e )
     //
     // Example of use: ./lib/fastmath2d.js
     {
@@ -225,6 +247,26 @@
         return zip.apply( null, mat );
     }
 
+    function vec( /*integer*/dim, /*any expression*/e )
+    // Returns a vector [ e[0], ... , e[dim-1]]
+    {
+        return empty_array( dim ).map( function (_,i) {
+            return flatorize.part( e, i );
+        })
+    }
+    
+    function vecop( /*string e.g. "+"*/operator, /*array*/va, /*array*/vb )
+    {
+        return va.length !== vb.length
+        
+            ?  null.length_mismatch
+
+            :  zip( va, vb ).map( function ( xy ) {
+                return op( operator, xy[ 0 ], xy[ 1 ] );
+            })
+        ;
+    }
+    
     function zip(/*...arguments...*/)
     //
     // Example of use: ./lib/fastmath2d.js
@@ -379,7 +421,7 @@
     }
 
     var creatingDirect, within;
-    function flatorize(/*comma-separated string*/possibly_typed_varstr, /*function*/exprgen)
+    function flatorize_impl(/*comma-separated string*/possibly_typed_varstr, /*function*/exprgen)
     // Returns a function.
     {
         if (within)
@@ -524,6 +566,11 @@
                 direct.dupliidnum2varname = dupliidnum2varname;
                 direct.duplicates         = duplicates;
 
+                // Give "back-access" to `switcher`, in case someone
+                // has the `direct` and would like to build further on
+                // top of it using `flatorize()`
+                direct.switcher = switcher;
+                
                 // Done
                 
                 creatingDirect--;
@@ -2054,4 +2101,4 @@
         };
     }
     
-})(this);
+})();

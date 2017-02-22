@@ -21,6 +21,12 @@
         width: 85%;
       }
 
+      button { cursor: pointer; }
+      
+      .src-btn {
+        margin-left: 2em;
+      }
+      
     </style>
     <!--link rel="stylesheet" type="text/css" href="../prettify/prettify.css"-->
 
@@ -33,30 +39,88 @@
     <h1>fastmath2d_speedtest</h1>
 
     <section>
-      <button onclick="fm2d_speedtest_flatmatmul_inplace(this.parentNode)"><code>fm2d_speedtest_flatmatmul_inplace()</code></button>
-      <pre><code class="result"></code></pre>
-      <pre><code class="generated-code"></code></pre>
+      <p>Measure the speed of the in-place multiplication of two matrices.</p>
+      <div>
+        <button onclick="speedtest_flatmatmul_inplace(this.parentNode, fm2d_flatmatmul_inplace_of_ijk, {is_hand:false})">
+          <code>speedtest_flatmatmul_inplace(this.parentNode, fm2d_flatmatmul_inplace_of_ijk, {is_hand:false})</code>
+        </button>
+        <pre><code class="result"></code></pre>
+        <pre><code class="func-code"></code></pre>
+      </div>
+
+      <hr/>
+
+      <p>Comparison with a hand-written loop implementation.</p>
+
+      <div>
+        <button onclick="speedtest_flatmatmul_inplace(this.parentNode, hand_flatmatmul_inplace_of_ijk, {is_hand:true})">
+          <code>speedtest_flatmatmul_inplace(this.parentNode, hand_flatmatmul_inplace_of_ijk, {is_hand:true})</code>
+        </button>
+        <pre><code class="result"></code></pre>
+        <pre><code class="func-code"></code></pre>
+      </div>
+      
+    </section>
+
+
+    <section>
+
+      <p>Measure the speed of the product <code>(x-V)^T * M * (x-V)</code> where <code>x</code> and <code>V</code> are vectors, and <code>M</code> a square matrix. This is useful when computing the exponent term in a Gaussian probability density function.</p>
+
+      <div>
+        <button onclick="speedtest_flatmat_xmV_M_xmV(this.parentNode, fm2d_flatmat_xmV_M_xmV_of_dim, {is_hand:false})">
+          <code>speedtest_flatmat_xmV_M_xmV(this.parentNode, fm2d_flatmat_xmV_M_xmV_of_dim, {is_hand:false})</code>
+        </button>
+        <pre><code class="result"></code></pre>
+        <pre><code class="func-code"></code></pre>
+      </div>
+
+      <hr/>
+
+      <p>Comparison with a hand-written implementation (loops).</p>
+      
+      <div>
+        <button onclick="speedtest_flatmat_xmV_M_xmV(this.parentNode, hand_flatmat_xmV_M_xmV_of_dim, {is_hand:true})">
+          <code>speedtest_flatmat_xmV_M_xmV(this.parentNode, hand_flatmat_xmV_M_xmV_of_dim, {is_hand:true})</code>
+        </button>
+        <pre><code class="result"></code></pre>
+        <pre><code class="func-code"></code></pre>
+      </div>
+
     </section>
     
-    <section class="shown">
-
-      <button onclick="this.parentNode.classList[this.parentNode.classList.contains('shown')?'remove':'add']('shown')"><span class="when_hidden">show</span><span class="when_shown">hide</span> sources</button>
-
-      <div class="when_shown">
-                
-        <p id="src_fastmath2d_speedtest"><code>fastmath2d_speedtest.js</code> <a href="#src_fastmath2d_speedtest">#</a></p>
-
-        <object class="codesource prettyprint lang-js" data="fastmath2d_speedtest.js" type="text/javascript" style="height:600px;">
-          <a href="fastmath2d_speedtest.js">fastmath2d_speedtest.js</a>
-        </object>
+    
+    <section>
         
-        <hr/>
-        
-        <p id="src_fastmath2d"><code>fastmath2d.js</code> <a href="#src_fastmath2d">#</a></p>
+      <div class="shown">
 
-        <object class="codesource prettyprint lang-js" data="fastmath2d.js" type="text/javascript" style="height:2000px;">
-          <a href="fastmath2d.js">fastmath2d.js</a>
-        </object>
+        <span id="src_fastmath2d_speedtest">
+          <code>fastmath2d_speedtest.js</code> <a href="#src_fastmath2d_speedtest">#</a>
+        </span>
+        <button class="src-btn" onclick="this.parentNode.classList[this.parentNode.classList.contains('shown')?'remove':'add']('shown')"><span class="when_hidden">show</span><span class="when_shown">hide</span> source</button>
+        
+        <div class="when_shown">
+          <object class="codesource prettyprint lang-js" data="fastmath2d_speedtest.js" type="text/javascript" style="height:1500px;">
+            <a href="fastmath2d_speedtest.js">fastmath2d_speedtest.js</a>
+          </object>
+        </div>
+      </div>
+      
+      <hr/>
+
+      <div class="shown">
+        
+        <span id="src_fastmath2d">
+          <code>fastmath2d.js</code> <a href="#src_fastmath2d">#</a>
+        </span>
+
+        <button class="src-btn" onclick="this.parentNode.classList[this.parentNode.classList.contains('shown')?'remove':'add']('shown')"><span class="when_hidden">show</span><span class="when_shown">hide</span> source</button>
+        
+        <div class="when_shown">
+          <object class="codesource prettyprint lang-js" data="fastmath2d.js" type="text/javascript" style="height:3500px;">
+            <a href="fastmath2d.js">fastmath2d.js</a>
+          </object>
+        </div>
         
     </section>
 
