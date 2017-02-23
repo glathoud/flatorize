@@ -79,8 +79,8 @@
       <p>Measure the speed of the product <code>(x-V)^T * M * (x-V)</code> where <code>x</code> and <code>V</code> are vectors, and <code>M</code> a square matrix. This is useful when computing the exponent term in a Gaussian probability density function.</p>
 
       <div>
-        <button onclick="speedtest_flatmat_xmV_M_xmV(this.parentNode, fm_xvmxv_of_dim, {is_hand:false})">
-          <code>speedtest_flatmat_xmV_M_xmV(this.parentNode, fm_xvmxv_of_dim, {is_hand:false})</code>
+        <button onclick="speedtest_flatmat_xvmxv(this.parentNode, fm_xvmxv_of_dim, {is_hand:false})">
+          <code>speedtest_flatmat_xvmxv(this.parentNode, fm_xvmxv_of_dim, {is_hand:false})</code>
         </button>
         <pre><code class="result"></code></pre>
         <pre><code class="func-code"></code></pre>
@@ -91,8 +91,8 @@
       <p>Comparison with a hand-written implementation (loops).</p>
       
       <div>
-        <button onclick="speedtest_flatmat_xmV_M_xmV(this.parentNode, hand_xvmxv_of_dim, {is_hand:true})">
-          <code>speedtest_flatmat_xmV_M_xmV(this.parentNode, hand_xvmxv_of_dim, {is_hand:true})</code>
+        <button onclick="speedtest_flatmat_xvmxv(this.parentNode, hand_xvmxv_of_dim, {is_hand:true})">
+          <code>speedtest_flatmat_xvmxv(this.parentNode, hand_xvmxv_of_dim, {is_hand:true})</code>
         </button>
         <pre><code class="result"></code></pre>
         <pre><code class="func-code"></code></pre>
