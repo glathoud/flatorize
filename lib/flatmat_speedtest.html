@@ -52,8 +52,8 @@
     <section>
       <p>Measure the speed of the multiplication of two matrices.</p>
       <div>
-        <button onclick="speedtest_flatmatmul(this.parentNode, fm_mul_of_ijk, {is_hand:false})">
-          <code>speedtest_flatmatmul(this.parentNode, fm_mul_of_ijk, {is_hand:false})</code>
+        <button onclick="speedtest_flatmat_mul(this.parentNode, fm_mul_of_ijk, {is_hand:false})">
+          <code>speedtest_flatmat_mul(this.parentNode, fm_mul_of_ijk, {is_hand:false})</code>
         </button>
         <pre><code class="result"></code></pre>
         <pre><code class="func-code"></code></pre>
@@ -64,8 +64,8 @@
       <p>Comparison with a hand-written loop implementation.</p>
 
       <div>
-        <button onclick="speedtest_flatmatmul(this.parentNode, hand_mul_of_ijk, {is_hand:true})">
-          <code>speedtest_flatmatmul(this.parentNode, hand_mul_of_ijk, {is_hand:true})</code>
+        <button onclick="speedtest_flatmat_mul(this.parentNode, hand_mul_of_ijk, {is_hand:true})">
+          <code>speedtest_flatmat_mul(this.parentNode, hand_mul_of_ijk, {is_hand:true})</code>
         </button>
         <pre><code class="result"></code></pre>
         <pre><code class="func-code"></code></pre>
@@ -79,8 +79,8 @@
     <section>
       <p>Measure the speed of matrix inversion.</p>
       <div>
-        <button onclick="speedtest_flatmatinv(this.parentNode, fm_inv_of_ij, {is_hand:false})">
-          <code>speedtest_flatmatinv(this.parentNode, fm_inv_of_ij, {is_hand:false})</code>
+        <button onclick="speedtest_flatmat_inv(this.parentNode, fm_inv_of_ij, {is_hand:false})">
+          <code>speedtest_flatmat_inv(this.parentNode, fm_inv_of_ij, {is_hand:false})</code>
         </button>
         <pre><code class="result"></code></pre>
         <pre><code class="func-code"></code></pre>
@@ -90,8 +90,8 @@
 
       <p>Comparison with an implementation for matrices stored as 2-D arrays.</p>
       <div>
-        <button onclick="speedtest_flatmatinv(this.parentNode, hand_inv_of_ij, {is_hand:true,is2d:true})">
-          <code>speedtest_flatmatinv(this.parentNode, hand_inv_of_ij, {is_hand:true,is2d:true})</code>
+        <button onclick="speedtest_mat2d_inv(this.parentNode, hand_inv_of_ij, {is_hand:true})">
+          <code>speedtest_mat2d_inv(this.parentNode, hand_inv_of_ij, {is_hand:true})</code>
         </button>
         <pre><code class="result"></code></pre>
         <pre><code class="func-code"></code></pre>
