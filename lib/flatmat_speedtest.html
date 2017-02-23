@@ -89,6 +89,10 @@
       <hr/>
 
       <p>Comparison with an implementation for matrices stored as 2-D arrays.</p>
+      <p>As of 2017-02-23 2-D arrays had roughly 2 times the speed of the 1-D flatmat implementation (just above).
+        Not good? On the other hand, for matrix multiplication (and xvmxv) 1-D goes ca 5 to 10 times faster.
+        So there is a tradeoff, depending on the type of application.
+      </p>
       <div>
         <button onclick="speedtest_mat2d_inv(this.parentNode, hand_mat2d_inv_of_ij, {is_hand:true})">
           <code>speedtest_mat2d_inv(this.parentNode, hand_mat2d_inv_of_ij, {is_hand:true})</code>
