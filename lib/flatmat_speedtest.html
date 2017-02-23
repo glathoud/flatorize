@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>fastmath2d_speedtest</title>
+    <title>flatmat_speedtest</title>
 
     <style type="text/css">
       .when_shown { display: none; }
@@ -31,29 +31,29 @@
     <!--link rel="stylesheet" type="text/css" href="../prettify/prettify.css"-->
 
     <script type="text/javascript" src="../flatorize.js"></script>
-    <script type="text/javascript" src="fastmath2d.js"></script>
-    <script type="text/javascript" src="fastmath2d_speedtest.js"></script>
+    <script type="text/javascript" src="flatmat.js"></script>
+    <script type="text/javascript" src="flatmat_speedtest.js"></script>
     
   </head>
   <body>
-    <h1>fastmath2d_speedtest</h1>
+    <h1>flatmat_speedtest</h1>
 
     <section>
       <p>
-        <emph>This page provides interactive speed tests for <code>fastmath2d.js</code>, a
+        <emph>This page provides interactive speed tests for <code>flatmat.js</code>, a
           library of fast math functions for 2-D&nbsp;matrices stored as
           flat&nbsp;(1-D) arrays of numbers.</emph>
       </p>
 
-      <p>[to the <a href="../index.html">main article</a>, to the GitHub file <a href="https://github.com/glathoud/flatorize/blob/master/lib/fastmath2d.js">flatmat2d.js</a>]
+      <p>[to the <a href="../index.html">main article</a>, to the GitHub file <a href="https://github.com/glathoud/flatorize/blob/master/lib/flatmat.js">flatmat2d.js</a>]
       </p>
     </section>
 
     <section>
       <p>Measure the speed of the in-place multiplication of two matrices.</p>
       <div>
-        <button onclick="speedtest_flatmatmul_inplace(this.parentNode, fm2d_flatmatmul_inplace_of_ijk, {is_hand:false})">
-          <code>speedtest_flatmatmul_inplace(this.parentNode, fm2d_flatmatmul_inplace_of_ijk, {is_hand:false})</code>
+        <button onclick="speedtest_flatmatmul_inplace(this.parentNode, fm_mul_inplace_of_ijk, {is_hand:false})">
+          <code>speedtest_flatmatmul_inplace(this.parentNode, fm_mul_inplace_of_ijk, {is_hand:false})</code>
         </button>
         <pre><code class="result"></code></pre>
         <pre><code class="func-code"></code></pre>
@@ -64,8 +64,8 @@
       <p>Comparison with a hand-written loop implementation.</p>
 
       <div>
-        <button onclick="speedtest_flatmatmul_inplace(this.parentNode, hand_flatmatmul_inplace_of_ijk, {is_hand:true})">
-          <code>speedtest_flatmatmul_inplace(this.parentNode, hand_flatmatmul_inplace_of_ijk, {is_hand:true})</code>
+        <button onclick="speedtest_flatmatmul_inplace(this.parentNode, hand_mul_inplace_of_ijk, {is_hand:true})">
+          <code>speedtest_flatmatmul_inplace(this.parentNode, hand_mul_inplace_of_ijk, {is_hand:true})</code>
         </button>
         <pre><code class="result"></code></pre>
         <pre><code class="func-code"></code></pre>
@@ -79,8 +79,8 @@
       <p>Measure the speed of the product <code>(x-V)^T * M * (x-V)</code> where <code>x</code> and <code>V</code> are vectors, and <code>M</code> a square matrix. This is useful when computing the exponent term in a Gaussian probability density function.</p>
 
       <div>
-        <button onclick="speedtest_flatmat_xmV_M_xmV(this.parentNode, fm2d_flatmat_xmV_M_xmV_of_dim, {is_hand:false})">
-          <code>speedtest_flatmat_xmV_M_xmV(this.parentNode, fm2d_flatmat_xmV_M_xmV_of_dim, {is_hand:false})</code>
+        <button onclick="speedtest_flatmat_xmV_M_xmV(this.parentNode, fm_xvmxv_of_dim, {is_hand:false})">
+          <code>speedtest_flatmat_xmV_M_xmV(this.parentNode, fm_xvmxv_of_dim, {is_hand:false})</code>
         </button>
         <pre><code class="result"></code></pre>
         <pre><code class="func-code"></code></pre>
@@ -91,8 +91,8 @@
       <p>Comparison with a hand-written implementation (loops).</p>
       
       <div>
-        <button onclick="speedtest_flatmat_xmV_M_xmV(this.parentNode, hand_flatmat_xmV_M_xmV_of_dim, {is_hand:true})">
-          <code>speedtest_flatmat_xmV_M_xmV(this.parentNode, hand_flatmat_xmV_M_xmV_of_dim, {is_hand:true})</code>
+        <button onclick="speedtest_flatmat_xmV_M_xmV(this.parentNode, hand_xvmxv_of_dim, {is_hand:true})">
+          <code>speedtest_flatmat_xmV_M_xmV(this.parentNode, hand_xvmxv_of_dim, {is_hand:true})</code>
         </button>
         <pre><code class="result"></code></pre>
         <pre><code class="func-code"></code></pre>
@@ -107,14 +107,14 @@
       
       <div class="shown">
 
-        <span id="src_fastmath2d_speedtest">
-          <code>fastmath2d_speedtest.js</code> <a href="#src_fastmath2d_speedtest">#</a>
+        <span id="src_flatmat_speedtest">
+          <code>flatmat_speedtest.js</code> <a href="#src_flatmat_speedtest">#</a>
         </span>
         <button class="src-btn" onclick="this.parentNode.classList[this.parentNode.classList.contains('shown')?'remove':'add']('shown')"><span class="when_hidden">show</span><span class="when_shown">hide</span> source</button>
         
         <div class="when_shown">
-          <object class="codesource prettyprint lang-js" data="fastmath2d_speedtest.js" type="text/javascript" style="height:3400px;">
-            <a href="fastmath2d_speedtest.js">fastmath2d_speedtest.js</a>
+          <object class="codesource prettyprint lang-js" data="flatmat_speedtest.js" type="text/javascript" style="height:3400px;">
+            <a href="flatmat_speedtest.js">flatmat_speedtest.js</a>
           </object>
         </div>
       </div>
@@ -123,15 +123,15 @@
 
       <div class="shown">
         
-        <span id="src_fastmath2d">
-          <code>fastmath2d.js</code> <a href="#src_fastmath2d">#</a>
+        <span id="src_flatmat">
+          <code>flatmat.js</code> <a href="#src_flatmat">#</a>
         </span>
 
         <button class="src-btn" onclick="this.parentNode.classList[this.parentNode.classList.contains('shown')?'remove':'add']('shown')"><span class="when_hidden">show</span><span class="when_shown">hide</span> source</button>
         
         <div class="when_shown">
-          <object class="codesource prettyprint lang-js" data="fastmath2d.js" type="text/javascript" style="height:5200px;">
-            <a href="fastmath2d.js">fastmath2d.js</a>
+          <object class="codesource prettyprint lang-js" data="flatmat.js" type="text/javascript" style="height:5200px;">
+            <a href="flatmat.js">flatmat.js</a>
           </object>
         </div>
         
