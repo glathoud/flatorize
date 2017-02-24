@@ -26,6 +26,8 @@
       .src-btn {
         margin-left: 2em;
       }
+
+      body { font-family: Verdana,Arial,'Lucida Grande',Sans-Serif; }
       
     </style>
     <!--link rel="stylesheet" type="text/css" href="../prettify/prettify.css"-->
@@ -38,19 +40,28 @@
   <body>
     <h1>flatmat_speedtest</h1>
 
-    <section>
+    <section id="what">
+      <h1>What</h1>
       <p>
-        <emph>This page provides interactive speed tests for <code>flatmat.js</code>, a
-          library of fast linear algebra functions for <em>flat</em> 2-D&nbsp;matrices, i.e. matrices stored as
-          1-D arrays of numbers.</emph>
+        <code>flatmat</code> is a library of fast linear algebra functions in JavaScript, build mostly using <a href="../index.html">flatorize</a>.
+      </p>
+      <p>
+        "<code>flatmat</code>" means "flat matrix", because all matrices are stored as 1-D arrays of numbers (e.g.  <code>Float64Array</code>s).
+      </p>
+      <p>
+        The present page provides an API description and interactive speed tests.
       </p>
 
-      <p>[to the <a href="../index.html">main article</a>] [to <a href="https://github.com/glathoud/flatorize/blob/master/lib/">GitHub</a>]
+      <p>[to <a href="https://github.com/glathoud/flatorize/blob/master/lib/">GitHub</a>]
       </p>
     </section>
 
-    <section>
-      <p>Measure the speed of the multiplication of two matrices.</p>
+    <section id="api">
+      <h1>API</h1>
+    </section>
+    
+    <section id="speedtest_matmul">
+      <h1>Speed test: matrix multiplication</h1>
       <div>
         <button onclick="speedtest_flatmat_mul(this.parentNode, fm_mul_of_ijk, {is_hand:false})">
           <code>speedtest_flatmat_mul(this.parentNode, fm_mul_of_ijk, {is_hand:false})</code>
@@ -76,8 +87,8 @@
 
 
 
-    <section>
-      <p>Measure the speed of matrix inversion.</p>
+    <section id="speedtest_matinv">
+      <h1>Speed test: matrix inversion</h1>
       <div>
         <button onclick="speedtest_flatmat_inv(this.parentNode, fm_inv_of_ij, {is_hand:true})">
           <code>speedtest_flatmat_inv(this.parentNode, fm_inv_of_ij, {is_hand:true})</code>
@@ -120,8 +131,10 @@
 
 
     
-    <section>
+    <section id="speedtest_gaussianexponent">
 
+      <h1>Speed test: Gaussian "exponent"</h1>
+      
       <p>Measure the speed of the product <code>(x-V)^T * M * (x-V)</code> where <code>x</code> and <code>V</code> are vectors, and <code>M</code> a square matrix. This is useful when computing the exponent term in a Gaussian probability density function.</p>
 
       <div>
@@ -151,7 +164,7 @@
 
       <p>The source files used for the tests. Also browsable on <a href="https://github.com/glathoud/flatorize/blob/master/lib/">GitHub</a>
       
-      <div class="shown">
+      <div class="">
 
         <span id="src_flatmat_speedtest">
           <code>flatmat_speedtest.js</code> <a href="#src_flatmat_speedtest">#</a>
@@ -167,7 +180,7 @@
       
       <hr/>
 
-      <div class="shown">
+      <div class="">
         
         <span id="src_flatmat">
           <code>flatmat.js</code> <a href="#src_flatmat">#</a>
