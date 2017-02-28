@@ -1,36 +1,56 @@
 <!doctype html>
 <html>
   <head>
-    <title>flatmat_speedtest</title>
+    <title>flatmat.js</title>
 
     <style type="text/css">
       .when_shown { display: none; }
       .shown .when_shown { display: initial; }
       .shown .when_hidden { display: none; }
 
-      body { background-color: lightblue; }
+      .shown pre.when_shown { display: block; }
+
+      
+      body { background-color: lightblue;
+      font-family: Verdana,Arial,'Lucida Grande',Sans-Serif;
+      line-height: 150%;
+      max-width: 600px;
+      margin: auto;
+      }
+
+
+      h1,h2,h3,.author { text-align: center; }
+      h1 code, h2 code, h3 code, dd code { display: inline-block; }
+      
       section { background-color: white; }
 
       section, .codesource {
-        border: solid 1px black; padding: 1em; margin: 1em; border-radius: 0.5em;
+      border: solid 1px black; padding: 1em; margin: 1em; border-radius: 0.5em;
       }
 
-      code { word-wrap: break-word; }
+      .anchor-link { margin-left: 0.5em; font-size: 80%; }
+
+      #api dd { margin-bottom: 1em; }
+      
+      pre { word-wrap: break-word; white-space: pre-wrap; line-height: 120%; }
       
       .codesource {
-        width: 85%;
+      width: 85%;
       }
 
+      hr {     border: solid 2px grey;
+    border-radius: 2px;
+      margin: 1em 30% 1em 30%;
+      }
+      
       button { cursor: pointer; }
       
       .src-btn {
-        margin-left: 2em;
+      margin-left: 2em;
       }
-
-      body { font-family: Verdana,Arial,'Lucida Grande',Sans-Serif; }
       
     </style>
-    <!--link rel="stylesheet" type="text/css" href="../prettify/prettify.css"-->
+    <link rel="stylesheet" type="text/css" href="../prettify/prettify.css">
 
     <script type="text/javascript" src="../flatorize.js"></script>
     <script type="text/javascript" src="flatmat.js"></script>
@@ -38,36 +58,49 @@
     
   </head>
   <body>
-    <h1>flatmat_speedtest</h1>
 
-    <section id="what">
-      <h1>What</h1>
-      <p>
-        <code>flatmat</code> is a library of fast linear algebra functions in JavaScript, build mostly using <a href="../index.html">flatorize</a>.
-      </p>
-      <p>
-        "<code>flatmat</code>" means "flat matrix", because all matrices are stored as 1-D arrays of numbers (e.g.  <code>Float64Array</code>s).
-      </p>
-      <p>
-        The present page provides an API description and interactive speed tests.
-      </p>
+    <h1>flatmat.js</h1>
 
-      <p>[to <a href="https://github.com/glathoud/flatorize/blob/master/lib/">GitHub</a>]
-      </p>
-    </section>
+    <p class="author">by G. Lathoud, February 2017</p>
 
-    <section id="api">
-      <h1>API</h1>
-    </section>
+    <div class="clear"></div>
     
-    <section id="speedtest_matmul">
-      <h1>Speed test: matrix multiplication</h1>
+    <section>
+      <p>
+        <code>flatmat.js</code> is a
+        library of fast linear algebra functions. API&nbsp;description &amp; speed&nbsp;tests below.
+      </p>
+      <p>
+        2-D&nbsp;matrices are stored <em>flat</em>: as
+        1-D arrays of numbers.
+      </p>
+
+      <p>Contents:
+        <ul class="contents">
+        </ul>
+      </p>
+      
+      <p>[to the <a href="../index.html">main article</a>] [to <a href="https://github.com/glathoud/flatorize/blob/master/lib/">GitHub</a>]
+      </p>
+    </section>
+
+    <section id="API">
+      <h2>API</h2>
+
+      <dl id="api"></dl>
+    </section>
+
+    <section id="speedtest-matul">
+      <h2>Speed test: matrix multiplication</h2>
+      
       <div>
         <button onclick="speedtest_flatmat_mul(this.parentNode, fm_mul_of_ijk, {is_hand:false})">
           <code>speedtest_flatmat_mul(this.parentNode, fm_mul_of_ijk, {is_hand:false})</code>
         </button>
-        <pre><code class="result"></code></pre>
-        <pre><code class="func-code"></code></pre>
+        <pre class="result"></pre>
+        <div>
+          <pre class="func-code prettyprint lang-js when_shown"></pre>
+        </div>
       </div>
 
       <hr/>
@@ -78,8 +111,10 @@
         <button onclick="speedtest_flatmat_mul(this.parentNode, hand_mul_of_ijk, {is_hand:true})">
           <code>speedtest_flatmat_mul(this.parentNode, hand_mul_of_ijk, {is_hand:true})</code>
         </button>
-        <pre><code class="result"></code></pre>
-        <pre><code class="func-code"></code></pre>
+        <pre class="result"></pre>
+        <div>
+          <pre class="func-code prettyprint lang-js when_shown"></pre>
+        </div>
       </div>
       
     </section>
@@ -87,14 +122,18 @@
 
 
 
-    <section id="speedtest_matinv">
-      <h1>Speed test: matrix inversion</h1>
+    <section id="speedtest-matinv">
+      
+      <h2>Speed test: matrix inversion</h2>
+
       <div>
         <button onclick="speedtest_flatmat_inv(this.parentNode, fm_inv_of_ij, {is_hand:true})">
           <code>speedtest_flatmat_inv(this.parentNode, fm_inv_of_ij, {is_hand:true})</code>
         </button>
-        <pre><code class="result"></code></pre>
-        <pre><code class="func-code"></code></pre>
+        <pre class="result"></pre>
+        <div>
+          <pre class="func-code prettyprint lang-js when_shown"></pre>
+        </div>
       </div>
 
       <hr/>
@@ -108,8 +147,10 @@
         <button onclick="speedtest_mat2d_inv(this.parentNode, hand_mat2d_inv_of_ij, {is_hand:true})">
           <code>speedtest_mat2d_inv(this.parentNode, hand_mat2d_inv_of_ij, {is_hand:true})</code>
         </button>
-        <pre><code class="result"></code></pre>
-        <pre><code class="func-code"></code></pre>
+        <pre class="result"></pre>
+        <div>
+          <pre class="func-code prettyprint lang-js when_shown"></pre>
+        </div>
       </div>
 
       <hr/>
@@ -119,8 +160,10 @@
         <button onclick="speedtest_flatmat_inv(this.parentNode, hand_thru2d_fm_inv_of_ij, {is_hand:true})">
           <code>speedtest_flatmat_inv(this.parentNode, hand_thru2d_fm_inv_of_ij, {is_hand:true})</code>
         </button>
-        <pre><code class="result"></code></pre>
-        <pre><code class="func-code"></code></pre>
+        <pre class="result"></pre>
+        <div>
+          <pre class="func-code prettyprint lang-js when_shown"></pre>
+        </div>
       </div>
 
 
@@ -131,9 +174,9 @@
 
 
     
-    <section id="speedtest_gaussianexponent">
+    <section id="speedtest-xvmxv">
 
-      <h1>Speed test: Gaussian "exponent"</h1>
+      <h2>Speed test: vector-matrix product <code>(x-V)^T * M * (x-V)</code></h2>
       
       <p>Measure the speed of the product <code>(x-V)^T * M * (x-V)</code> where <code>x</code> and <code>V</code> are vectors, and <code>M</code> a square matrix. This is useful when computing the exponent term in a Gaussian probability density function.</p>
 
@@ -141,8 +184,10 @@
         <button onclick="speedtest_flatmat_xvmxv(this.parentNode, fm_xvmxv_of_dim, {is_hand:false})">
           <code>speedtest_flatmat_xvmxv(this.parentNode, fm_xvmxv_of_dim, {is_hand:false})</code>
         </button>
-        <pre><code class="result"></code></pre>
-        <pre><code class="func-code"></code></pre>
+        <pre class="result"></pre>
+        <div>
+          <pre class="func-code prettyprint lang-js when_shown"></pre>
+        </div>
       </div>
 
       <hr/>
@@ -153,53 +198,58 @@
         <button onclick="speedtest_flatmat_xvmxv(this.parentNode, hand_xvmxv_of_dim, {is_hand:true})">
           <code>speedtest_flatmat_xvmxv(this.parentNode, hand_xvmxv_of_dim, {is_hand:true})</code>
         </button>
-        <pre><code class="result"></code></pre>
-        <pre><code class="func-code"></code></pre>
+        <pre class="result"></pre>
+        <div>
+          <pre class="func-code prettyprint lang-js when_shown"></pre>
+        </div>
       </div>
 
     </section>
     
     
-    <section>
+    <section id="src">
 
+      <h2>Code source</h2>
+      
       <p>The source files used for the tests. Also browsable on <a href="https://github.com/glathoud/flatorize/blob/master/lib/">GitHub</a>
-      
-      <div class="">
-
-        <span id="src_flatmat_speedtest">
-          <code>flatmat_speedtest.js</code> <a href="#src_flatmat_speedtest">#</a>
-        </span>
-        <button class="src-btn" onclick="this.parentNode.classList[this.parentNode.classList.contains('shown')?'remove':'add']('shown')"><span class="when_hidden">show</span><span class="when_shown">hide</span> source</button>
         
-        <div class="when_shown">
-          <object class="codesource prettyprint lang-js" data="flatmat_speedtest.js" type="text/javascript" style="height:3400px;">
-            <a href="flatmat_speedtest.js">flatmat_speedtest.js</a>
-          </object>
-        </div>
-      </div>
-      
-      <hr/>
+        <div class="shown">
 
-      <div class="">
-        
-        <span id="src_flatmat">
-          <code>flatmat.js</code> <a href="#src_flatmat">#</a>
-        </span>
-
-        <button class="src-btn" onclick="this.parentNode.classList[this.parentNode.classList.contains('shown')?'remove':'add']('shown')"><span class="when_hidden">show</span><span class="when_shown">hide</span> source</button>
-        
-        <div class="when_shown">
-          <object class="codesource prettyprint lang-js" data="flatmat.js" type="text/javascript" style="height:5200px;">
-            <a href="flatmat.js">flatmat.js</a>
-          </object>
+          <span id="src_flatmat_speedtest">
+            <code>flatmat_speedtest.js</code> <a href="#src_flatmat_speedtest">#</a>
+          </span>
+          <button class="src-btn" onclick="toggle_parent_shown(this)"><span class="when_hidden">show</span><span class="when_shown">hide</span> source</button>
+          
+          <div class="when_shown">
+            <object class="codesource prettyprint lang-js" data="flatmat_speedtest.js" type="text/javascript" style="height:600px;">
+              <a href="flatmat_speedtest.js">flatmat_speedtest.js</a>
+            </object>
+          </div>
         </div>
         
+        <hr/>
+
+        <div class="shown">
+          
+          <span id="src_flatmat">
+            <code>flatmat.js</code> <a href="#src_flatmat">#</a>
+          </span>
+
+          <button class="src-btn" onclick="this.parentNode.classList[this.parentNode.classList.contains('shown')?'remove':'add']('shown')"><span class="when_hidden">show</span><span class="when_shown">hide</span> source</button>
+          
+          <div class="when_shown">
+            <object class="codesource prettyprint lang-js" data="flatmat.js" type="text/javascript" style="height:600px;">
+              <a href="flatmat.js">flatmat.js</a>
+            </object>
+          </div>
+          
     </section>
 
-    <!--
+    <script type="text/javascript" src="opinel.js"></script>
+    <script type="text/javascript" src="flatmat_speedtest_layout.js"></script>
+
     <script type="text/javascript" src="../prettify/prettify.js"></script>
     <script type="text/javascript">setTimeout( prettyPrint );</script>
-    -->
 
     <script type="text/javascript" src="../ga.js"></script>
 
