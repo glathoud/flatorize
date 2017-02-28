@@ -11,7 +11,9 @@
       .shown pre.when_shown { display: block; }
 
       
-      body { background-color: lightblue;
+      @media screen { body { background-color: lightblue; } }
+
+      body {
       font-family: Verdana,Arial,'Lucida Grande',Sans-Serif;
       line-height: 150%;
       max-width: 600px;
@@ -73,6 +75,7 @@
       <p>
         2-D&nbsp;matrices are stored <em>flat</em>: as
         1-D arrays of numbers.
+        Most code is automatically generated for performance (see&nbsp;<a href="../index.html"><code>flatorize</code></a>).
       </p>
 
       <p>Contents:
@@ -80,7 +83,8 @@
         </ul>
       </p>
       
-      <p>[to the <a href="../index.html">main article</a>] [to <a href="https://github.com/glathoud/flatorize/blob/master/lib/">GitHub</a>]
+      <p>
+        [to <a href="https://github.com/glathoud/flatorize/blob/master/lib/">GitHub</a>]
       </p>
     </section>
 
@@ -212,36 +216,20 @@
       <h2>Code source</h2>
       
       <p>The source files used for the tests. Also browsable on <a href="https://github.com/glathoud/flatorize/blob/master/lib/">GitHub</a>
+      </p>
+
+      <ul>
+          <li id="src_flatmat_speedtest">
+            <code><a href="flatmat_speedtest.js">flatmat_speedtest.js</a></code>
+          </li>
         
-        <div class="shown">
-
-          <span id="src_flatmat_speedtest">
-            <code>flatmat_speedtest.js</code> <a href="#src_flatmat_speedtest">#</a>
-          </span>
-          <button class="src-btn" onclick="toggle_parent_shown(this)"><span class="when_hidden">show</span><span class="when_shown">hide</span> source</button>
           
-          <div class="when_shown">
-            <object class="codesource prettyprint lang-js" data="flatmat_speedtest.js" type="text/javascript" style="height:600px;">
-              <a href="flatmat_speedtest.js">flatmat_speedtest.js</a>
-            </object>
-          </div>
-        </div>
-        
-        <hr/>
+          <li id="src_flatmat">
+            <code><a href="flatmat.js">flatmat.js</a></code>
+          </li>
 
-        <div class="shown">
-          
-          <span id="src_flatmat">
-            <code>flatmat.js</code> <a href="#src_flatmat">#</a>
-          </span>
+          </ul>
 
-          <button class="src-btn" onclick="this.parentNode.classList[this.parentNode.classList.contains('shown')?'remove':'add']('shown')"><span class="when_hidden">show</span><span class="when_shown">hide</span> source</button>
-          
-          <div class="when_shown">
-            <object class="codesource prettyprint lang-js" data="flatmat.js" type="text/javascript" style="height:600px;">
-              <a href="flatmat.js">flatmat.js</a>
-            </object>
-          </div>
           
     </section>
 
