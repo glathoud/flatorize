@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-LDC_DIR="/media/ssd2/software/ldc"
+LDC_DIR="~/other2/software/ldc"
 COMPILO="$LDC_DIR/bin/ldmd2"
 FULLNAME_SHARED_LIB="$LDC_DIR/lib/libphobos2-ldc-shared.so.2.0.80"
 

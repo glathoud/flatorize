@@ -93,9 +93,9 @@ https://wiki.dlang.org/Building_LDC_from_source
   tar xf ldc-1.10.0-src.tar.gz
 
   cd ldc-1.10.0-src/
-  mkdir /media/ssd2/software 2>>/dev/null
+  mkdir ~/other2/software 2>>/dev/null
   mkdir build  &&  cd build
-  cmake -G Ninja -DLLVM_CONFIG=../../../ldc-llvm5-tweak/llvm-5.0.1.src/build/bin/llvm-config -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/media/ssd2/software/ldc ..
+  cmake -G Ninja -DLLVM_CONFIG=../../../ldc-llvm5-tweak/llvm-5.0.1.src/build/bin/llvm-config -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=~/other2/software/ldc ..
 
   # Build and install LDC. Use -j<n> to limit parallelism if running out of memory.
   ninja
@@ -178,9 +178,9 @@ https://wiki.dlang.org/Building_LDC_from_source
   tar xf ldc-1.10.0-src.tar.gz
 
   cd ldc-1.10.0-src/
-  mkdir /media/ssd2/software 2>>/dev/null
+  mkdir ~/other2/software 2>>/dev/null
   mkdir build  &&  cd build
-  cmake -G Ninja -DLLVM_CONFIG=../../../ldc-llvm5-tweak/llvm-5.0.1.src/build/bin/llvm-config -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/media/ssd2/software/ldc ..
+  cmake -G Ninja -DLLVM_CONFIG=../../../ldc-llvm5-tweak/llvm-5.0.1.src/build/bin/llvm-config -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=~/other2/software/ldc ..
 
   # Build and install LDC. Use -j<n> to limit parallelism if running out of memory.
   ninja
