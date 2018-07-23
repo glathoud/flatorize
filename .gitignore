@@ -1,8 +1,10 @@
 .hg
 *~
 *.bin
+*.map
 *.o
 *.s
+*.so
 DIRECTIONS.org
 *.outdir
 *.pyc

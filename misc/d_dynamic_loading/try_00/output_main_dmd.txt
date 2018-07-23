@@ -1,0 +1,11 @@
+/home/oa/d/glathoud/tmp/flatorize/misc/d_dynamic_loading/try_00
+main shared static this
++main()
+libdll.so shared static this
+libdll.so is loaded
+dll() function is found
+dll()
+unloading libdll.so
+libdll.so shared static ~this
+-main()
+main shared static ~this

@@ -1,0 +1,252 @@
+# -*- coding: utf-8 -*-
+
+https://github.com/glathoud/flatorize/issues/7
+
+points in the reverse chronological order
+
+* sketching out practicalities: implementation
+
+Local cache directory where we write out generated code and compiled
+libraries.
+
+In fact, since this process is not specific to flatorize, I'd rather
+write a separate tool.
+
+But but but wait, at the top of main.d there is `extern (C) int
+dll();` which means we'd still have to write that declaration, which
+is a no-go for flatorize.
+
+Does it work without that declaration?
+
+YES, because the local declaration:
+
+    int function() fn = cast(int function())dlsym(lh, "dll");
+
+is enough. Notice how the string "dll" can be determined at runtime.
+
+* sketching out practicalities: user
+
+We'll need the user to configure:
+ * fullpath to the dmd or ldmd2 binary
+ * fullpath to the Phobos shared library
+
+In case ldmd2 is used, and Phobos is missing, gently point out to
+step-by-step information to build LDC2 with shared libraries.
+
+That should pretty much be all that is needed from the user's point
+of view :)
+
+* try dlopen with ldc2 (works)
+
+
+** build LDC with shared libraries (esp. Phobos)
+Use LDC's ldmd2, a wrapper script for ldc2 which converts argument
+formats from dmd style over to ldc style.
+
+Requirement: LDC compiled with shared libs, especially Phobos
+
+Example:
+
+https://forum.dlang.org/thread/lbrfycmutwrrghtzazin@forum.dlang.org?page=3
+
+This is a fresh build on Ubuntu 14.04 with cmake called via:
+
+    cmake -DCMAKE_INSTALL_PREFIX=/opt/ldc -DBUILD_SHARED_LIBS=ON ..
+
+.
+
+so here we go
+
+https://wiki.dlang.org/Building_LDC_from_source
+
+#+BEGIN_SRC sh
+
+  # tools
+
+  sudo apt install cmake
+
+  #https://github.com/ninja-build/ninja/wiki/Pre-built-Ninja-packages
+  sudo apt install ninja-build
+
+  # llvm (slightly tweaked by the LDC guys)
+
+  cd ~/d/glathoud/software
+  mkdir ldc-llvm5-tweak
+  cd ldc-llvm5-tweak
+
+  curl -L -O https://github.com/ldc-developers/llvm/releases/download/ldc-v5.0.1/llvm-5.0.1.src.tar.xz
+  tar xf llvm-5.0.1.src.tar.xz
+  cd llvm-5.0.1.src/
+  mkdir build && cd build/
+
+  cmake -GNinja .. -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD="X86;AArch64;ARM;PowerPC;NVPTX" -DLLVM_BUILD_TOOLS=OFF -DLLVM_BUILD_UTILS=OFF # remove -GNinja to use Make instead
+  
+  cd ../../../
+
+  # now LDC itself
+  # 
+  # looked there: https://github.com/ldc-developers/ldc/releases
+  # for the latest stable release
+
+  mkdir ldc-1.10.0  &&  cd ldc-1.10.0
+  curl -L -O https://github.com/ldc-developers/ldc/releases/download/v1.10.0/ldc-1.10.0-src.tar.gz
+  tar xf ldc-1.10.0-src.tar.gz
+
+  cd ldc-1.10.0-src/
+  mkdir /media/ssd2/software 2>>/dev/null
+  mkdir build  &&  cd build
+  cmake -G Ninja -DLLVM_CONFIG=../../../ldc-llvm5-tweak/llvm-5.0.1.src/build/bin/llvm-config -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/media/ssd2/software/ldc ..
+
+  # Build and install LDC. Use -j<n> to limit parallelism if running out of memory.
+  ninja
+  sudo ninja install
+#+END_SRC
+
+** run it
+
+file:./main_ldc2.sh
+
+* try dlopen with ldc2 (old notes: til I got it working)
+
+file:./try_00/main_ldc2.sh
+
+https://forum.dlang.org/group/digitalmars.D.ldc
+
+maybe try with ldmd2
+
+https://stackoverflow.com/questions/35515138/ldc2-vs-ldmd2-whats-the-difference
+
+ldmd2 is just a wrapper script for ldc2 which converts argument formats from dmd style over to ldc style.
+
+but there should be phobos as shared lib
+https://wiki.dlang.org/Compilers
+Phobos as a shared library
+
+https://wiki.dlang.org/Building_LDC_runtime_libraries
+
+https://github.com/ldc-developers/ldc/blob/master/runtime/ldc-build-runtime.d.in
+
+https://packages.ubuntu.com/artful/libphobos2-ldc74
+
+https://packages.ubuntu.com/artful/libphobos2-ldc-dev
+
+should work by building it
+
+https://forum.dlang.org/thread/lbrfycmutwrrghtzazin@forum.dlang.org?page=3
+
+This is a fresh build on Ubuntu 14.04 with cmake called via:
+
+    cmake -DCMAKE_INSTALL_PREFIX=/opt/ldc -DBUILD_SHARED_LIBS=ON ..
+
+.
+
+so here we go
+
+https://wiki.dlang.org/Building_LDC_from_source
+
+#+BEGIN_SRC sh
+
+  # tools
+
+  sudo apt install cmake
+
+  #https://github.com/ninja-build/ninja/wiki/Pre-built-Ninja-packages
+  sudo apt install ninja-build
+
+  # llvm (slightly tweaked by the LDC guys)
+
+  cd ~/d/glathoud/software
+  mkdir ldc-llvm5-tweak
+  cd ldc-llvm5-tweak
+
+  curl -L -O https://github.com/ldc-developers/llvm/releases/download/ldc-v5.0.1/llvm-5.0.1.src.tar.xz
+  tar xf llvm-5.0.1.src.tar.xz
+  cd llvm-5.0.1.src/
+  mkdir build && cd build/
+
+  cmake -GNinja .. -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD="X86;AArch64;ARM;PowerPC;NVPTX" -DLLVM_BUILD_TOOLS=OFF -DLLVM_BUILD_UTILS=OFF # remove -GNinja to use Make instead
+  
+  cd ../../../
+
+  # now LDC itself
+  # 
+  # looked there: https://github.com/ldc-developers/ldc/releases
+  # for the latest stable release
+
+  mkdir ldc-1.10.0  &&  cd ldc-1.10.0
+  curl -L -O https://github.com/ldc-developers/ldc/releases/download/v1.10.0/ldc-1.10.0-src.tar.gz
+  tar xf ldc-1.10.0-src.tar.gz
+
+  cd ldc-1.10.0-src/
+  mkdir /media/ssd2/software 2>>/dev/null
+  mkdir build  &&  cd build
+  cmake -G Ninja -DLLVM_CONFIG=../../../ldc-llvm5-tweak/llvm-5.0.1.src/build/bin/llvm-config -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/media/ssd2/software/ldc ..
+
+  # Build and install LDC. Use -j<n> to limit parallelism if running out of memory.
+  ninja
+  sudo ninja install
+#+END_SRC
+
+* try dlopen with dmd (works)
+
+file:./try_00/main_dmd.sh
+
+* about dlopen 
+
+file:./
+
+https://dlang.org/articles/dll-linux.html
+
+
+dll.d
+
+https://dlang.org/articles/dll-linux.html#dso9
+
+main
+
+https://dlang.org/articles/dll-linux.html#dso10
+
+
+some experience:
+
+https://forum.dlang.org/post/rmdtpuhcpttktxdjvhnl@forum.dlang.org
+
+* wiki
+
+https://wiki.dlang.org/Win32_DLLs_in_D
+
+* initial research
+
+https://forum.dlang.org/thread/rronfcwusoixzqbyhvdf@forum.dlang.org
+
+I've written a program where user input drives the generation of a
+code snippet that then gets passed to an invocation of dmd,
+compiled, linked and the loaded as a shared library via dlopen(), et
+al. It works fairly well, and dmd generally is fast enough that the
+pause is not very noticeable. (This was before dmd-as-a-library was
+available; I imagine it would be even faster today now that you
+don't have to spawn a separate dmd process.)
+
+The generated snippet does import std.math, and it seems to work
+fine. But then the generated snippets tend to be fairly small, and
+only use a limited subset of the language, so there may be gotchas
+that I'm not aware of.
+
+.
+
+https://dlang.org/blog/2017/08/01/a-dub-case-study-compiling-dmd-as-a-library/
+
+Recently there has been some progress in making the D compiler (DMD)
+available as a library. Razvan Nitu has been working on it as part
+of his D Foundation scholarship at the University Politechnica of
+Bucharest. He gave a presentation at DConf 2017 (a video of the talk
+is available, as well as examples in the DMD repository). So I had
+the idea that as part of the DConf 2017 hackathon I could create a
+simple DUB package for DMD to make only the lexer and the parser
+available as a library, something his work has made possible.
+
+http://code.dlang.org/packages/dmd
+
+.
+
+But if I want fast code... I'd rather invoke ldc2
