@@ -746,7 +746,11 @@ function tryit_all( button, opt )
         log( '' );
 
         if ('undefined' !== typeof document)
-            document.getElementById('all-perf-yours-' + name).innerHTML = get_speedup_percent_str( result.speedup_percent );
+        {
+            var tmp_node = document.getElementById('all-perf-yours-' + name);
+            if (tmp_node)
+                tmp_node.innerHTML = get_speedup_percent_str( result.speedup_percent );
+        }
         
         var table = 'undefined' !== typeof document  &&  document.getElementById( 'all-perf' );
         if (table)
