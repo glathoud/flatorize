@@ -461,6 +461,12 @@ var flatorize, FR;
         switcher.getDirect = switcher_getDirect;
         switcher.evalnow   = switcher_evalnow;
 
+        // Support transfun's inlineable interface
+        // https://github.com/glathoud/flatorize/issues/8
+        // https://github.com/glathoud/transfun/issues/7
+        switcher._tf_get_argname_arr = function () { return vararr.slice(); };
+        switcher._tf_get_bodycode    = function () { return switcher_getDirect()._tf_get_bodycode(); };
+        
         within = false;
         return switcher;
 
@@ -570,6 +576,12 @@ var flatorize, FR;
                 // has the `direct` and would like to build further on
                 // top of it using `flatorize()`
                 direct.switcher = switcher;
+                
+                // Support transfun's inlineable interface
+                // https://github.com/glathoud/flatorize/issues/8
+                // https://github.com/glathoud/transfun/issues/7
+                direct._tf_get_argname_arr = function () { return vararr.slice(); };
+                direct._tf_get_bodycode    = function () { return code; };
                 
                 // Done
                 
