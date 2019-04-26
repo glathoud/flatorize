@@ -318,7 +318,7 @@ var flatorize, FR;
             if (ret[0].__isExpr__  ||  'number' === typeof ret[0])
                 return ret[0];
         }
-        
+
         ret = wrap_products( ret );
 
         ret = normalize_the_sum_order( ret );
@@ -872,13 +872,13 @@ var flatorize, FR;
         var ret = null;
         for (var i = arr.length - 3; i >= 0; i--)
         {
-            var arr_ip1 = arr[ i+1 ];
+            var arr_ip1 = (ret  ||  arr)[ i+1 ];
             if (arr_ip1 === '*')
             {
                 (
                     ret  ||  (ret = arr.slice())  // shallow copy
                 )
-                    .splice( i, 3, expr( arr[ i ], arr_ip1, arr[ i+2 ] ) )
+                    .splice( i, 3, expr( ret[ i ], arr_ip1, ret[ i+2 ] ) )
                 ;
             }
         }
